@@ -1,0 +1,28 @@
+{
+  "name": "mainnoteJS",
+  "version": "0.0.1",
+  "homepage": "https://github.com/mainnote/mainnoteJS",
+  "authors": [
+    "George Zhang <service@mainnote.com>"
+  ],
+  "description": "A set of browser components based on groupJS",
+  "main": "build/mainnote.min.js",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals",
+    "node",
+    "yui"
+  ],
+  "keywords": [
+    "mainnote"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
