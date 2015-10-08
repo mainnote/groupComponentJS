@@ -1,0 +1,58 @@
+#mnbody, div.promptTop > *{
+    max-width: 850px;
+    margin: 0 auto;
+}
+div.promptTop{
+    max-width: 865px;
+    margin: 0 auto;
+}
+
+#mnbody{
+    background-color: white;
+    height: 100vh;
+    position: relative;
+}
+
+div.promptTop{
+    padding: 0px 30px 15px 5px;
+    box-sizing: border-box;
+}
+div.promptTop {
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: -15px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 100%;
+    min-height: 100vh;
+}
+
+div.promptTop, div.promptHead{
+    background: rgb(255, 255, 255);
+    background: rgba(255, 255, 255, .95);
+}
+div.promptHead, div.promptTitle{
+    height: 46px;
+}
+div.promptHead{
+  position: fixed;
+  width: 100%;
+  max-width: 840px;
+  z-index: 50;
+}
+div.promptTop form{
+    margin-top: 46px;
+    padding: 12px 10px 5px 10px;
+    text-align:left;
+}
+div.promptTitle{
+    padding:12px 10px 5px 10px;
+    text-align: center;
+    vertical-align: middle;
+    color: black;
+    font-weight: bold;
+    font-family: "Times New Roman", Times, serif;
+    font-size: large;
+}

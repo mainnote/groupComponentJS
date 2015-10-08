@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="/public/css/global.css">
+        <link rel="stylesheet" type="text/css" href="/public/css/ios-button.css">
+        <link rel="stylesheet" type="text/css" href="/public/css/prompt.css">
+        <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.1.0/js/tether.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js"></script>
+        <script>
+              require.config({
+                baseUrl: '/public/js/',
+                paths: {
+                    'jquery': '//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min',
+                    'underscore': '//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min',
+                    'text': '//cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text.min',
+                    'tpl': '//cdnjs.cloudflare.com/ajax/libs/requirejs-tpl/0.0.2/tpl.min',
+                    'autosize': '//cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.8/autosize.min',
+                    'bootstrap': '//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min',
+                    'fastclick': '//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min',
+                },
+                shim : {
+                    'bootstrap' : { "deps" :['jquery'] }
+                },
+                waitSeconds: 15,
+              });
+        </script>
+    </head>
+    <body>
+        <div id="mnbody">
+            <h1>Playground</h1>
+        </div>
+        <script>
+            (function() {
+                require(['fastclick'], function(fastclick){
+                    fastclick.attach(document.body);
+                });
+                require(['jquery', 'bootstrap', 'textarea'], function($, bootstrap, Textarea){
+                    var textareaCmd = Textarea.create('textareaCmd').command();
+                    var opt = {
+                        container: $('#mnbody'),
+                        textarea_name: 'thisTextarea',
+                        textarea_value: 'hello world',
+                        textarea_placeholder: 'Type Here',
+                    };
+                    textareaCmd('render', opt);
+                });
+                require(['jquery', 'bootstrap', 'textareaCountGrp'], function($, bootstrap, TextareaCountGrp){
+                    var textareaCountGrpCmd = TextareaCountGrp.create('textareaCountGrpCmd').command();
+                    var opt = {
+                        container: $('#mnbody'),
+                        textareaCountGrp_maxCount: 120,
+                    };
+                    textareaCountGrpCmd('render', opt);
+                });
+                require(['jquery', 'prompt'], function($, Prompt){
+                    var btn = $('<button>Prompt</button>');
+                    $('#mnbody').append(btn);
+                                                           
+                    btn.on('click', function(e) {
+                        var promptCmd = Prompt.create('promptCmd').command();
+                        var opt = {
+                            container: $('#mnbody'),
+                            prompt_title: 'Test Prompt',
+                        };
+                        promptCmd('render', opt);
+                        
+                        var promptCmd1 = Prompt.create('promptCmd1').command();
+                        var opt1 = {
+                            container: $('#mnbody'),
+                            prompt_title: 'Test Prompt 1',
+                        };
+                        promptCmd1('render', opt1);
+                    });
+                });
+                require(['jquery', 'promptFormGrp'], function($, PromptFormGrp){
+                    var btn = $('<button>PromptFormGrp</button>');
+                    $('#mnbody').append(btn);
+                                                           
+                    btn.on('click', function(e) {
+                        var promptFormGrpCmd = PromptFormGrp.create('promptFormGrpCmd').command();
+                        var opt = {
+                            container: $('#mnbody'),
+                            prompt_title: 'Test PromptFormGrp',
+                            form_elements: [{elem: 'textareaCountGrp'
+                                            , name: 'textareaCountGrp'
+                                            , opt: {textarea_name: 'thisTextarea',
+                                                    textarea_value: 'In prompt Value',
+                                                    }
+                                            },
+                                            {elem: 'textareaCountGrp'
+                                            , name: 'textareaCountGrp'
+                                            , opt: {textarea_name: 'thisTextarea2',
+                                                    textarea_value: 'In prompt Value2',
+                                                    }
+                                            },
+                                            ],
+                        };
+                        promptFormGrpCmd('render', opt);
+                    });
+                });
+                
+            })();
+        </script>
+    </body>
+</html>
