@@ -4,7 +4,7 @@ define(['jquery', 'component', 'tpl!../templates/list',
 	List.extend({
 		tpl : tpl,
 		items : [],
-		afterRender : function (opt) {
+		setup : function (opt) {
 			var that = this;
 			if (opt.list_data && $.isArray(opt.list_data)) {
 				$.each(opt.list_data, function (index, data) {
@@ -25,7 +25,7 @@ define(['jquery', 'component', 'tpl!../templates/list',
 
 		setupItems : function (opt) {
 			$.each(this.items, function (index, itemCmd) {
-				itemCmd('afterRender', opt);
+				itemCmd('setup', opt);
 			});
 		},
 	});

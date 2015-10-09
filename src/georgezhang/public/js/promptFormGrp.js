@@ -6,8 +6,8 @@ define(['jquery', 'group', 'prompt', 'form'
     PromptFormGrp.join(prompt, form);
     
     prompt.extend({
-        afterRender: function(opt) {
-            var promptComp = Prompt.afterRender.call(this, opt);
+        setup: function(opt) {
+            var promptComp = Prompt.setup.call(this, opt);
             opt.container = promptComp;
             var formComp = form.command()('render', opt);
             return promptComp;

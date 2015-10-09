@@ -14,6 +14,7 @@ define(['jquery', 'component', 'tpl!../templates/count'
                 };
                 that.count(opt_);
             });
+            return this.comp;
         },
         
 		render : function (opt) {
@@ -22,12 +23,7 @@ define(['jquery', 'component', 'tpl!../templates/count'
             this.comp = showTpl;
             this.watchComp = opt.comp;
             this.maxCount = opt.maxCount;
-			return this.afterRender();
-		},
-        
-        afterRender : function (opt) {
-            this.setup();
-			return this.comp;
+			return this.setup();
 		},
         
         count: function(opt) {

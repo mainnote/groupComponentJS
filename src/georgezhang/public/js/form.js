@@ -3,7 +3,7 @@ define(['jquery', 'component', 'tpl!../templates/form'
 	var Form = Component.create('Form');
 	Form.extend({
 		tpl : tpl,
-		afterRender : function (opt) {
+		setup : function (opt) {
 			var that = this;
 			if (opt.form_elements && $.isArray(opt.form_elements)) {
 				var len = opt.form_elements.length;

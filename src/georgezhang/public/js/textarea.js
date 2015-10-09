@@ -8,7 +8,7 @@ define(['jquery', 'component', 'tpl!../templates/textarea', 'autosize'
             textarea_value: '',
             textarea_placeholder: '',
         },
-        afterRender: function(opt) {
+        setup: function(opt) {
             autosize(this.comp);
             return this.comp;
         },

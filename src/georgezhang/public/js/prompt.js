@@ -3,7 +3,7 @@ define(['jquery', 'component', 'tpl!../templates/prompt'
 	var Prompt = Component.create('Prompt');
 	Prompt.extend({
         tpl: tpl,
-        afterRender: function(opt) {
+        setup: function(opt) {
             var that = this;
             if (!window.layerCount) window.layerCount = 10000;
             this.comp.css('z-index', window.layerCount++);

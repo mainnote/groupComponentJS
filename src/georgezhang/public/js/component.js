@@ -12,10 +12,10 @@ define(['jquery', 'group'
 			var comp = $(this.template(opt_));
 			comp.appendTo(opt.container);
 			this.comp = comp;
-			return opt.noSetup ? this.comp : this.afterRender(opt);
+			return opt.noSetup ? this.comp : this.setup(opt);
 		},
 
-		afterRender : function (opt) {
+		setup : function (opt) {
 			return this.comp;
 		},
 		remove : function (opt) {
