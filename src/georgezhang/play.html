@@ -102,6 +102,15 @@
                         promptFormGrpCmd('render', opt);
                     });
                 });
+                require(['jquery', 'listItemGrp', 'dataCollectionGrp'], function($, ListItemGrp, DataCollectionGrp){
+                    var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd').command();
+                    var dataCollectionGrpCmd = DataCollectionGrp.create('dataCollectionGrpCmd').command();
+                    var opt = {
+                        container: $('#mnbody'),
+                        list_data: dataCollectionGrpCmd('callCollection', {method: 'add', opt:{values:['yes', 'haha']}}),
+                    };
+                    listItemGrpCmd('render', opt);
+                });
                 
             })();
         </script>

@@ -2,25 +2,25 @@ define(['jquery', 'group'
 	], function ($, Grp) {
 	var Component = Grp.obj.create('Component');
 	Component.extend({
-        defaultOpt: {},
+		defaultOpt : {},
 		template : function (opt) {
 			return this.tpl ? this.tpl(opt) : '';
 		},
-        
+
 		render : function (opt) {
-            var opt_ = $.extend({}, this.defaultOpt, opt);
+			var opt_ = $.extend({}, this.defaultOpt, opt);
 			var comp = $(this.template(opt_));
 			comp.appendTo(opt.container);
-            this.comp = comp;
-			return this.afterRender(opt);
+			this.comp = comp;
+			return opt.noSetup ? this.comp : this.afterRender(opt);
 		},
 
 		afterRender : function (opt) {
 			return this.comp;
 		},
-        remove: function(opt) {
-            this.comp.remove();
-        },
+		remove : function (opt) {
+			this.comp.remove();
+		},
 	});
 
 	return Component;
