@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!../templates/prompt'
+define(['jquery', 'component', 'tpl!templates/prompt'
 	], function ($, Component, tpl) {
 	var Prompt = Component.create('Prompt');
 	Prompt.extend({

@@ -5,11 +5,7 @@ define(['jquery', 'group', 'dataCollection', 'data'
     var Data = Data.create('Data');
     DataCollectionGrp.join(DataCollection, Data);
     
-    DataCollectionGrp.extend({
-        callCollection: function(opt) { //generic call to member
-            return this.call('DataCollection', opt.method, opt.opt);
-        },
-    });
+    DataCollectionGrp.setCallToMember('DataCollection');
 
 	return DataCollectionGrp;
 });

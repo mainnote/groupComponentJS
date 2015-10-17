@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!../templates/count'
+define(['jquery', 'component', 'tpl!templates/count'
 	], function ($, Component, tpl) {
 	var Count = Component.create('Count');
 	Count.extend({

@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!../templates/list',
+define(['jquery', 'component', 'tpl!templates/list',
 	], function ($, Component, tpl) {
 	var List = Component.create('List');
 	List.extend({
