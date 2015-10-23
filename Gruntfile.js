@@ -24,7 +24,7 @@ module.exports = function (grunt) {
 							exports : '_'
 						}
 					},
-					stubModules : ['underscore', 'text', 'tpl', 'main'],
+                    stubModules : ['main'],
 					removeCombined : true,
 					inlineText : true,
 					preserveLicenseComments : false,
@@ -43,6 +43,20 @@ module.exports = function (grunt) {
 			},
 
 		},
+		cssmin : {
+			options : {
+				shorthandCompacting : false,
+				roundingPrecision : -1
+			},
+			target : {
+				files : [{
+						src : ['dest/georgezhang/public/css/*.css'],
+						dest : 'build/mainnote.min.css',
+					}
+				],
+
+			},
+		},
 		jasmine : {
 			requirejs : {
 				src : 'src/georgezhang/public/js/*.js',
@@ -51,15 +65,18 @@ module.exports = function (grunt) {
 					helpers : 'spec/*Helper.js',
 					template : require('grunt-template-jasmine-requirejs'),
 					templateOptions : {
-                        requireConfigFile : 'src/georgezhang/public/js/config.js',
+						requireConfigFile : 'src/georgezhang/public/js/config.js',
 						requireConfig : {
-							baseUrl: 'src/georgezhang/public/js',
-                            paths: {
-                                'jquery' : 'http://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min',
-                                'autosize' : 'empty:',
-                                'bootstrap' : 'empty:',
-                                'fastclick' : 'empty:',
-                            },
+							baseUrl : 'src/georgezhang/public/js',
+							paths : {
+								'jquery' : 'http://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min',
+								'autosize' : 'http://cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.8/autosize.min',
+								'bootstrap' : 'http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min',
+								'fastclick' : 'http://cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min',
+								'underscore' : 'http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min',
+								'text' : 'http://cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text.min',
+								'tpl' : 'http://cdnjs.cloudflare.com/ajax/libs/requirejs-tpl/0.0.2/tpl.min',
+							},
 						},
 					}
 				}
@@ -81,8 +98,9 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jasmine');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-contrib-cssmin');
 
 	// Default task(s).
-	grunt.registerTask('default', ['requirejs', 'uglify']);
+	grunt.registerTask('default', ['requirejs', 'uglify', 'cssmin']);
 	grunt.registerTask('test', ['jasmine:requirejs']);
 };

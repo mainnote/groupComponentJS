@@ -9,13 +9,12 @@ define(['jquery', 'group', 'prompt', 'form'
         setup: function(opt) {
             var promptComp = Prompt.setup.call(this, opt);
             opt.container = promptComp;
-            var formComp = form.command()('render', opt);
+            this.group.call('form', 'render', opt);
             return promptComp;
         },
         
         donePrompt: function(opt) {
             var formValue = this.group.call('form', 'serialize', opt);
-            console.log(formValue);
             Prompt.donePrompt.call(this, opt);
         },
     });
