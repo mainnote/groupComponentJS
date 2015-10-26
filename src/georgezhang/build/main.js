@@ -5,6 +5,7 @@ require([
 'dataCollection',
 'dataCollectionGrp',
 'form',
+'formGrp',
 'item',
 'list',
 'listItemGrp',
@@ -12,5 +13,6 @@ require([
 'promptFormGrp',
 'textarea',
 'textareaCountGrp',
+'request',
 ], function () {
 });

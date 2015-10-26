@@ -1,20 +1,20 @@
-define(['jquery', 'group', 'prompt', 'form'
-	], function ($, Grp, Prompt, Form) {
+define(['jquery', 'group', 'prompt', 'formGrp'
+	], function ($, Grp, Prompt, FormGrp) {
 	var PromptFormGrp = Grp.group.create('PromptFormGrp');
     var prompt = Prompt.create('prompt');
-    var form = Form.create('form');
-    PromptFormGrp.join(prompt, form);
+    var formGrp = FormGrp.create('formGrp');
+    PromptFormGrp.join(prompt, formGrp);
     
     prompt.extend({
         setup: function(opt) {
             var promptComp = Prompt.setup.call(this, opt);
             opt.container = promptComp;
-            this.group.call('form', 'render', opt);
+            this.group.call('formGrp', 'render', opt);
             return promptComp;
         },
         
         donePrompt: function(opt) {
-            var formValue = this.group.call('form', 'serialize', opt);
+            var formValue = this.group.call('formGrp', 'submit', opt);
             Prompt.donePrompt.call(this, opt);
         },
     });

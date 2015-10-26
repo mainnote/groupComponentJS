@@ -5,6 +5,7 @@ define(['jquery', 'component', 'tpl!templates/form'
 		tpl : tpl,
 		setup : function (opt) {
 			var that = this;
+            //build fieldset from JSON
 			if (opt.form_elements && $.isArray(opt.form_elements)) {
 				var len = opt.form_elements.length;
 				for (var i = 0; i < len; i++) {
@@ -20,12 +21,13 @@ define(['jquery', 'component', 'tpl!templates/form'
 					});
 				}
 			}
+            
 			return this.comp;
 		},
 
 		add : function (opt) {
 			var opt_ = $.extend({
-				container : this.comp,
+				container : this.comp.find('fieldset'),
 			}, opt.compOpt);
 			opt.compCmd('render', opt_);
 		},
@@ -37,6 +39,7 @@ define(['jquery', 'component', 'tpl!templates/form'
 		serializeArray : function (opt) {
             return this.comp.serializeArray();
         },
+        
 	});
 
 	return Form;

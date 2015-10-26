@@ -2168,7 +2168,7 @@ define('dataCollectionGrp',['jquery', 'group', 'dataCollection', 'data'
 define('tpl!templates/form', [],function () { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<form onsubmit="return false;">\r\n</form>';
+__p+='<form onsubmit="return false;">\r\n<fieldset>\r\n</fieldset>\r\n</form>';
 }
 return __p;
 }; });
@@ -2212,9 +2212,21 @@ define('form',['jquery', 'component', 'tpl!templates/form'
 		serializeArray : function (opt) {
             return this.comp.serializeArray();
         },
+        
 	});
 
 	return Form;
+});
+
+define('formGrp',['jquery', 'group', 'form'
+	], function ($, Grp, Form) {
+	var FormGrp = Grp.group.create('FormGrp');
+    var form = Form.create('form');
+    FormGrp.join(form);
+    
+    FormGrp.setCallToMember('form');
+    
+	return FormGrp;
 });
 
 
@@ -2351,23 +2363,23 @@ define('prompt',['jquery', 'component', 'tpl!templates/prompt'
     return Prompt;
 });
 
-define('promptFormGrp',['jquery', 'group', 'prompt', 'form'
-	], function ($, Grp, Prompt, Form) {
+define('promptFormGrp',['jquery', 'group', 'prompt', 'formGrp'
+	], function ($, Grp, Prompt, FormGrp) {
 	var PromptFormGrp = Grp.group.create('PromptFormGrp');
     var prompt = Prompt.create('prompt');
-    var form = Form.create('form');
-    PromptFormGrp.join(prompt, form);
+    var formGrp = FormGrp.create('formGrp');
+    PromptFormGrp.join(prompt, formGrp);
     
     prompt.extend({
         setup: function(opt) {
             var promptComp = Prompt.setup.call(this, opt);
             opt.container = promptComp;
-            this.group.call('form', 'render', opt);
+            this.group.call('formGrp', 'render', opt);
             return promptComp;
         },
         
         donePrompt: function(opt) {
-            var formValue = this.group.call('form', 'serialize', opt);
+            var formValue = this.group.call('formGrp', 'serialize', opt);
             Prompt.donePrompt.call(this, opt);
         },
     });
@@ -2443,6 +2455,7 @@ require([
 'dataCollection',
 'dataCollectionGrp',
 'form',
+'formGrp',
 'item',
 'list',
 'listItemGrp',
