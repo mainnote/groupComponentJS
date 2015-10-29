@@ -5,41 +5,72 @@ define(['jquery', 'component', 'tpl!templates/form'
 		tpl : tpl,
 		setup : function (opt) {
 			var that = this;
-            //build fieldset from JSON
+			//build fieldset from JSON
 			if (opt.form_elements && $.isArray(opt.form_elements)) {
 				var len = opt.form_elements.length;
 				for (var i = 0; i < len; i++) {
-					var comp = opt.form_elements[i];
-                    var compOpt = comp.opt;
-					if (!comp.hasOwnProperty('parentNames') || comp.parentNames.indexOf('Component') === -1) {
-						var Comp = require(comp.elem);
-						comp = Comp.create(comp.name);
+					var elem = opt.form_elements[i];
+					var comp = elem.elem;
+					var compOpt = elem.opt;
+					if (comp.hasOwnProperty('parentNames')) {
+						this.add({
+							compCmd : comp.command(),
+							compOpt : compOpt || {},
+						});
 					}
-					this.add({
-						compCmd : comp.command(),
-                        compOpt: compOpt||{},
-					});
 				}
 			}
-            
+
+			this.comp.find('fieldset .submit').on('click', function (e) {
+				e.preventDefault();
+				that.submit();
+			});
+
 			return this.comp;
 		},
-
+		submitting : false,
+		submit : function (opt) {
+			if (!this.submitting) {
+				this.submitting = true;
+				var action = this.comp.attr('action');
+				var method = this.comp.attr('method');
+				var data = this.serialize();
+				$.ajax({
+					type : method,
+					url : action,
+					data : data,
+					context : this,
+					done : function (data) {
+						var opt_ = {
+							data : data,
+						};
+						this.done(opt_);
+					},
+					always : function () {
+						this.always();
+					},
+				});
+			}
+		},
+		done : function (opt) {},
+		always : function (opt) {
+			this.submitting = false;
+		},
 		add : function (opt) {
 			var opt_ = $.extend({
-				container : this.comp.find('fieldset'),
-			}, opt.compOpt);
+					container : this.comp.find('fieldset'),
+				}, opt.compOpt);
 			opt.compCmd('render', opt_);
 		},
 
 		serialize : function (opt) {
-            return this.comp.serialize();
-        },
+			return this.comp.serialize();
+		},
 
 		serializeArray : function (opt) {
-            return this.comp.serializeArray();
-        },
-        
+			return this.comp.serializeArray();
+		},
+
 	});
 
 	return Form;

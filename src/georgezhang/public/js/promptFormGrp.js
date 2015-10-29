@@ -1,8 +1,16 @@
-define(['jquery', 'group', 'prompt', 'formGrp'
+define(['jquery', 'group', 'prompt', 'formGrp' 
 	], function ($, Grp, Prompt, FormGrp) {
 	var PromptFormGrp = Grp.group.create('PromptFormGrp');
     var prompt = Prompt.create('prompt');
     var formGrp = FormGrp.create('formGrp');
+    var form = formGrp.call('form', 'create'); //create a form object from formGrp
+    form.extend({
+        done: function(opt){
+          this.group.group.call('prompt', 'donePrompt');
+        },
+    });
+    formGrp.override(form);
+    
     PromptFormGrp.join(prompt, formGrp);
     
     prompt.extend({

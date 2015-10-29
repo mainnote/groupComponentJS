@@ -14,5 +14,6 @@ require([
 'textarea',
 'textareaCountGrp',
 'request',
+'button',
 ], function () {
 });
