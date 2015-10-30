@@ -1,5 +1,5 @@
-/*! groupjs 2015-10-19 */
-!function(a,b){"function"==typeof define&&define.amd?define('group',[],function(){return a.Grp=b()}):"object"==typeof exports?module.exports=b():a.Grp=b()}(this,function(){Object.create||(Object.create=function(a){function b(){}if(arguments.length>1)throw new Error("Object.create implementation only accepts the first parameter.");return b.prototype=a,new b}),Function.prototype.bind||(Function.prototype.bind=function(a){if("function"!=typeof this)throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");var b=Array.prototype.slice.call(arguments,1),c=this,d=function(){},e=function(){return c.apply(this instanceof d&&a?this:a,b.concat(Array.prototype.slice.call(arguments)))};return d.prototype=this.prototype,e.prototype=new d,e});var a={create:function(a){var b=Object.create(this);if(this.hasOwnProperty("parentNames")){b.parentNames=[];for(var c=this.parentNames.length,d=0;c>d;d++)b.parentNames.push(this.parentNames[d])}return this.hasOwnProperty("name")&&(b.hasOwnProperty("parentNames")||(b.parentNames=[]),b.parentNames.push(this.name),a||(a=this.name)),b.name=a,b},extend:function(){for(var a=0;a<arguments.length;a++){var b=arguments[a];for(var c in b)this[c]=b[c]}},command:function(){var a=this;return function(b,c){return"function"==typeof a[b]?a[b](c):a[b]}},thisObj:function(){return this}},b=a.create("group");b.extend({create:function(b){var c=a.create.apply(this,arguments);return c._buildMemberList(),c},_buildMemberList:function(){if(this._memberList){if(!this.hasOwnProperty("_memberList")){var a=this._memberList;this._memberList={};for(var b in a){var c=a[b],d=c("create");d.group=this,this._memberList[b]=d.command()}}}else this._memberList={}},join:function(){for(var a=0;a<arguments.length;a++){var b=arguments[a],c=b.create(b.name);c.group=this,this._memberList[b.name]=c.command()}},call:function(a,b,c){var d;if(a in this._memberList)return(d=this._memberList[a])(b,c);var e=this._memberList;for(var f in e){var d=e[f];if("function"==typeof d){var g=e[f]("thisObj");if(g.hasOwnProperty("parentNames"))for(var h=g.parentNames,i=h.length,j=0;i>j;j++)a===h[j]&&d(b,c)}}},setCallToMember:function(a,c){function d(a,b){"function"==typeof b[a]?e[a]=b[a].bind(b):e[a]=b[a]}var e=this,f=this.call(a,"thisObj");if(c)d(c,f);else for(var g in f)g in b||d(g,f)}});var c={obj:a,group:b};return c});
+/*! groupjs 2015-10-29 */
+!function(a,b){"function"==typeof define&&define.amd?define('group',[],function(){return a.Grp=b()}):"object"==typeof exports?module.exports=b():a.Grp=b()}(this,function(){Object.create||(Object.create=function(a){function b(){}if(arguments.length>1)throw new Error("Object.create implementation only accepts the first parameter.");return b.prototype=a,new b}),Function.prototype.bind||(Function.prototype.bind=function(a){if("function"!=typeof this)throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");var b=Array.prototype.slice.call(arguments,1),c=this,d=function(){},e=function(){return c.apply(this instanceof d&&a?this:a,b.concat(Array.prototype.slice.call(arguments)))};return d.prototype=this.prototype,e.prototype=new d,e});var a={create:function(a){var b=Object.create(this);if(this.hasOwnProperty("parentNames")){b.parentNames=[];for(var c=this.parentNames.length,d=0;c>d;d++)b.parentNames.push(this.parentNames[d])}return this.hasOwnProperty("name")&&(b.hasOwnProperty("parentNames")||(b.parentNames=[]),b.parentNames.push(this.name),a||(a=this.name)),b.name=a,b},extend:function(){for(var a=0;a<arguments.length;a++){var b=arguments[a];for(var c in b)this[c]=b[c]}},command:function(){var a=this;return function(b,c){return"function"==typeof a[b]?a[b](c):a[b]}},thisObj:function(){return this}},b=a.create("group");b.extend({create:function(b){var c=a.create.apply(this,arguments);return c._buildMemberList(),c},_buildMemberList:function(){if(this._memberList){if(!this.hasOwnProperty("_memberList")){var a=this._memberList;this._memberList={};for(var b in a){var c=a[b],d=c("create");d.group=this,this._memberList[b]=d.command()}}}else this._memberList={}},join:function(){for(var a=0;a<arguments.length;a++){var b=arguments[a],c=b.create(b.name);c.group=this,this._memberList[b.name]=c.command()}},call:function(a,b,c){var d;if(a in this._memberList)return(d=this._memberList[a])(b,c);var e=this._memberList;for(var f in e){var d=e[f];if("function"==typeof d){var g=e[f]("thisObj");if(g.hasOwnProperty("parentNames"))for(var h=g.parentNames,i=h.length,j=0;i>j;j++)a===h[j]&&d(b,c)}}},setCallToMember:function(a,c){function d(a,c){a in b||"parentNames"==a||"group"==a||"_memberList"==a||"name"==a||"_callToMembers"==a||("function"!=typeof c[a]||c[a].binded?e[a]=c[a]:(e[a]=c[a].bind(c),e[a].binded=!0))}var e=this,f=this.call(a,"thisObj");if(f)if(this._callToMembers||(this._callToMembers=[]),this._callToMembers.push({name:a,method:c}),c)d(c,f);else for(var g in f)d(g,f)},members:function(){function a(b){var c=[];for(var d in b){var e={name:d},f=b[d]("thisObj");f.hasOwnProperty("_memberList")&&(e.members=a(f._memberList)),c.push(e)}return c}return a(this._memberList)},override:function(a,b){function c(a,b){if("[object Array]"===Object.prototype.toString.call(a))for(var e=a.length,f=0;e>f;f++)a[f].hasOwnProperty("members")?c(a[f].members,b.call(a[f].name,"thisObj")):d(b)}function d(b){function c(a){if("_callToMembers"in a){for(var b=a._callToMembers.length,c=0;b>c;c++){var d=a._callToMembers[c];a.setCallToMember(d.name,d.method)}return!0}return!1}var e=!1;if(b.hasOwnProperty("_memberList"))for(var f in b._memberList){var g=b._memberList[f]("thisObj");g.name===a.name?(b.join(a),e=c(b)):g.hasOwnProperty("_memberList")&&d(g)&&(e=c(b))}return e}a&&(b&&"object"==typeof b&&b.constructor===Array?c(b,this):d(this))}});var c={obj:a,group:b};return c});
 define('component',['jquery', 'group'
 	], function ($, Grp) {
 	var Component = Grp.obj.create('Component');
@@ -2168,7 +2168,7 @@ define('dataCollectionGrp',['jquery', 'group', 'dataCollection', 'data'
 define('tpl!templates/form', [],function () { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<form onsubmit="return false;">\r\n<fieldset>\r\n</fieldset>\r\n</form>';
+__p+='<form onsubmit="return false;" method="get" action="data.json">\r\n<fieldset>\r\n</fieldset>\r\n</form>';
 }
 return __p;
 }; });
@@ -2180,52 +2180,149 @@ define('form',['jquery', 'component', 'tpl!templates/form'
 		tpl : tpl,
 		setup : function (opt) {
 			var that = this;
+			//build fieldset from JSON
 			if (opt.form_elements && $.isArray(opt.form_elements)) {
 				var len = opt.form_elements.length;
 				for (var i = 0; i < len; i++) {
-					var comp = opt.form_elements[i];
-                    var compOpt = comp.opt;
-					if (!comp.hasOwnProperty('parentNames') || comp.parentNames.indexOf('Component') === -1) {
-						var Comp = require(comp.elem);
-						comp = Comp.create(comp.name);
+					var elem = opt.form_elements[i];
+					var comp = elem.elem;
+					var compOpt = elem.opt;
+					if (comp.hasOwnProperty('parentNames')) {
+						this.add({
+							compCmd : comp.command(),
+							compOpt : compOpt || {},
+						});
 					}
-					this.add({
-						compCmd : comp.command(),
-                        compOpt: compOpt||{},
-					});
 				}
 			}
+
+			this.comp.find('fieldset .submit').on('click', function (e) {
+				e.preventDefault();
+				that.submit();
+			});
+
 			return this.comp;
 		},
-
+		submitting : false,
+		submit : function (opt) {
+			if (!this.submitting) {
+				this.submitting = true;
+				var action = this.comp.attr('action');
+				var method = this.comp.attr('method');
+				var data = this.serialize();
+				$.ajax({
+					type : method,
+					url : action,
+					data : data,
+					context : this,
+					done : function (data) {
+						var opt_ = {
+							data : data,
+						};
+						this.done(opt_);
+					},
+					always : function () {
+						this.always();
+					},
+				});
+			}
+		},
+		done : function (opt) {},
+		always : function (opt) {
+			this.submitting = false;
+		},
 		add : function (opt) {
 			var opt_ = $.extend({
-				container : this.comp,
-			}, opt.compOpt);
+					container : this.comp.find('fieldset'),
+				}, opt.compOpt);
 			opt.compCmd('render', opt_);
 		},
 
 		serialize : function (opt) {
-            return this.comp.serialize();
-        },
+			return this.comp.serialize();
+		},
 
 		serializeArray : function (opt) {
-            return this.comp.serializeArray();
-        },
-        
+			return this.comp.serializeArray();
+		},
+
 	});
 
 	return Form;
 });
 
-define('formGrp',['jquery', 'group', 'form'
-	], function ($, Grp, Form) {
+define('request',['jquery', 'group'
+	], function ($, Grp) {
+	var Request = Grp.obj.create('Request');
+	Request.extend({
+		connect : function (opt) {
+			$.ajax({
+				url : opt.request_url,
+				method : opt.request_method,
+				data : opt.request_data,
+				dataType : 'json',
+				context : this,
+			})
+			.done(opt.request_done)
+			.fail(opt.request_fail)
+			.always(opt.request_always);
+		},
+	});
+
+	return Request;
+});
+
+define('formGrp',['jquery', 'group', 'form', 'request'
+	], function ($, Grp, Form, Request) {
 	var FormGrp = Grp.group.create('FormGrp');
-    var form = Form.create('form');
-    FormGrp.join(form);
-    
-    FormGrp.setCallToMember('form');
-    
+	var form = Form.create('form');
+	form.extend({
+		submit : function (opt) {
+			if (!this.submitting) {
+				this.submitting = true;
+				var that = this;
+				this.comp.find('.error').each(function (index) {
+					$(this).remove();
+				});
+				var action = this.comp.attr('action');
+				var method = this.comp.attr('method');
+				var inputData = this.serializeArray();
+				//request
+				var opt_ = {
+					request_url : action,
+					request_method : method,
+					request_data : inputData,
+					request_done : function (data, textStatus, jqXHR) {
+						var opt0 = {
+							data : data
+						};
+						that.done(opt0);
+					},
+					request_fail : function (jqXHR, textStatus, errorThrown) {
+						var opt0 = {
+							error : errorThrown
+						};
+						that.error(opt0);
+					},
+					request_always : function (data_jqXHR, textStatus, jqXHR_errorThrow) {
+                        that.always();
+                    },
+				};
+				this.group.call('request', 'connect', opt_);
+			}
+		},
+		error : function (opt) {
+			this.comp.append('<div class="error">' + opt.error + '</div>');
+		},
+
+	});
+
+	var request = Request.create('request');
+
+	FormGrp.join(form, request);
+
+	FormGrp.setCallToMember('form');
+
 	return FormGrp;
 });
 
@@ -2363,11 +2460,19 @@ define('prompt',['jquery', 'component', 'tpl!templates/prompt'
     return Prompt;
 });
 
-define('promptFormGrp',['jquery', 'group', 'prompt', 'formGrp'
+define('promptFormGrp',['jquery', 'group', 'prompt', 'formGrp' 
 	], function ($, Grp, Prompt, FormGrp) {
 	var PromptFormGrp = Grp.group.create('PromptFormGrp');
     var prompt = Prompt.create('prompt');
     var formGrp = FormGrp.create('formGrp');
+    var form = formGrp.call('form', 'create'); //create a form object from formGrp
+    form.extend({
+        done: function(opt){
+          this.group.group.call('prompt', 'donePrompt');
+        },
+    });
+    formGrp.override(form);
+    
     PromptFormGrp.join(prompt, formGrp);
     
     prompt.extend({
@@ -2379,7 +2484,7 @@ define('promptFormGrp',['jquery', 'group', 'prompt', 'formGrp'
         },
         
         donePrompt: function(opt) {
-            var formValue = this.group.call('formGrp', 'serialize', opt);
+            var formValue = this.group.call('formGrp', 'submit', opt);
             Prompt.donePrompt.call(this, opt);
         },
     });
@@ -2448,6 +2553,27 @@ define('textareaCountGrp',['jquery', 'group', 'textarea', 'count'
 	return TextareaCountGrp;
 });
 
+
+define('tpl!templates/button', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<button class="btn btn-lg btn-primary btn-block submit" type="submit">'+
+((__t=( button_name ))==null?'':__t)+
+'</button>';
+}
+return __p;
+}; });
+
+define('button',['jquery', 'component', 'tpl!templates/button'
+	], function ($, Component, tpl) {
+	var Button = Component.create('Button');
+	Button.extend({
+        tpl: tpl,
+	});
+
+	return Button;
+});
+
 require([
 'component', 
 'count', 
@@ -2463,6 +2589,8 @@ require([
 'promptFormGrp',
 'textarea',
 'textareaCountGrp',
+'request',
+'button',
 ], function () {
 });
 

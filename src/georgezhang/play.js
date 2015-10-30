@@ -46,21 +46,26 @@
         var RequestMock = Grp.obj.create('RequestMock');
         RequestMock.extend({
             connect : function (opt) {
-                opt.request_done([1, 2, 3]);
+                opt.request_done({error: {message: 'this is wrong', code: 101 }});
                 opt.request_always();
             },
         });
 
         return RequestMock;
     });
-	require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, RequestMock) {
+	require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputGrp, RequestMock) {
 		var btn = $('<button>PromptFormGrp</button>');
 		$('#mnbody').append(btn);
 
 		btn.on('click', function (e) {
+            var requestMock = RequestMock.create('request');  
 			var promptFormGrpCmd = PromptFormGrp.create('promptFormGrpCmd').command();
             var thisTextarea = TextareaCountGrp.create();
             var thisTextarea2 = TextareaCountGrp.create();
+            
+            var inputEmail = InputGrp.create('inputEmail');
+            inputEmail.override(requestMock);
+            var inputPassword = Input.create('inputPassword');
             var button_submit = Button.create();
 			var opt = {
 				container : $('#mnbody'),
@@ -78,6 +83,16 @@
 							textarea_value : 'In prompt Value2',
 						},
 					}, {
+						elem : inputEmail,
+						opt : {
+							input_id : 'email',
+                            input_name: 'email',
+                            input_type: 'email',
+                            input_placeholder: 'Email address',
+                            input_required: true,
+                            input_autofocus: true,
+						},
+                    }, {
 						elem : button_submit,
 						opt : {
 							button_name : 'Submit',
@@ -86,7 +101,7 @@
 				],
 			};
 
-            var requestMock = RequestMock.create('request');            
+                      
             promptFormGrpCmd('override', requestMock);
 			promptFormGrpCmd('render', opt);
 		});
