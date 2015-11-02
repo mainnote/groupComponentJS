@@ -15,5 +15,9 @@ require([
 'textareaCountGrp',
 'request',
 'button',
+'input',
+'inputPassword',
+'inputGrp',
+'inputEmailGrp'
 ], function () {
 });

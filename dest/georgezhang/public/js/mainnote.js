@@ -2574,6 +2574,182 @@ define('button',['jquery', 'component', 'tpl!templates/button'
 	return Button;
 });
 
+
+define('tpl!templates/input', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="form-group">\r\n    <label for="'+
+((__t=( input_id ))==null?'':__t)+
+'" class="sr-only">'+
+((__t=( input_name ))==null?'':__t)+
+'</label>\r\n    <input type="'+
+((__t=( input_type ))==null?'':__t)+
+'" id="'+
+((__t=( input_id ))==null?'':__t)+
+'" name="'+
+((__t=( input_name ))==null?'':__t)+
+'" class="form-control" placeholder="'+
+((__t=( input_placeholder ))==null?'':__t)+
+'" \r\n    ';
+ if (input_required) {
+__p+='\r\n     required \r\n    ';
+ } 
+__p+='\r\n    ';
+ if (input_autofocus) {
+__p+='\r\n     autofocus \r\n    ';
+ } 
+__p+='\r\n    ';
+ if (input_action) {
+__p+='\r\n     action="'+
+((__t=( input_action ))==null?'':__t)+
+'" \r\n    ';
+ } 
+__p+='\r\n    >\r\n    <p class="hints"></p>\r\n</div>';
+}
+return __p;
+}; });
+
+define('input',['jquery', 'component', 'tpl!templates/input'
+	], function ($, Component, tpl) {
+	var Input = Component.create('Input');
+	Input.extend({
+		tpl : tpl,
+        defaultOpt: {
+            input_required: false,
+            input_autofocus: false,
+            input_action: false,
+        },
+		setup : function (opt) {
+			var that = this;
+			var inputElem = this.comp.find('input');
+			inputElem.on('input', function (e) {
+				clearTimeout($.data(this, 'timer'));
+				var wait = setTimeout(function () {
+						var opt_ = {
+							value : inputElem.val()
+						};
+						that.checkValid(opt_);
+					}, 500);
+				$(this).data('timer', wait);
+			});
+		},
+		checkValid : function (opt) { //to be overriden
+			this.getResult({
+				invalidHints : false
+			});
+		},
+		getResult : function (opt) {
+			var inputElem = this.comp.find('input');
+			var hints = this.comp.find('.hints');
+			if (opt.invalidHints) {
+				this.comp.removeClass('has-success').addClass('has-warning');
+				inputElem.removeClass('form-control-success').addClass('form-control-warning');
+				hints.html(opt.invalidHints);
+			} else {
+				this.comp.removeClass('has-warning').addClass('has-success');
+				inputElem.removeClass('form-control-warning').addClass('form-control-success');
+				hints.html('');
+			}
+		},
+	});
+
+	return Input;
+});
+
+define('inputPassword',['jquery', 'component', 'input'
+	], function ($, Component, Input) {
+	var InputPassword = Input.create('InputPassword');
+	InputPassword.extend({
+		checkValid : function (opt) {
+            if (opt.value.length < 6) {
+                this.getResult({
+                    invalidHints : 'Error: Password must contain at least six characters!',
+                });
+            } else if (!/[a-z]/.test(opt.value)) {
+                this.getResult({
+                    invalidHints : 'Error: password must contain at least one lowercase letter (a-z)!',
+                });                
+            } else if (!/[A-Z]/.test(opt.value)) {
+                this.getResult({
+                    invalidHints : 'Error: password must contain at least one uppercase letter (A-Z)!',
+                });                
+            } else if (!/[0-9]/.test(opt.value)) {
+                this.getResult({
+                    invalidHints : 'Error: password must contain at least one number (0-9)!',
+                });                
+            } else {
+                this.getResult({
+                    invalidHints : false
+                });
+            }
+		}
+	});
+
+	return InputPassword;
+});
+
+define('inputGrp',['jquery', 'group', 'input', 'request'
+	], function ($, Grp, Input, Request) {
+	var InputGrp = Grp.group.create('InputGrp');
+	var input = Input.create('input');
+	input.extend({
+		checkValid : function (opt) {
+			var that = this;
+            var action = this.comp.find('input').attr('action');
+			//request
+			var opt_ = {
+				request_url : action,
+				request_method : 'GET',
+				request_data : {value: opt.value},
+				request_done : function (data, textStatus, jqXHR) {
+					if (data.hasOwnProperty('error')) {
+						that.getResult({
+							invalidHints : data.error.message || data.error.code,
+						});
+					} else {
+						that.getResult({
+							invalidHints : false
+						});
+					}
+				},
+				request_fail : function (jqXHR, textStatus, errorThrown) {
+					that.getResult({
+						invalidHints : errorThrown,
+					});
+				},
+				request_always : function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
+			};
+			this.group.call('request', 'connect', opt_);
+		},
+	});
+
+	var request = Request.create('request');
+	InputGrp.join(input, request);
+	InputGrp.setCallToMember('input');
+
+	return InputGrp;
+});
+
+define('inputEmailGrp',['jquery', 'group', 'inputGrp', 'input'
+	], function ($, Grp, InputGrp) {
+	var InputEmailGrp = InputGrp.create('InputEmailGrp');
+    var input = InputEmailGrp.call('input', 'thisObj');
+	var inputEmail = InputEmailGrp.call('input', 'create');
+    var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+	inputEmail.extend({
+		checkValid : function (opt) {
+            if (re.test(opt.value)) {
+                input.checkValid.call(this, opt);
+            }
+		},
+	});
+    
+	InputEmailGrp.override(inputEmail);
+
+	return InputEmailGrp;
+});
+
 require([
 'component', 
 'count', 
@@ -2591,6 +2767,10 @@ require([
 'textareaCountGrp',
 'request',
 'button',
+'input',
+'inputPassword',
+'inputGrp',
+'inputEmailGrp'
 ], function () {
 });
 

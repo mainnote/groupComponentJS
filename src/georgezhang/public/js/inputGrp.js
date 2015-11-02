@@ -5,20 +5,19 @@ define(['jquery', 'group', 'input', 'request'
 	input.extend({
 		checkValid : function (opt) {
 			var that = this;
+            var action = this.comp.find('input').attr('action');
 			//request
 			var opt_ = {
-				request_url : '/',
+				request_url : action,
 				request_method : 'GET',
 				request_data : {value: opt.value},
 				request_done : function (data, textStatus, jqXHR) {
-                    console.log(data);
 					if (data.hasOwnProperty('error')) {
-                        console.log('yes');
 						that.getResult({
 							invalidHints : data.error.message || data.error.code,
 						});
 					} else {
-						this.getResult({
+						that.getResult({
 							invalidHints : false
 						});
 					}

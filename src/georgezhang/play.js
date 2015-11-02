@@ -46,14 +46,18 @@
         var RequestMock = Grp.obj.create('RequestMock');
         RequestMock.extend({
             connect : function (opt) {
-                opt.request_done({error: {message: 'this is wrong', code: 101 }});
+                if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
+                    opt.request_done({data:{}});
+                }else{
+                    opt.request_done({error: {message: 'this is wrong', code: 101 }});
+                }
                 opt.request_always();
             },
         });
 
         return RequestMock;
     });
-	require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputGrp, RequestMock) {
+	require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputPassword', 'inputEmailGrp', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputPassword, InputEmailGrp, InputGrp, RequestMock) {
 		var btn = $('<button>PromptFormGrp</button>');
 		$('#mnbody').append(btn);
 
@@ -63,9 +67,12 @@
             var thisTextarea = TextareaCountGrp.create();
             var thisTextarea2 = TextareaCountGrp.create();
             
-            var inputEmail = InputGrp.create('inputEmail');
-            inputEmail.override(requestMock);
-            var inputPassword = Input.create('inputPassword');
+            var inputText = InputGrp.create('inputText');
+            inputText.override(requestMock);
+            var inputPassword = InputPassword.create('inputPassword');
+            var inputEmailGrp = InputEmailGrp.create('inputEmailGrp');
+            inputEmailGrp.override(requestMock);
+            
             var button_submit = Button.create();
 			var opt = {
 				container : $('#mnbody'),
@@ -83,14 +90,33 @@
 							textarea_value : 'In prompt Value2',
 						},
 					}, {
-						elem : inputEmail,
+						elem : inputText,
 						opt : {
-							input_id : 'email',
-                            input_name: 'email',
-                            input_type: 'email',
-                            input_placeholder: 'Email address',
+							input_id : 'inputtext',
+                            input_name: 'inputtext',
+                            input_type: 'text',
+                            input_placeholder: 'User Name',
                             input_required: true,
                             input_autofocus: true,
+                            input_action: '/',
+						},
+                    }, {
+						elem : inputPassword,
+						opt : {
+							input_id : 'inputpassword',
+                            input_name: 'inputpassword',
+                            input_type: 'password',
+                            input_placeholder: 'Password',
+                            input_required: true,
+						},
+                    }, {
+						elem : inputEmailGrp,
+						opt : {
+							input_id : 'inputemail',
+                            input_name: 'inputemail',
+                            input_type: 'email',
+                            input_placeholder: 'Email Address',
+                            input_required: true,
 						},
                     }, {
 						elem : button_submit,

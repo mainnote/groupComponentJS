@@ -7,6 +7,9 @@
     <% if (input_autofocus) {%>
      autofocus 
     <% } %>
+    <% if (input_action) {%>
+     action="<%= input_action %>" 
+    <% } %>
     >
     <p class="hints"></p>
 </div>

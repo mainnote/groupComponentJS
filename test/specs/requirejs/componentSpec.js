@@ -25,19 +25,32 @@ define(function (require) {
 
 		});
 		it('Component promptFormGrp test cases', function (done) {
+
 			define('requestMock', ['jquery', 'group'
 				], function ($, Grp) {
 				var RequestMock = Grp.obj.create('RequestMock');
 				RequestMock.extend({
 					connect : function (opt) {
-						opt.request_done([1, 2, 3]);
+						if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
+							opt.request_done({
+								data : {}
+
+							});
+						} else {
+							opt.request_done({
+								error : {
+									message : 'this is wrong',
+									code : 101
+								}
+							});
+						}
 						opt.request_always();
 					},
 				});
 
 				return RequestMock;
 			});
-			require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, RequestMock) {
+			require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputPassword', 'inputEmailGrp', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputPassword, InputEmailGrp, InputGrp, RequestMock) {
 				var testContainer = $('<div></div>');
 				testContainer.appendTo('body');
 				var btn = $('<button>PromptFormGrp</button>');
@@ -47,6 +60,13 @@ define(function (require) {
 					var promptFormGrpCmd = PromptFormGrp.create('promptFormGrpCmd').command();
 					var thisTextarea = TextareaCountGrp.create();
 					var thisTextarea2 = TextareaCountGrp.create();
+
+					var inputText = InputGrp.create('inputText');
+					inputText.override(requestMock);
+					var inputPassword = InputPassword.create('inputPassword');
+					var inputEmailGrp = InputEmailGrp.create('inputEmailGrp');
+					inputEmailGrp.override(requestMock);
+
 					var button_submit = Button.create();
 					var opt = {
 						container : testContainer,
@@ -64,6 +84,35 @@ define(function (require) {
 									textarea_value : 'In prompt Value2',
 								},
 							}, {
+								elem : inputText,
+								opt : {
+									input_id : 'inputtext',
+									input_name : 'inputtext',
+									input_type : 'text',
+									input_placeholder : 'User Name',
+									input_required : true,
+									input_autofocus : true,
+									input_action : '/',
+								},
+							}, {
+								elem : inputPassword,
+								opt : {
+									input_id : 'inputpassword',
+									input_name : 'inputpassword',
+									input_type : 'password',
+									input_placeholder : 'Password',
+									input_required : true,
+								},
+							}, {
+								elem : inputEmailGrp,
+								opt : {
+									input_id : 'inputemail',
+									input_name : 'inputemail',
+									input_type : 'email',
+									input_placeholder : 'Email Address',
+									input_required : true,
+								},
+							}, {
 								elem : button_submit,
 								opt : {
 									button_name : 'Submit',
@@ -78,11 +127,18 @@ define(function (require) {
 
 					var value = $(testContainer.find('textarea')[1]).val();
 					expect(value).toBe('In prompt Value2');
+
+                    /*
+                    testContainer.find('#inputtext').trigger('keypress').val('abc');
+                    console.log(testContainer.find('#inputtext').parents().html());
+                    var value = testContainer.find('#inputtext').parents().find('.hints').html();
+					expect(value).toBe('this is wrong');
+                    */
                     
-                    //click the submit button
-                    button_submit.comp.trigger('click');
-                    var value = $(testContainer.find('textarea')[1]).val();
-                    expect(value).toBe(undefined);
+					//click the submit button
+					button_submit.comp.trigger('click');
+					var value = $(testContainer.find('textarea')[1]).val();
+					expect(value).toBe(undefined);
 					done();
 				});
 				btn.trigger('click');

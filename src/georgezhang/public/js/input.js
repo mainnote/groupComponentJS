@@ -3,10 +3,15 @@ define(['jquery', 'component', 'tpl!templates/input'
 	var Input = Component.create('Input');
 	Input.extend({
 		tpl : tpl,
+        defaultOpt: {
+            input_required: false,
+            input_autofocus: false,
+            input_action: false,
+        },
 		setup : function (opt) {
 			var that = this;
 			var inputElem = this.comp.find('input');
-			inputElem.on('keypress', function (e) {
+			inputElem.on('input', function (e) {
 				clearTimeout($.data(this, 'timer'));
 				var wait = setTimeout(function () {
 						var opt_ = {
