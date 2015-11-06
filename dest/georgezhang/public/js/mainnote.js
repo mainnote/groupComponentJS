@@ -1,5 +1,285 @@
-/*! groupjs 2015-10-29 */
-!function(a,b){"function"==typeof define&&define.amd?define('group',[],function(){return a.Grp=b()}):"object"==typeof exports?module.exports=b():a.Grp=b()}(this,function(){Object.create||(Object.create=function(a){function b(){}if(arguments.length>1)throw new Error("Object.create implementation only accepts the first parameter.");return b.prototype=a,new b}),Function.prototype.bind||(Function.prototype.bind=function(a){if("function"!=typeof this)throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");var b=Array.prototype.slice.call(arguments,1),c=this,d=function(){},e=function(){return c.apply(this instanceof d&&a?this:a,b.concat(Array.prototype.slice.call(arguments)))};return d.prototype=this.prototype,e.prototype=new d,e});var a={create:function(a){var b=Object.create(this);if(this.hasOwnProperty("parentNames")){b.parentNames=[];for(var c=this.parentNames.length,d=0;c>d;d++)b.parentNames.push(this.parentNames[d])}return this.hasOwnProperty("name")&&(b.hasOwnProperty("parentNames")||(b.parentNames=[]),b.parentNames.push(this.name),a||(a=this.name)),b.name=a,b},extend:function(){for(var a=0;a<arguments.length;a++){var b=arguments[a];for(var c in b)this[c]=b[c]}},command:function(){var a=this;return function(b,c){return"function"==typeof a[b]?a[b](c):a[b]}},thisObj:function(){return this}},b=a.create("group");b.extend({create:function(b){var c=a.create.apply(this,arguments);return c._buildMemberList(),c},_buildMemberList:function(){if(this._memberList){if(!this.hasOwnProperty("_memberList")){var a=this._memberList;this._memberList={};for(var b in a){var c=a[b],d=c("create");d.group=this,this._memberList[b]=d.command()}}}else this._memberList={}},join:function(){for(var a=0;a<arguments.length;a++){var b=arguments[a],c=b.create(b.name);c.group=this,this._memberList[b.name]=c.command()}},call:function(a,b,c){var d;if(a in this._memberList)return(d=this._memberList[a])(b,c);var e=this._memberList;for(var f in e){var d=e[f];if("function"==typeof d){var g=e[f]("thisObj");if(g.hasOwnProperty("parentNames"))for(var h=g.parentNames,i=h.length,j=0;i>j;j++)a===h[j]&&d(b,c)}}},setCallToMember:function(a,c){function d(a,c){a in b||"parentNames"==a||"group"==a||"_memberList"==a||"name"==a||"_callToMembers"==a||("function"!=typeof c[a]||c[a].binded?e[a]=c[a]:(e[a]=c[a].bind(c),e[a].binded=!0))}var e=this,f=this.call(a,"thisObj");if(f)if(this._callToMembers||(this._callToMembers=[]),this._callToMembers.push({name:a,method:c}),c)d(c,f);else for(var g in f)d(g,f)},members:function(){function a(b){var c=[];for(var d in b){var e={name:d},f=b[d]("thisObj");f.hasOwnProperty("_memberList")&&(e.members=a(f._memberList)),c.push(e)}return c}return a(this._memberList)},override:function(a,b){function c(a,b){if("[object Array]"===Object.prototype.toString.call(a))for(var e=a.length,f=0;e>f;f++)a[f].hasOwnProperty("members")?c(a[f].members,b.call(a[f].name,"thisObj")):d(b)}function d(b){function c(a){if("_callToMembers"in a){for(var b=a._callToMembers.length,c=0;b>c;c++){var d=a._callToMembers[c];a.setCallToMember(d.name,d.method)}return!0}return!1}var e=!1;if(b.hasOwnProperty("_memberList"))for(var f in b._memberList){var g=b._memberList[f]("thisObj");g.name===a.name?(b.join(a),e=c(b)):g.hasOwnProperty("_memberList")&&d(g)&&(e=c(b))}return e}a&&(b&&"object"==typeof b&&b.constructor===Array?c(b,this):d(this))}});var c={obj:a,group:b};return c});
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module unless amdModuleId is set
+    define('group',[], function () {
+      return (root['Grp'] = factory());
+    });
+  } else if (typeof exports === 'object') {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like environments that support module.exports,
+    // like Node.
+    module.exports = factory();
+  } else {
+    root['Grp'] = factory();
+  }
+}(this, function () {
+
+//for stupid old IE
+if (!Object.create) {
+	Object.create = function (o) {
+		if (arguments.length > 1) {
+			throw new Error('Object.create implementation only accepts the first parameter.');
+		}
+		function F() {}
+		F.prototype = o;
+		return new F();
+	};
+}
+if (!Function.prototype.bind) {
+	Function.prototype.bind = function (oThis) {
+		if (typeof this !== 'function') {
+			// closest thing possible to the ECMAScript 5
+			// internal IsCallable function
+			throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+		}
+
+		var aArgs = Array.prototype.slice.call(arguments, 1),
+		fToBind = this,
+		fNOP = function () {},
+		fBound = function () {
+			return fToBind.apply(this instanceof fNOP && oThis
+				 ? this
+				 : oThis,
+				aArgs.concat(Array.prototype.slice.call(arguments)));
+		};
+
+		fNOP.prototype = this.prototype;
+		fBound.prototype = new fNOP();
+
+		return fBound;
+	};
+}
+//----------------------------
+
+var obj = {
+	create : function (name) {
+		var newObj = Object.create(this);
+		if (this.hasOwnProperty('parentNames')) {
+			newObj.parentNames = [];
+			var len = this.parentNames.length;
+			for (var i = 0; i < len; i++) {
+				newObj.parentNames.push(this.parentNames[i]);
+			}
+		}
+
+		if (this.hasOwnProperty('name')) {
+			if (!newObj.hasOwnProperty('parentNames'))
+				newObj.parentNames = [];
+			newObj.parentNames.push(this.name);
+
+			if (!name) {
+				name = this.name; //name from originate during instance
+			}
+		}
+
+		newObj.name = name;
+
+		return newObj;
+	},
+	extend : function () {
+		for (var i = 0; i < arguments.length; i++) {
+			var extObj = arguments[i];
+			for (var key in extObj)
+				this[key] = extObj[key];
+		}
+	},
+	command : function () {
+		var self = this;
+		return function (cmd, opt) {
+			if (typeof self[cmd] === 'function') {
+				return self[cmd](opt);
+			} else {
+				return self[cmd]; //value
+			}
+		};
+	},
+	thisObj : function () {
+		return this;
+	},
+};
+
+var group = obj.create('group');
+group.extend({
+	create : function (name) {
+		var newObj = obj.create.apply(this, arguments);
+		//all members should recreated within new group
+		newObj._buildMemberList();
+
+		return newObj;
+	},
+	_buildMemberList : function () {
+		if (!this._memberList) { //base group
+			this._memberList = {};
+		} else if (!this.hasOwnProperty('_memberList')) { //inherited group
+			var prototypeMemberList = this._memberList;
+			this._memberList = {}; //in object level memberList
+			for (var key in prototypeMemberList) {
+				var memberCmd = prototypeMemberList[key];
+				var newMember = memberCmd('create');
+				newMember.group = this; //member
+
+				this._memberList[key] = newMember.command();
+			}
+		}
+	},
+	join : function () {
+		for (var i = 0; i < arguments.length; i++) {
+			var member = arguments[i];
+			//add new member in command interface
+			var newMember = member.create(member.name);
+			newMember.group = this;
+			this._memberList[member.name] = newMember.command();
+		}
+	},
+	call : function (memberName, methodName, opt) {
+		var memberCmd;
+		if (memberName in this._memberList) {
+			memberCmd = this._memberList[memberName];
+			return memberCmd(methodName, opt);
+		} else {
+			var prototypeMemberList = this._memberList;
+			for (var key in prototypeMemberList) {
+				var memberCmd = prototypeMemberList[key];
+				if (typeof memberCmd === 'function') {
+					var member = prototypeMemberList[key]('thisObj');
+					if (member.hasOwnProperty('parentNames')) {
+						var parentNames = member.parentNames;
+						var p_len = parentNames.length;
+						for (var j = 0; j < p_len; j++) {
+							if (memberName === parentNames[j]) {
+								memberCmd(methodName, opt); //no return till all members checked
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	/* call through to specific member whom play as a major role*/
+	setCallToMember : function (memberName, methodName) {
+		var that = this;
+		var member = this.call(memberName, 'thisObj');
+		if (member) {
+			if (!this._callToMembers)
+				this._callToMembers = [];
+			this._callToMembers.push({
+				name : memberName,
+				method : methodName
+			});
+
+			if (methodName) {
+				_setMethod(methodName, member); //override specific attribute. Even the one might exist.
+			} else {
+				for (var key in member) {
+					_setMethod(key, member);
+				}
+			}
+
+			function _setMethod(attribute, memberObj) {
+				if (!(attribute in group)
+					 && attribute != 'parentNames'
+					 && attribute != 'group'
+					 && attribute != '_memberList'
+					 && attribute != 'name'
+					 && attribute != '_callToMembers') { //skip those attributes exist in group!!!
+					if (typeof memberObj[attribute] === 'function' && !memberObj[attribute].binded) {
+						that[attribute] = memberObj[attribute].bind(memberObj);
+						that[attribute].binded = true;
+					} else {
+						that[attribute] = memberObj[attribute];
+					}
+				}
+			}
+		}
+	},
+
+	members : function () {
+		function _getMember(memberList) {
+			var ms = [];
+			for (var key in memberList) {
+				var member = {
+					name : key,
+				};
+				var memberObj = memberList[key]('thisObj');
+				if (memberObj.hasOwnProperty('_memberList')) {
+					member['members'] = _getMember(memberObj._memberList);
+				}
+				ms.push(member);
+			}
+			return ms;
+		}
+		return _getMember(this._memberList);
+	},
+
+	override : function (newMember, memberMap) {
+		if (newMember) {
+			if (memberMap && typeof memberMap === 'object' && memberMap.constructor === Array) {
+				//only override the ones in map
+				_overrideMemberInMap(memberMap, this);
+
+				function _overrideMemberInMap(map, thisGroup) {
+					if (Object.prototype.toString.call(map) === '[object Array]') {
+						var len = map.length;
+						for (var i = 0; i < len; i++) {
+							//if level down
+							if (map[i].hasOwnProperty('members')) {
+								_overrideMemberInMap(map[i].members, thisGroup.call(map[i].name, 'thisObj'));
+							} else {
+								_overrideMember(thisGroup);
+							}
+						}
+					}
+				}
+
+			} else {
+				//override all member with the same name
+				_overrideMember(this);
+			}
+
+			function _overrideMember(thisGroup) {
+                var reset = false;
+				if (thisGroup.hasOwnProperty('_memberList')) {
+					for (var key in thisGroup._memberList) {
+						var memberObj = thisGroup._memberList[key]('thisObj');
+						if (memberObj.name === newMember.name) {
+							thisGroup.join(newMember);
+                            reset = _resetCallToMember(thisGroup);
+						} else if (memberObj.hasOwnProperty('_memberList')) {
+                            if (_overrideMember(memberObj)) {
+                                reset = _resetCallToMember(thisGroup);
+                            }
+						}
+					}
+                    
+				}
+
+				function _resetCallToMember(thisGrp) {
+					if ('_callToMembers' in thisGrp) { //reset setCallToMembers and level up
+						var len = thisGrp._callToMembers.length;
+						for (var i = 0; i < len; i++) {
+							var toMem = thisGrp._callToMembers[i];
+							thisGrp.setCallToMember(toMem.name, toMem.method);
+						}
+                        return true;
+					}
+                    return false;
+				}
+                
+                return reset;
+			}
+		}
+	},
+});
+
+var Grp = {
+	obj : obj,
+	group : group
+};
+
+return Grp;
+
+}));
+
 define('component',['jquery', 'group'
 	], function ($, Grp) {
 	var Component = Grp.obj.create('Component');
@@ -2491,6 +2771,9 @@ define('promptFormGrp',['jquery', 'group', 'prompt', 'formGrp'
     
 	PromptFormGrp.extend({
         render: function(opt) {
+            if (this.defaultOpt) {
+                opt = $.extend({}, this.defaultOpt, opt);
+            }
             return this.call('prompt', 'render', opt);
         },
 	});

@@ -24,7 +24,7 @@ module.exports = function (grunt) {
 							exports : '_'
 						}
 					},
-                    stubModules : ['main'],
+					stubModules : ['main'],
 					removeCombined : true,
 					inlineText : true,
 					preserveLicenseComments : false,
@@ -37,8 +37,11 @@ module.exports = function (grunt) {
 				banner : '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
 			},
 			build : {
+				options : {
+					sourceMap : true,
+				},
 				files : {
-					'build/mainnote.min.js' : ['dest/georgezhang/public/js/mainnote.js'],
+					'build/mainnote.min.js' : ['build/mainnote.js'],
 				}
 			},
 

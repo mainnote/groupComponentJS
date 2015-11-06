@@ -29,6 +29,9 @@ define(['jquery', 'group', 'prompt', 'formGrp'
     
 	PromptFormGrp.extend({
         render: function(opt) {
+            if (this.defaultOpt) {
+                opt = $.extend({}, this.defaultOpt, opt);
+            }
             return this.call('prompt', 'render', opt);
         },
 	});
