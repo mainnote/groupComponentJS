@@ -18,6 +18,9 @@ require([
 'input',
 'inputPassword',
 'inputGrp',
-'inputEmailGrp'
+'inputEmailGrp',
+'nav',
+'navBrand',
+'navItem',
 ], function () {
 });

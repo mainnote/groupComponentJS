@@ -2,6 +2,13 @@
 	require(['fastclick'], function (fastclick) {
 		fastclick.attach(document.body);
 	});
+	require(['jquery', 'bootstrap', 'nav'], function ($, bootstrap, Nav) {
+		var navCmd = Nav.create('navCmd').command();
+		var opt = {
+			container : $('#mnbody'),
+		};
+		navCmd('render', opt);
+	});
 	require(['jquery', 'bootstrap', 'textarea'], function ($, bootstrap, Textarea) {
 		var textareaCmd = Textarea.create('textareaCmd').command();
 		var opt = {
