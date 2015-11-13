@@ -10,7 +10,11 @@ define(['jquery', 'group'
 		render : function (opt) {
 			var opt_ = $.extend({}, this.defaultOpt, opt);
 			var comp = $(this.template(opt_));
-			comp.appendTo(opt.container);
+            if (opt_.prepend) {
+                comp.prependTo(opt.container);
+            } else {
+                comp.appendTo(opt.container);
+            }
 			this.comp = comp;
 			return opt.noSetup ? this.comp : this.setup(opt);
 		},

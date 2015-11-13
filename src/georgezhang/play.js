@@ -2,10 +2,44 @@
 	require(['fastclick'], function (fastclick) {
 		fastclick.attach(document.body);
 	});
-	require(['jquery', 'bootstrap', 'nav'], function ($, bootstrap, Nav) {
+	require(['jquery', 'bootstrap', 'nav', 'navBrand', 'navItem'], function ($, bootstrap, Nav, NavBrand, NavItem) {
+        var navBrandCmd = NavBrand.create('navBrandCmd').command();
+        var Home = NavItem.create('Home').command();
+        var Page = NavItem.create('Page').command();
+        var User = NavItem.create('User').command();
+        
 		var navCmd = Nav.create('navCmd').command();
 		var opt = {
 			container : $('#mnbody'),
+            nav_brand:{
+                cmd: navBrandCmd,
+                opt: {
+                    navBrand_url: '/',
+                    navBrand_html: 'Playground',
+                    },
+            },
+            nav_items_left:[{
+                cmd: Home,
+                opt: {
+                    navItem_url: '/',
+                    navItem_html: 'Home',
+                    },
+            },{
+                cmd: Page,
+                opt: {
+                    navItem_url: '#',
+                    navItem_html: 'Page',
+                    },
+            },
+            ],
+            nav_items_right:[{
+                cmd: User,
+                opt: {
+                    navItem_url: '#',
+                    navItem_html: 'User',
+                    },
+            },
+            ],
 		};
 		navCmd('render', opt);
 	});

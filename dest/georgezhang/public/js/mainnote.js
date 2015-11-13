@@ -49,6 +49,11 @@ if (!Function.prototype.bind) {
 		return fBound;
 	};
 }
+if (typeof Array.isArray === 'undefined') {
+  Array.isArray = function(obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+  }
+};
 //----------------------------
 
 var obj = {
@@ -154,6 +159,7 @@ group.extend({
 				}
 			}
 		}
+        //if not found, should we leave error?
 	},
 	/* call through to specific member whom play as a major role*/
 	setCallToMember : function (memberName, methodName) {
@@ -213,12 +219,12 @@ group.extend({
 	},
     
     getMember : function(memberName, memberMap){
-        if (memberMap && typeof memberMap === 'object' && memberMap.constructor === Array) {
+        if (memberMap && Array.isArray(memberMap)) {
             //find the first one in map
             return _findMemberInMap(memberMap, this);
             
             function _findMemberInMap(map, thisGroup) {
-                if (Object.prototype.toString.call(map) === '[object Array]' && thisGroup && thisGroup.hasOwnProperty('_memberList')) {
+                if (Array.isArray(map) && thisGroup && thisGroup.hasOwnProperty('_memberList')) {
                     var len = map.length;
                     for (var i = 0; i < len; i++) {
                         //if level down
@@ -255,12 +261,12 @@ group.extend({
 
 	override : function (newMember, memberMap) {
 		if (newMember) {
-			if (memberMap && typeof memberMap === 'object' && memberMap.constructor === Array) {
+			if (memberMap && Array.isArray(memberMap)) {
 				//only override the ones in map
 				_overrideMemberInMap(memberMap, this);
 
 				function _overrideMemberInMap(map, thisGroup) {
-					if (Object.prototype.toString.call(map) === '[object Array]' && thisGroup && thisGroup.hasOwnProperty('_memberList')) {
+					if (Array.isArray(map) && thisGroup && thisGroup.hasOwnProperty('_memberList')) {
 						var len = map.length;
 						for (var i = 0; i < len; i++) {
 							//if level down
@@ -3075,6 +3081,100 @@ define('inputEmailGrp',['jquery', 'group', 'inputGrp', 'input'
 	return InputEmailGrp;
 });
 
+
+define('tpl!templates/nav', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<nav class="navbar navbar-dark bg-primary">\r\n  <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#'+
+((__t=( nav_id ))==null?'':__t)+
+'">\r\n    &#9776;\r\n  </button>\r\n  <div class="collapse navbar-toggleable-xs" id="'+
+((__t=( nav_id ))==null?'':__t)+
+'">\r\n    <ul class="nav navbar-nav">\r\n    </ul>\r\n  </div>\r\n</nav>';
+}
+return __p;
+}; });
+
+define('nav',['jquery', 'component', 'tpl!templates/nav'
+	], function ($, Component, tpl) {
+	var Nav = Component.create('Nav');
+	Nav.extend({
+        defaultOpt: {
+            nav_id: 'navID',
+        },
+        tpl: tpl,
+        setup: function(opt){
+            if (opt.nav_brand && opt.nav_brand.cmd) {
+                opt.nav_brand.cmd('render', opt.nav_brand.opt||{});
+            }
+            
+            if (opt.nav_items && $.isArray(opt.nav_items)){
+                var len = opt.nav_items.length;
+                var container = this.comp.find('ul.nav');
+                for (var i=0; i<len; i++){
+                    var item = opt.nav_items[i];
+                    item.cmd('render', item.opt);
+                }
+            }
+        },
+	});
+
+	return Nav;
+});
+
+
+define('tpl!templates/navBrand', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<a class="navbar-brand" href="'+
+((__t=( navBrand_url ))==null?'':__t)+
+'">'+
+((__t=( navBrand_html ))==null?'':__t)+
+'</a>';
+}
+return __p;
+}; });
+
+define('navBrand',['jquery', 'component', 'tpl!templates/navBrand'
+	], function ($, Component, tpl) {
+	var NavBrand = Component.create('NavBrand');
+	NavBrand.extend({
+        defaultOpt: {
+            navBrand_url: '#',
+            navBrand_html: '',
+        },
+        tpl: tpl,
+	});
+
+	return NavBrand;
+});
+
+
+define('tpl!templates/navItem', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="nav-item">\r\n    <a class="nav-link" href="'+
+((__t=( navItem_url ))==null?'':__t)+
+'">'+
+((__t=( navItem_html ))==null?'':__t)+
+'</a>\r\n</li>';
+}
+return __p;
+}; });
+
+define('navItem',['jquery', 'component', 'tpl!templates/navItem'
+	], function ($, Component, tpl) {
+	var NavItem = Component.create('NavItem');
+	NavItem.extend({
+        defaultOpt: {
+            navItem_url: '#',
+            navItem_html: '',
+        },
+        tpl: tpl,
+	});
+
+	return NavItem;
+});
+
 require([
 'component', 
 'count', 
@@ -3095,7 +3195,10 @@ require([
 'input',
 'inputPassword',
 'inputGrp',
-'inputEmailGrp'
+'inputEmailGrp',
+'nav',
+'navBrand',
+'navItem',
 ], function () {
 });
 
