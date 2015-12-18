@@ -1,9 +1,55 @@
+var LOG = function (tag, msg, type, result) {
+			if (window.console) {
+                if (typeof(tag) != 'string') {
+                    return console.error('TAG is required for LOG!');
+                } else {
+                    tag = tag + '       ';
+                }
+                
+                if (msg == undefined) {
+                    return;
+                } else if (type == '$') {
+					return window.console.log(tag, msg);
+                } else if (typeof(msg) != 'string') {
+                    msg = JSON.stringify(msg);
+                }
+                
+				if (type) {
+					if (type == 'info' && window.console.info) {
+						return window.console.info(tag, msg);
+					} else if (type == 'error' && window.console.error) {
+						return window.console.error(tag, msg);
+					} else if (typeof(type) != 'string') {
+						if (type == undefined) {
+							type = '';
+						} else {
+							type = '( ' + JSON.stringify(type) + ' )';
+						}
+					}
+				} else {
+					type = '';
+				}
+                
+                if (result == undefined) {
+                    result = '';
+                } else {
+                    result = ' === ' + JSON.stringify(result);
+                }
+
+				return window.console.log(tag, msg + type + result);
+			}
+		};
+
 (function () {
 	require(['fastclick'], function (fastclick) {
 		fastclick.attach(document.body);
 	});
 	require(['jquery', 'bootstrap', 'nav', 'navBrand', 'navItem'], function ($, bootstrap, Nav, NavBrand, NavItem) {
         var navBrandCmd = NavBrand.create('navBrandCmd').command();
+        navBrandCmd('setOpt', {
+            navBrand_url: '/',
+            navBrand_html: 'Playground'
+        });
         var Home = NavItem.create('Home').command();
         var Page = NavItem.create('Page').command();
         var User = NavItem.create('User').command();
@@ -14,23 +60,23 @@
             nav_brand:{
                 cmd: navBrandCmd,
                 opt: {
-                    navBrand_url: '/',
-                    navBrand_html: 'Playground',
-                    },
+            navBrand_url: '/',
+            navBrand_html: 'Playground'
+        }
             },
             nav_items_left:[{
-                cmd: Home,
-                opt: {
-                    navItem_url: '/',
-                    navItem_html: 'Home',
-                    },
-            },{
-                cmd: Page,
-                opt: {
-                    navItem_url: '#',
-                    navItem_html: 'Page',
-                    },
-            },
+                    cmd: Home,
+                    opt: {
+                        navItem_url: '/',
+                        navItem_html: 'Home',
+                        },
+                },{
+                    cmd: Page,
+                    opt: {
+                        navItem_url: '#',
+                        navItem_html: 'Page',
+                        },
+                },
             ],
             nav_items_right:[{
                 cmd: User,

@@ -8,7 +8,6 @@ define(['jquery', 'component', 'tpl!templates/navBrand'
             prepend: true,
         },
         tpl: tpl,
-        
 	});
 
 	return NavBrand;
