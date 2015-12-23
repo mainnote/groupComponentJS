@@ -1,0 +1,28 @@
+<nav class="navbar <%= navbar_placement %> navbar-dark bg-primary bd-navbar">
+  <div class="pull-right">
+      <button class="navbar-toggler pull-xs-right hidden-sm-up" type="button" data-toggle="collapse" data-target="#<%= navbar_id %>">
+        &#9776;
+      </button>
+  </div>
+  <style>
+@media screen and (max-width: 767px) {
+    ul.nav li.nav-item {
+        width: 100%;
+        display: block;
+        clear: both;
+        text-align:left;
+        margin-left: 0 !important;
+    }
+    
+    nav .nav-middle {
+        width: 80%;
+        height: 2.5em;
+    }
+}
+  </style>
+  <div class="nav-middle"></div>
+  <div class="collapse navbar-toggleable-xs menu-items" id="<%= navbar_id %>">
+    <ul class="nav navbar-nav">
+    </ul>
+  </div>
+</nav>

@@ -14,7 +14,7 @@ div.promptTop{
 }
 
 div.promptTop{
-    padding: 0px 30px 15px 5px;
+    padding: 0px 0px 15px 0px;
     box-sizing: border-box;
 }
 div.promptTop {
@@ -22,7 +22,7 @@ div.promptTop {
     top: 0px;
     bottom: 0px;
     left: 0px;
-    right: -15px;
+    right: 0px;
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 100%;

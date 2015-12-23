@@ -1,93 +1,141 @@
-var LOG = function (tag, msg, type, result) {
-			if (window.console) {
-                if (typeof(tag) != 'string') {
-                    return console.error('TAG is required for LOG!');
-                } else {
-                    tag = tag + '       ';
-                }
-                
-                if (msg == undefined) {
-                    return;
-                } else if (type == '$') {
-					return window.console.log(tag, msg);
-                } else if (typeof(msg) != 'string') {
-                    msg = JSON.stringify(msg);
-                }
-                
-				if (type) {
-					if (type == 'info' && window.console.info) {
-						return window.console.info(tag, msg);
-					} else if (type == 'error' && window.console.error) {
-						return window.console.error(tag, msg);
-					} else if (typeof(type) != 'string') {
-						if (type == undefined) {
-							type = '';
-						} else {
-							type = '( ' + JSON.stringify(type) + ' )';
-						}
-					}
-				} else {
-					type = '';
-				}
-                
-                if (result == undefined) {
-                    result = '';
-                } else {
-                    result = ' === ' + JSON.stringify(result);
-                }
+window.LOG = function (tag, msg, type, result) {
+	var skipObj = false;
 
-				return window.console.log(tag, msg + type + result);
+	if (window.console) {
+		if (typeof(tag) != 'string') {
+			return console.error('TAG is required for LOG!');
+		} else {
+			tag = tag + '       ';
+		}
+
+		if (msg == undefined) {
+			return;
+		} else if (type == '$') {
+			if (skipObj) {
+				return '';
+			} else {
+				return window.console.log(tag, msg);
 			}
-		};
+		} else if (typeof(msg) != 'string') {
+			msg = stringify(msg);
+		}
+
+		if (type) {
+			if (type == 'info' && window.console.info) {
+				return window.console.info(tag, msg);
+			} else if (type == 'error' && window.console.error) {
+				return window.console.error(tag, msg);
+			} else if (typeof(type) != 'string') {
+				if (type == undefined) {
+					type = '';
+				} else {
+					type = '( ' + stringify(type) + ' )';
+				}
+			}
+		} else {
+			type = '';
+		}
+
+		if (result == undefined) {
+			result = '';
+		} else {
+			result = ' === ' + stringify(result);
+		}
+
+		return window.console.log(tag, msg + type + result);
+	}
+
+	function stringify(obj) {
+		var seen = [];
+		if (skipObj) {
+			return '';
+		} else {
+			return JSON.stringify(obj, function (key, val) {
+				if (val != null && typeof val == "object") {
+					if (seen.indexOf(val) >= 0) {
+						return;
+					}
+					seen.push(val);
+				}
+				return val;
+			});
+		}
+	}
+};
 
 (function () {
 	require(['fastclick'], function (fastclick) {
 		fastclick.attach(document.body);
 	});
-	require(['jquery', 'bootstrap', 'nav', 'navBrand', 'navItem'], function ($, bootstrap, Nav, NavBrand, NavItem) {
-        var navBrandCmd = NavBrand.create('navBrandCmd').command();
-        navBrandCmd('setOpt', {
-            navBrand_url: '/',
-            navBrand_html: 'Playground'
-        });
-        var Home = NavItem.create('Home').command();
-        var Page = NavItem.create('Page').command();
-        var User = NavItem.create('User').command();
-        
-		var navCmd = Nav.create('navCmd').command();
+	require(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider'], function ($, bootstrap, Navbar, NavBrand, NavItem, NavDropdownItem, DropdownItem, DropdownDivider) {
+		var navBrandCmd = NavBrand.create('navBrandCmd').command();
+		navBrandCmd('setOpt', {
+			navBrand_url : '/',
+			navBrand_html : 'Playground'
+		});
+		var NotesCmd = NavItem.create('NotesCmd').command();
+		NotesCmd('setOpt', {
+			navItem_url : '#',
+			navItem_html : 'Notes',
+            active: true,
+		});
+
+		var crtPageCmd = DropdownItem.create('crtPageCmd').command();
+		crtPageCmd('setOpt', {
+			dropdownItem_url : '/',
+			dropdownItem_html : 'Create Page'
+		});
+		var crtNoteCmd = DropdownItem.create('crtNoteCmd').command();
+		crtNoteCmd('setOpt', {
+			dropdownItem_url : '/',
+			dropdownItem_html : 'Create Note'
+		});
+		var dividerCmd = DropdownDivider.create('dividerCmd').command();
+		var actionCmd = DropdownItem.create('actionCmd').command();
+		actionCmd('setOpt', {
+			dropdownItem_url : '/',
+			dropdownItem_html : 'Another Item'
+		});
+
+		var PagesCmd = NavDropdownItem.create('PagesCmd').command();
+		PagesCmd('setOpt', {
+			navItem_html : 'Multiple',
+			dropdown_items : [{
+					cmd : crtPageCmd
+				}, {
+					cmd : crtNoteCmd
+				}, {
+					cmd : dividerCmd
+				}, {
+					cmd : actionCmd
+				},
+			],
+		});
+		var UserCmd = NavItem.create('UserCmd').command();
+		UserCmd('setOpt', {
+			navItem_url : '#',
+			navItem_html : 'User',
+			pullright : true,
+		});
+
+		var navbarCmd = Navbar.create('navCmd').command();
 		var opt = {
 			container : $('#mnbody'),
-            nav_brand:{
-                cmd: navBrandCmd,
-                opt: {
-            navBrand_url: '/',
-            navBrand_html: 'Playground'
-        }
-            },
-            nav_items_left:[{
-                    cmd: Home,
-                    opt: {
-                        navItem_url: '/',
-                        navItem_html: 'Home',
-                        },
-                },{
-                    cmd: Page,
-                    opt: {
-                        navItem_url: '#',
-                        navItem_html: 'Page',
-                        },
-                },
-            ],
-            nav_items_right:[{
-                cmd: User,
-                opt: {
-                    navItem_url: '#',
-                    navItem_html: 'User',
-                    },
-            },
-            ],
+			navbar_brand : {
+				cmd : navBrandCmd,
+			},
+			navbar_items : [{
+					cmd : NotesCmd,
+				}, {
+					cmd : PagesCmd,
+				},
+				//right side
+				{
+					cmd : UserCmd,
+				},
+			],
 		};
-		navCmd('render', opt);
+		navbarCmd('render', opt);
 	});
 	require(['jquery', 'bootstrap', 'textarea'], function ($, bootstrap, Textarea) {
 		var textareaCmd = Textarea.create('textareaCmd').command();
@@ -127,40 +175,48 @@ var LOG = function (tag, msg, type, result) {
 			promptCmd1('render', opt1);
 		});
 	});
-    
-    define('requestMock', ['jquery', 'group'
-        ], function ($, Grp) {
-        var RequestMock = Grp.obj.create('RequestMock');
-        RequestMock.extend({
-            connect : function (opt) {
-                if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
-                    opt.request_done({data:{}});
-                }else{
-                    opt.request_done({error: {message: 'this is wrong', code: 101 }});
-                }
-                opt.request_always();
-            },
-        });
 
-        return RequestMock;
-    });
+	define('requestMock', ['jquery', 'group'
+		], function ($, Grp) {
+		var RequestMock = Grp.obj.create('RequestMock');
+		RequestMock.extend({
+			connect : function (opt) {
+				if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
+					opt.request_done({
+						data : {}
+
+					});
+				} else {
+					opt.request_done({
+						error : {
+							message : 'this is wrong',
+							code : 101
+						}
+					});
+				}
+				opt.request_always();
+			},
+		});
+
+		return RequestMock;
+	});
 	require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputPassword', 'inputEmailGrp', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputPassword, InputEmailGrp, InputGrp, RequestMock) {
 		var btn = $('<button>PromptFormGrp</button>');
 		$('#mnbody').append(btn);
 
 		btn.on('click', function (e) {
-            var requestMock = RequestMock.create('request');  
+			var requestMock = RequestMock.create('request');
 			var promptFormGrpCmd = PromptFormGrp.create('promptFormGrpCmd').command();
-            var thisTextarea = TextareaCountGrp.create();
-            var thisTextarea2 = TextareaCountGrp.create();
-            
-            var inputText = InputGrp.create('inputText');
-            inputText.override(requestMock);
-            var inputPassword = InputPassword.create('inputPassword');
-            var inputEmailGrp = InputEmailGrp.create('inputEmailGrp');
-            inputEmailGrp.override(requestMock);
-            
-            var button_submit = Button.create();
+			var thisTextarea = TextareaCountGrp.create();
+			var thisTextarea2 = TextareaCountGrp.create();
+
+			var inputText = InputGrp.create('inputText');
+			inputText.override(requestMock);
+			var inputPassword = InputPassword.create('inputPassword');
+			var inputEmailGrp = InputEmailGrp.create('inputEmailGrp');
+			inputEmailGrp.override(requestMock);
+
+			var button_submit = Button.create();
 			var opt = {
 				container : $('#mnbody'),
 				prompt_title : 'Test PromptFormGrp',
@@ -180,32 +236,32 @@ var LOG = function (tag, msg, type, result) {
 						elem : inputText,
 						opt : {
 							input_id : 'inputtext',
-                            input_name: 'inputtext',
-                            input_type: 'text',
-                            input_placeholder: 'User Name',
-                            input_required: true,
-                            input_autofocus: true,
-                            input_action: '/',
+							input_name : 'inputtext',
+							input_type : 'text',
+							input_placeholder : 'User Name',
+							input_required : true,
+							input_autofocus : true,
+							input_action : '/',
 						},
-                    }, {
+					}, {
 						elem : inputPassword,
 						opt : {
 							input_id : 'inputpassword',
-                            input_name: 'inputpassword',
-                            input_type: 'password',
-                            input_placeholder: 'Password',
-                            input_required: true,
+							input_name : 'inputpassword',
+							input_type : 'password',
+							input_placeholder : 'Password',
+							input_required : true,
 						},
-                    }, {
+					}, {
 						elem : inputEmailGrp,
 						opt : {
 							input_id : 'inputemail',
-                            input_name: 'inputemail',
-                            input_type: 'email',
-                            input_placeholder: 'Email Address',
-                            input_required: true,
+							input_name : 'inputemail',
+							input_type : 'email',
+							input_placeholder : 'Email Address',
+							input_required : true,
 						},
-                    }, {
+					}, {
 						elem : button_submit,
 						opt : {
 							button_name : 'Submit',
@@ -214,8 +270,7 @@ var LOG = function (tag, msg, type, result) {
 				],
 			};
 
-                      
-            promptFormGrpCmd('override', requestMock);
+			promptFormGrpCmd('override', requestMock);
 			promptFormGrpCmd('render', opt);
 		});
 	});

@@ -15,6 +15,7 @@
 }(this, function () {
 
 //for stupid old IE
+var TAG = 'groupjs';
 if (!Object.create) {
 	Object.create = function (o) {
 		if (arguments.length > 1) {
@@ -50,11 +51,24 @@ if (!Function.prototype.bind) {
 	};
 }
 if (typeof Array.isArray === 'undefined') {
-  Array.isArray = function(obj) {
-    return Object.prototype.toString.call(obj) === '[object Array]';
-  }
+	Array.isArray = function (obj) {
+		return Object.prototype.toString.call(obj) === '[object Array]';
+	}
 };
 //----------------------------
+function reservedAttr(attribute) {
+	if ((attribute in obj)
+		 || (attribute in group)
+		 || attribute === 'parentNames'
+		 || attribute === 'group'
+		 || attribute === '_memberList'
+		 || attribute === 'name'
+		 || attribute === '_callToMembers') {
+		return true;
+	} else {
+		return false;
+	}
+};
 
 var obj = {
 	create : function (name) {
@@ -92,9 +106,25 @@ var obj = {
 		var self = this;
 		return function (cmd, opt) {
 			if (typeof self[cmd] === 'function') {
-				return self[cmd](opt);
+				if (window.LOG) {
+                    var result = self[cmd](opt);
+					if (!(reservedAttr(cmd))) {
+						LOG(TAG, self.name + ' -> ' + cmd, opt, result);
+					}
+                    return result;
+				} else {
+                    return self[cmd](opt);
+                }
 			} else {
-				return self[cmd]; //value
+				if (window.LOG) {
+                    var result = self[cmd];
+					if (!(reservedAttr(cmd))) {
+						LOG(TAG, self.name + '.' + cmd, '', result);
+					}
+                    return result;
+				} else {
+                    return self[cmd]; //value
+                }
 			}
 		};
 	},
@@ -140,7 +170,13 @@ group.extend({
 		var memberCmd;
 		if (memberName in this._memberList) {
 			memberCmd = this._memberList[memberName];
-			return memberCmd(methodName, opt);
+			if (window.LOG) {
+                var result = memberCmd(methodName, opt);
+				LOG(TAG, this.name + ' => ' + memberName, opt, result);
+                return result;
+			} else {
+                return memberCmd(methodName, opt);
+            }
 		} else {
 			var prototypeMemberList = this._memberList;
 			for (var key in prototypeMemberList) {
@@ -152,15 +188,21 @@ group.extend({
 						var p_len = parentNames.length;
 						for (var j = 0; j < p_len; j++) {
 							if (memberName === parentNames[j]) {
-								memberCmd(methodName, opt); //no return till all members checked
+								if (window.LOG) {
+                                    var result = memberCmd(methodName, opt);
+									LOG(TAG, this.name + ' => ' + memberName, opt, result);
+								} else {
+                                    memberCmd(methodName, opt); //no return till all members checked
+                                }
 							}
 						}
 					}
 				}
 			}
 		}
-        //if not found, should we leave error?
+		//if not found, should we leave error?
 	},
+
 	/* call through to specific member whom play as a major role*/
 	setCallToMember : function (memberName, methodName) {
 		var that = this;
@@ -182,12 +224,7 @@ group.extend({
 			}
 
 			function _setMethod(attribute, memberObj) {
-				if (!(attribute in group)
-					 && attribute != 'parentNames'
-					 && attribute != 'group'
-					 && attribute != '_memberList'
-					 && attribute != 'name'
-					 && attribute != '_callToMembers') { //skip those attributes exist in group!!!
+				if (!reservedAttr(attribute)) { //skip those attributes exist in group!!!
 					if (typeof memberObj[attribute] === 'function' && !memberObj[attribute].binded) {
 						that[attribute] = memberObj[attribute].bind(memberObj);
 						that[attribute].binded = true;
@@ -201,7 +238,7 @@ group.extend({
 
 	members : function () {
 		function _getMember(thisGroup) {
-            var memberList = thisGroup._memberList;
+			var memberList = thisGroup._memberList;
 			var ms = [];
 			for (var key in memberList) {
 				var member = {
@@ -217,47 +254,48 @@ group.extend({
 		}
 		return _getMember(this);
 	},
-    
-    getMember : function(memberName, memberMap){
-        if (memberMap && Array.isArray(memberMap)) {
-            //find the first one in map
-            return _findMemberInMap(memberMap, this);
-            
-            function _findMemberInMap(map, thisGroup) {
-                if (Array.isArray(map) && thisGroup && thisGroup.hasOwnProperty('_memberList')) {
-                    var len = map.length;
-                    for (var i = 0; i < len; i++) {
-                        //if level down
-                        if (map[i].hasOwnProperty('members')) {
-                            var member = _findMemberInMap(map[i].members, thisGroup.call(map[i].name, 'thisObj'));
-                            if (member) return member;
-                        } else {
-                            return _getMember(thisGroup);
-                        }
-                    }
-                }
-                return null;
-            }
-        } else {
-            //get the first matched member if memberMap not specified
-            return _getMember(this);
-        }
-        
-        function _getMember(thisGroup) {
-            var memberList = thisGroup._memberList;
-            if (memberName in memberList) {
-                return memberList[memberName]('thisObj');
-            } else {
-                for (var key in memberList) {
-                    var memberObj = memberList[key]('thisObj');
-                    if (memberObj.hasOwnProperty('_memberList')) {
-                        return _getMember(memberObj);
-                    }
-                }
-            }
-            return null;
+
+	getMember : function (memberName, memberMap) {
+		if (memberMap && Array.isArray(memberMap)) {
+			//find the first one in map
+			return _findMemberInMap(memberMap, this);
+
+			function _findMemberInMap(map, thisGroup) {
+				if (Array.isArray(map) && thisGroup && thisGroup.hasOwnProperty('_memberList')) {
+					var len = map.length;
+					for (var i = 0; i < len; i++) {
+						//if level down
+						if (map[i].hasOwnProperty('members')) {
+							var member = _findMemberInMap(map[i].members, thisGroup.call(map[i].name, 'thisObj'));
+							if (member)
+								return member;
+						} else {
+							return _getMember(thisGroup);
+						}
+					}
+				}
+				return null;
+			}
+		} else {
+			//get the first matched member if memberMap not specified
+			return _getMember(this);
 		}
-    },
+
+		function _getMember(thisGroup) {
+			var memberList = thisGroup._memberList;
+			if (memberName in memberList) {
+				return memberList[memberName]('thisObj');
+			} else {
+				for (var key in memberList) {
+					var memberObj = memberList[key]('thisObj');
+					if (memberObj.hasOwnProperty('_memberList')) {
+						return _getMember(memberObj);
+					}
+				}
+			}
+			return null;
+		}
+	},
 
 	override : function (newMember, memberMap) {
 		if (newMember) {
@@ -285,20 +323,20 @@ group.extend({
 			}
 
 			function _overrideMember(thisGroup) {
-                var reset = false;
+				var reset = false;
 				if (thisGroup.hasOwnProperty('_memberList')) {
 					for (var key in thisGroup._memberList) {
 						var memberObj = thisGroup._memberList[key]('thisObj');
 						if (memberObj.name === newMember.name) {
 							thisGroup.join(newMember);
-                            reset = _resetCallToMember(thisGroup);
+							reset = _resetCallToMember(thisGroup);
 						} else if (memberObj.hasOwnProperty('_memberList')) {
-                            if (_overrideMember(memberObj)) {
-                                reset = _resetCallToMember(thisGroup);
-                            }
+							if (_overrideMember(memberObj)) {
+								reset = _resetCallToMember(thisGroup);
+							}
 						}
 					}
-                    
+
 				}
 
 				function _resetCallToMember(thisGrp) {
@@ -308,12 +346,12 @@ group.extend({
 							var toMem = thisGrp._callToMembers[i];
 							thisGrp.setCallToMember(toMem.name, toMem.method);
 						}
-                        return true;
+						return true;
 					}
-                    return false;
+					return false;
 				}
-                
-                return reset;
+
+				return reset;
 			}
 		}
 	},
@@ -330,19 +368,34 @@ return Grp;
 
 define('component',['jquery', 'group'
 	], function ($, Grp) {
+	var TAG = 'componentjs';
 	var Component = Grp.obj.create('Component');
 	Component.extend({
 		defaultOpt : {},
+		opt : {},
 		template : function (opt) {
 			return this.tpl ? this.tpl(opt) : '';
 		},
-
+		beforeRender : function (opt) {},
 		render : function (opt) {
-			var opt_ = $.extend({}, this.defaultOpt, opt);
+			if (!opt)
+				opt = {};
+			this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
+            this.beforeRender(this.opt);
+            
+            var opt_ = this.opt;
 			var comp = $(this.template(opt_));
-			comp.appendTo(opt.container);
+			if (opt_.prepend) {
+				comp.prependTo(opt.container);
+			} else {
+				comp.appendTo(opt.container);
+			}
 			this.comp = comp;
-			return opt.noSetup ? this.comp : this.setup(opt);
+			if (window.LOG) {
+				LOG(TAG, opt.container, '$');
+				LOG(TAG, this.comp.prop('outerHTML'));
+			}
+			return opt.noSetup ? this.comp : this.setup(opt_);
 		},
 
 		setup : function (opt) {
@@ -350,6 +403,9 @@ define('component',['jquery', 'group'
 		},
 		remove : function (opt) {
 			this.comp.remove();
+		},
+		setOpt : function (opt) {
+			this.opt = $.extend({}, this.opt, opt);
 		},
 	});
 
@@ -3082,50 +3138,65 @@ define('inputEmailGrp',['jquery', 'group', 'inputGrp', 'input'
 });
 
 
-define('tpl!templates/nav', [],function () { return function(obj){
+define('tpl!templates/navbar', [],function () { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<nav class="navbar navbar-dark bg-primary">\r\n  <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#'+
-((__t=( nav_id ))==null?'':__t)+
-'">\r\n    &#9776;\r\n  </button>\r\n  <div class="collapse navbar-toggleable-xs" id="'+
-((__t=( nav_id ))==null?'':__t)+
+__p+='<nav class="navbar '+
+((__t=( navbar_placement ))==null?'':__t)+
+' navbar-dark bg-primary bd-navbar">\r\n  <div class="pull-right">\r\n      <button class="navbar-toggler pull-xs-right hidden-sm-up" type="button" data-toggle="collapse" data-target="#'+
+((__t=( navbar_id ))==null?'':__t)+
+'">\r\n        &#9776;\r\n      </button>\r\n  </div>\r\n  <style>\r\n@media screen and (max-width: 767px) {\r\n    ul.nav li.nav-item {\r\n        width: 100%;\r\n        display: block;\r\n        clear: both;\r\n        text-align:left;\r\n        margin-left: 0 !important;\r\n    }\r\n    \r\n    nav .nav-middle {\r\n        width: 80%;\r\n        height: 2.5em;\r\n    }\r\n}\r\n  </style>\r\n  <div class="nav-middle"></div>\r\n  <div class="collapse navbar-toggleable-xs menu-items" id="'+
+((__t=( navbar_id ))==null?'':__t)+
 '">\r\n    <ul class="nav navbar-nav">\r\n    </ul>\r\n  </div>\r\n</nav>';
 }
 return __p;
 }; });
 
-define('nav',['jquery', 'component', 'tpl!templates/nav'
+define('navbar',['jquery', 'component', 'tpl!templates/navbar'
 	], function ($, Component, tpl) {
-	var Nav = Component.create('Nav');
-	Nav.extend({
+    var TAG = 'navjs';
+	var Navbar = Component.create('Navbar');
+	Navbar.extend({
         defaultOpt: {
-            nav_id: 'navID',
+            navbar_id: 'navbar_id',
+            navbar_placement: 'navbar-fixed-top',
         },
         tpl: tpl,
         setup: function(opt){
-            if (opt.nav_brand && opt.nav_brand.cmd) {
-                opt.nav_brand.cmd('render', opt.nav_brand.opt||{});
+            var that = this;
+            if (opt.navbar_brand && opt.navbar_brand.cmd) {
+                var container = this.comp;
+                opt.navbar_brand.cmd('render', $.extend({}, opt.navbar_brand.opt||{}, { container: container }));
+            } else { if (window.LOG) LOG(TAG, 'Opt navbar_brand is not correct!', 'error'); }
+            
+            if (opt.navbar_items){
+                if ($.isArray(opt.navbar_items)) {
+                    setNavItem(opt.navbar_items, opt.navbar_id);
+                }
+                else { if (window.LOG) LOG(TAG, 'Opt navbar_items is not correct!', 'error'); }
             }
             
-            if (opt.nav_items && $.isArray(opt.nav_items)){
-                var len = opt.nav_items.length;
-                var container = this.comp.find('ul.nav');
+            function setNavItem(items, navId){
+                var len = items.length;
+                var container = that.comp.find('#' + navId + ' ul');
                 for (var i=0; i<len; i++){
-                    var item = opt.nav_items[i];
-                    item.cmd('render', item.opt);
+                    var item = items[i];
+                    item.cmd('render', $.extend({}, item.opt||{}, { container: container }));
                 }
             }
+            
+            return this.comp;
         },
 	});
 
-	return Nav;
+	return Navbar;
 });
 
 
 define('tpl!templates/navBrand', [],function () { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<a class="navbar-brand" href="'+
+__p+='<a class="navbar-brand pull-left" href="'+
 ((__t=( navBrand_url ))==null?'':__t)+
 '">'+
 ((__t=( navBrand_html ))==null?'':__t)+
@@ -3141,6 +3212,7 @@ define('navBrand',['jquery', 'component', 'tpl!templates/navBrand'
         defaultOpt: {
             navBrand_url: '#',
             navBrand_html: '',
+            prepend: true,
         },
         tpl: tpl,
 	});
@@ -3152,7 +3224,15 @@ define('navBrand',['jquery', 'component', 'tpl!templates/navBrand'
 define('tpl!templates/navItem', [],function () { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<li class="nav-item">\r\n    <a class="nav-link" href="'+
+__p+='<li class="nav-item ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+=' ';
+ if (active){ 
+__p+='active';
+ } 
+__p+='">\r\n    <a class="nav-link" href="'+
 ((__t=( navItem_url ))==null?'':__t)+
 '">'+
 ((__t=( navItem_html ))==null?'':__t)+
@@ -3168,11 +3248,127 @@ define('navItem',['jquery', 'component', 'tpl!templates/navItem'
         defaultOpt: {
             navItem_url: '#',
             navItem_html: '',
+            pullright: false,
+            active: false,
+        },
+        tpl: tpl,
+        setActive: function (opt) {
+            this.setOpt({
+                active: true,
+            });
+        },
+	});
+
+	return NavItem;
+});
+
+
+define('tpl!templates/navDropdownItem', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="nav-item dropdown ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+=' ';
+ if (active){ 
+__p+='active';
+ } 
+__p+='">\r\n<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">'+
+((__t=( navItem_html ))==null?'':__t)+
+'</a>\r\n<div class="dropdown-menu">\r\n</div>\r\n</li>';
+}
+return __p;
+}; });
+
+define('navDropdownItem',['jquery', 'navItem', 'tpl!templates/navDropdownItem'
+	], function ($, NavItem, tpl) {
+	var NavDropdownItem = NavItem.create('NavDropdownItem');
+	NavDropdownItem.extend({
+		tpl : tpl,
+		setup : function (opt) {
+			var that = this;
+			if (opt.dropdown_items) {
+				if ($.isArray(opt.dropdown_items)) {
+					setDropdownItem(opt.dropdown_items);
+				} else {
+					if (window.LOG)
+						LOG(TAG, 'Opt dropdown_items is not correct!', 'error');
+				}
+			}
+
+			function setDropdownItem(items) {
+				var len = items.length;
+				var container = that.comp.find('.dropdown-menu');
+				for (var i = 0; i < len; i++) {
+					var item = items[i];
+					item.cmd('render', $.extend({}, item.opt || {}, {
+							container : container
+						}));
+				}
+			}
+
+			return this.comp;
+		},
+	});
+
+	return NavDropdownItem;
+});
+
+
+define('tpl!templates/dropdownItem', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<a class="dropdown-item ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+='" href="'+
+((__t=( dropdownItem_url ))==null?'':__t)+
+'">'+
+((__t=( dropdownItem_html ))==null?'':__t)+
+'</a>';
+}
+return __p;
+}; });
+
+define('dropdownItem',['jquery', 'component', 'tpl!templates/dropdownItem'
+	], function ($, Component, tpl) {
+	var DropdownItem = Component.create('DropdownItem');
+	DropdownItem.extend({
+        defaultOpt: {
+            dropdownItem_url: '#',
+            dropdownItem_html: '',
+            pullright: false,
         },
         tpl: tpl,
 	});
 
-	return NavItem;
+	return DropdownItem;
+});
+
+
+define('tpl!templates/dropdownDivider', [],function () { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="dropdown-divider"></div>';
+}
+return __p;
+}; });
+
+define('dropdownDivider',['jquery', 'component', 'tpl!templates/dropdownDivider'
+	], function ($, Component, tpl) {
+	var DropdownDivider = Component.create('DropdownDivider');
+	DropdownDivider.extend({
+        defaultOpt: {
+            navItem_url: '#',
+            navItem_html: '',
+            pullright: false,
+        },
+        tpl: tpl,
+	});
+
+	return DropdownDivider;
 });
 
 require([
@@ -3196,9 +3392,12 @@ require([
 'inputPassword',
 'inputGrp',
 'inputEmailGrp',
-'nav',
+'navbar',
 'navBrand',
 'navItem',
+'navDropdownItem',
+'dropdownItem',
+'dropdownDivider',
 ], function () {
 });
 

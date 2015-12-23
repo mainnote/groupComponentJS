@@ -19,8 +19,11 @@ require([
 'inputPassword',
 'inputGrp',
 'inputEmailGrp',
-'nav',
+'navbar',
 'navBrand',
 'navItem',
+'navDropdownItem',
+'dropdownItem',
+'dropdownDivider',
 ], function () {
 });

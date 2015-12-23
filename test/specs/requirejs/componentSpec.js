@@ -1,6 +1,70 @@
 define(function (require) {
 	describe('test cases of georgezhang/public/js/*.js', function () {
 		it('group module is available.', function () {
+			window.LOG = function (tag, msg, type, result) {
+				var skipObj = true;
+
+				if (window.console) {
+					if (typeof(tag) != 'string') {
+						return console.error('TAG is required for LOG!');
+					} else {
+						tag = tag + '       ';
+					}
+
+					if (msg == undefined) {
+						return;
+					} else if (type == '$') {
+						if (skipObj) {
+							return '';
+						} else {
+							return window.console.log(tag, msg);
+						}
+					} else if (typeof(msg) != 'string') {
+						msg = stringify(msg);
+					}
+
+					if (type) {
+						if (type == 'info' && window.console.info) {
+							return window.console.info(tag, msg);
+						} else if (type == 'error' && window.console.error) {
+							return window.console.error(tag, msg);
+						} else if (typeof(type) != 'string') {
+							if (type == undefined) {
+								type = '';
+							} else {
+								type = '( ' + stringify(type) + ' )';
+							}
+						}
+					} else {
+						type = '';
+					}
+
+					if (result == undefined) {
+						result = '';
+					} else {
+						result = ' === ' + stringify(result);
+					}
+
+					return window.console.log(tag, msg + type + result);
+				}
+
+				function stringify(obj) {
+					var seen = [];
+					if (skipObj) {
+						return '';
+					} else {
+						return JSON.stringify(obj, function (key, val) {
+							if (val != null && typeof val == "object") {
+								if (seen.indexOf(val) >= 0) {
+									return;
+								}
+								seen.push(val);
+							}
+							return val;
+						});
+					}
+				}
+			};
 			expect(typeof require('group') === 'object').toBe(true);
 			expect(typeof require('group').obj === 'object').toBe(true);
 			expect(typeof require('group').group === 'object').toBe(true);
@@ -128,13 +192,13 @@ define(function (require) {
 					var value = $(testContainer.find('textarea')[1]).val();
 					expect(value).toBe('In prompt Value2');
 
-                    /*
-                    testContainer.find('#inputtext').trigger('keypress').val('abc');
-                    console.log(testContainer.find('#inputtext').parents().html());
-                    var value = testContainer.find('#inputtext').parents().find('.hints').html();
+					/*
+					testContainer.find('#inputtext').trigger('keypress').val('abc');
+					console.log(testContainer.find('#inputtext').parents().html());
+					var value = testContainer.find('#inputtext').parents().find('.hints').html();
 					expect(value).toBe('this is wrong');
-                    */
-                    
+					 */
+
 					//click the submit button
 					button_submit.comp.trigger('click');
 					var value = $(testContainer.find('textarea')[1]).val();
@@ -161,6 +225,83 @@ define(function (require) {
 				listItemGrpCmd('render', opt);
 				var value = $(testContainer.find('li')[0]).text();
 				expect(value).toBe('yes');
+				done();
+			});
+		});
+
+		it('Component navbar test cases', function (done) {
+			require(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider'], function ($, bootstrap, Navbar, NavBrand, NavItem, NavDropdownItem, DropdownItem, DropdownDivider) {
+				var testContainer = $('<div></div>');
+				testContainer.appendTo('body');
+				var navBrandCmd = NavBrand.create('navBrandCmd').command();
+				navBrandCmd('setOpt', {
+					navBrand_url : '/',
+					navBrand_html : 'Playground'
+				});
+				var NotesCmd = NavItem.create('NotesCmd').command();
+				NotesCmd('setOpt', {
+					navItem_url : '#',
+					navItem_html : 'Notes',
+				});
+
+				var crtPageCmd = DropdownItem.create('crtPageCmd').command();
+				crtPageCmd('setOpt', {
+					dropdownItem_url : '/',
+					dropdownItem_html : 'Create Page'
+				});
+				var crtNoteCmd = DropdownItem.create('crtNoteCmd').command();
+				crtNoteCmd('setOpt', {
+					dropdownItem_url : '/',
+					dropdownItem_html : 'Create Note'
+				});
+				var dividerCmd = DropdownDivider.create('dividerCmd').command();
+				var actionCmd = DropdownItem.create('actionCmd').command();
+				actionCmd('setOpt', {
+					dropdownItem_url : '/',
+					dropdownItem_html : 'Another Item'
+				});
+
+				var PagesCmd = NavItem.create('PagesCmd').command();
+				PagesCmd('setOpt', {
+					navItem_html : 'Multiple',
+					dropdown_items : [{
+							cmd : crtPageCmd
+						}, {
+							cmd : crtNoteCmd
+						}, {
+							cmd : dividerCmd
+						}, {
+							cmd : actionCmd
+						},
+					],
+				});
+				var UserCmd = NavItem.create('UserCmd').command();
+				UserCmd('setOpt', {
+					navItem_url : '#',
+					navItem_html : 'User',
+					pullright : true,
+				});
+
+				var navbarCmd = Navbar.create('navCmd').command();
+				var opt = {
+					container : testContainer,
+					navbar_brand : {
+						cmd : navBrandCmd,
+					},
+					navbar_items : [{
+							cmd : NotesCmd,
+						}, {
+							cmd : PagesCmd,
+						},
+						//right side
+						{
+							cmd : UserCmd,
+						},
+					],
+				};
+				navbarCmd('render', opt);
+				var value = $(testContainer.find('#navbar_id ul li a')[0]).text();
+				expect(value).toBe('Notes');
 				done();
 			});
 		});
