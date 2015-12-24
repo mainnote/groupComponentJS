@@ -7,6 +7,7 @@ define(['jquery', 'component', 'tpl!templates/navItem'
             navItem_html: '',
             pullright: false,
             active: false,
+            badge: 0,
         },
         tpl: tpl,
         setActive: function (opt) {

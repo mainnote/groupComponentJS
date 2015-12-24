@@ -301,7 +301,7 @@ define(function (require) {
 				};
 				navbarCmd('render', opt);
 				var value = $(testContainer.find('#navbar_id ul li a')[0]).text();
-				expect(value).toBe('Notes');
+				expect(value).toContain('Notes');
 				done();
 			});
 		});

@@ -1,3 +1,6 @@
 <li class="nav-item <% if (pullright){ %>pull-right<% } %> <% if (active){ %>active<% } %>">
-    <a class="nav-link" href="<%= navItem_url %>"><%= navItem_html %></a>
+    <a class="nav-link" href="<%= navItem_url %>">
+        <span class="label label-danger label-pill pull-right"><% if ( badge > 0 ){ %><%= badge %><% } %></span>
+        <%= navItem_html %>
+    </a>
 </li>

@@ -3234,9 +3234,15 @@ __p+='active';
  } 
 __p+='">\r\n    <a class="nav-link" href="'+
 ((__t=( navItem_url ))==null?'':__t)+
-'">'+
+'">\r\n        <span class="label label-danger label-pill pull-right">';
+ if ( badge > 0 ){ 
+__p+=''+
+((__t=( badge ))==null?'':__t)+
+'';
+ } 
+__p+='</span>\r\n        '+
 ((__t=( navItem_html ))==null?'':__t)+
-'</a>\r\n</li>';
+'\r\n    </a>\r\n</li>';
 }
 return __p;
 }; });
@@ -3250,6 +3256,7 @@ define('navItem',['jquery', 'component', 'tpl!templates/navItem'
             navItem_html: '',
             pullright: false,
             active: false,
+            badge: 0,
         },
         tpl: tpl,
         setActive: function (opt) {
@@ -3274,9 +3281,15 @@ __p+=' ';
  if (active){ 
 __p+='active';
  } 
-__p+='">\r\n<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">'+
+__p+='">\r\n    <span class="label label-danger label-pill pull-right">';
+ if ( badge > 0 ){ 
+__p+=''+
+((__t=( badge ))==null?'':__t)+
+'';
+ } 
+__p+='</span>\r\n    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">'+
 ((__t=( navItem_html ))==null?'':__t)+
-'</a>\r\n<div class="dropdown-menu">\r\n</div>\r\n</li>';
+'</a>\r\n    <div class="dropdown-menu">\r\n    </div>\r\n</li>';
 }
 return __p;
 }; });
