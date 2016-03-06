@@ -70,6 +70,7 @@ define(function (require) {
 			expect(typeof require('group').group === 'object').toBe(true);
 			expect(true).toBe(true);
 		});
+        
 		it('Component textarea test cases', function (done) {
 			require(['jquery', 'bootstrap', 'textarea'], function ($, bootstrap, Textarea) {
 				var testContainer = $('<div></div>');
@@ -192,12 +193,12 @@ define(function (require) {
 					var value = $(testContainer.find('textarea')[1]).val();
 					expect(value).toBe('In prompt Value2');
 
-					/*
-					testContainer.find('#inputtext').trigger('keypress').val('abc');
-					console.log(testContainer.find('#inputtext').parents().html());
-					var value = testContainer.find('#inputtext').parents().find('.hints').html();
-					expect(value).toBe('this is wrong');
-					 */
+					
+					//testContainer.find('#inputtext').trigger('keypress').val('abc');
+					//console.log(testContainer.find('#inputtext').parents().html());
+					//var value = testContainer.find('#inputtext').parents().find('.hints').html();
+					//expect(value).toBe('this is wrong');
+					 
 
 					//click the submit button
 					button_submit.comp.trigger('click');
