@@ -8,7 +8,7 @@ define(function (require) {
 					if (typeof(tag) != 'string') {
 						return console.error('TAG is required for LOG!');
 					} else {
-						tag = tag + '       ';
+						tag = tag + ' ::: ';
 					}
 
 					if (msg == undefined) {
@@ -42,7 +42,7 @@ define(function (require) {
 					if (result == undefined) {
 						result = '';
 					} else {
-						result = ' === ' + stringify(result);
+						result = ' RETURN::' + stringify(result);
 					}
 
 					return window.console.log(tag, msg + type + result);
@@ -181,6 +181,7 @@ define(function (require) {
 								elem : button_submit,
 								opt : {
 									button_name : 'Submit',
+                                    button_type: 'submit',
 								},
 							},
 						],
@@ -188,7 +189,7 @@ define(function (require) {
 
 					var requestMock = RequestMock.create('request');
 					promptFormGrpCmd('override', requestMock);
-					promptFormGrpCmd('render', opt);
+                    promptFormGrpCmd('render', opt);
 
 					var value = $(testContainer.find('textarea')[1]).val();
 					expect(value).toBe('In prompt Value2');
@@ -212,14 +213,14 @@ define(function (require) {
 		});
 
 		it('Component listItemGrp test cases', function (done) {
-			require(['jquery', 'listItemGrp', 'dataCollectionGrp'], function ($, ListItemGrp, DataCollectionGrp) {
+			require(['jquery', 'listItemGrp', 'collectionGrp'], function ($, ListItemGrp, CollectionGrp) {
 				var testContainer = $('<div></div>');
 				testContainer.appendTo('body');
 				var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd').command();
-				var dataCollectionGrpCmd = DataCollectionGrp.create('dataCollectionGrpCmd').command();
+				var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd').command();
 				var opt = {
 					container : testContainer,
-					list_data : dataCollectionGrpCmd('add', {
+					list_data : collectionGrpCmd('add', {
 						values : ['yes', 'haha']
 					}),
 				};

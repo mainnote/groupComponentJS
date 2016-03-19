@@ -1,9 +1,9 @@
 require([
-'component', 
-'count', 
-'data',
-'dataCollection',
-'dataCollectionGrp',
+'component',
+'count',
+'entity',
+'collection',
+'collectionGrp',
 'form',
 'formGrp',
 'item',
@@ -20,10 +20,14 @@ require([
 'inputGrp',
 'inputEmailGrp',
 'navbar',
+'navbarGrp',
 'navBrand',
 'navItem',
+'navUserItem',
 'navDropdownItem',
 'dropdownItem',
 'dropdownDivider',
-], function () {
-});
+'fetcher',
+'listScrollEndFetchGrp',
+'toggleHeaderScroll'
+], function () {});

@@ -10,7 +10,7 @@ define(['jquery', 'group', 'input', 'request'
 			var opt_ = {
 				request_url : action,
 				request_method : 'GET',
-				request_data : {value: opt.value},
+				request_data : {value: opt.input_value},
 				request_done : function (data, textStatus, jqXHR) {
 					if (data.hasOwnProperty('error')) {
 						that.getResult({

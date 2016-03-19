@@ -67,7 +67,7 @@ window.LOG = function (tag, msg, type, result) {
 	require(['fastclick'], function (fastclick) {
 		fastclick.attach(document.body);
 	});
-	require(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider'], function ($, bootstrap, Navbar, NavBrand, NavItem, NavDropdownItem, DropdownItem, DropdownDivider) {
+	require(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navUserItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider'], function ($, bootstrap, Navbar, NavBrand, NavItem, NavUserItem, NavDropdownItem, DropdownItem, DropdownDivider) {
 		var navBrandCmd = NavBrand.create('navBrandCmd').command();
 		navBrandCmd('setOpt', {
 			navBrand_url : '/',
@@ -111,11 +111,39 @@ window.LOG = function (tag, msg, type, result) {
 				},
 			],
 		});
-		var UserCmd = NavItem.create('UserCmd').command();
-		UserCmd('setOpt', {
-			navItem_url : '#',
-			navItem_html : 'User',
+        
+         var myStuffCmd = DropdownItem.create('myStuffCmd').command();
+		myStuffCmd('setOpt', {
+			dropdownItem_url : '/private/mystuff',
+			dropdownItem_html : 'My Stuff'
+		});
+        
+        var myAccountCmd = DropdownItem.create('myAccountCmd').command();
+		myAccountCmd('setOpt', {
+			dropdownItem_url : '/account',
+			dropdownItem_html : 'My Account'
+		});
+        
+        var logoutCmd = DropdownItem.create('logoutCmd').command();
+		logoutCmd('setOpt', {
+			dropdownItem_url : '/logout',
+			dropdownItem_html : 'Logout'
+		});
+              
+		var navUserItemCmd = NavUserItem.create('navUserItemCmd').command();
+		navUserItemCmd('setOpt', {
+			navUserItem_user: { name: 'George', profile_img: 'https://graph.facebook.com/1230943496933965/picture?type=small' },
 			pullright : true,
+            dropdown_items : [{
+					cmd : myStuffCmd
+				}, {
+					cmd : myAccountCmd
+				}, {
+					cmd : dividerCmd
+				}, {
+					cmd : logoutCmd
+				},
+			]
 		});
 
 		var navbarCmd = Navbar.create('navCmd').command();
@@ -131,7 +159,7 @@ window.LOG = function (tag, msg, type, result) {
 				},
 				//right side
 				{
-					cmd : UserCmd,
+					cmd : navUserItemCmd,
 				},
 			],
 		};
@@ -265,6 +293,8 @@ window.LOG = function (tag, msg, type, result) {
 						elem : button_submit,
 						opt : {
 							button_name : 'Submit',
+                            button_type: 'submit',
+                            button_class:  'btn-sm btn-primary'
 						},
 					},
 				],
@@ -274,12 +304,12 @@ window.LOG = function (tag, msg, type, result) {
 			promptFormGrpCmd('render', opt);
 		});
 	});
-	require(['jquery', 'listItemGrp', 'dataCollectionGrp'], function ($, ListItemGrp, DataCollectionGrp) {
+	require(['jquery', 'listItemGrp', 'collectionGrp'], function ($, ListItemGrp, CollectionGrp) {
 		var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd').command();
-		var dataCollectionGrpCmd = DataCollectionGrp.create('dataCollectionGrpCmd').command();
+		var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd').command();
 		var opt = {
 			container : $('#mnbody'),
-			list_data : dataCollectionGrpCmd('add', {
+			list_data : collectionGrpCmd('add', {
 				values : ['yes', 'haha']
 			}),
 		};

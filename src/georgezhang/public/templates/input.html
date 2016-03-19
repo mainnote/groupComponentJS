@@ -1,15 +1,17 @@
 <div class="form-group">
     <label for="<%= input_id %>" class="sr-only"><%= input_name %></label>
     <input type="<%= input_type %>" id="<%= input_id %>" name="<%= input_name %>" class="form-control" placeholder="<%= input_placeholder %>" 
-    <% if (input_required) {%>
-     required 
-    <% } %>
-    <% if (input_autofocus) {%>
-     autofocus 
-    <% } %>
-    <% if (input_action) {%>
-     action="<%= input_action %>" 
-    <% } %>
+        <% if (input_required) {%>
+         required 
+        <% } %>
+        <% if (input_autofocus) {%>
+         autofocus 
+        <% } %>
+        <% if (input_action) {%>
+         action="<%= input_action %>" 
+        <% } %>
+        
+        value="<%= input_value %>"
     >
     <p class="hints"></p>
 </div>

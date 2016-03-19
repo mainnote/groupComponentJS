@@ -1,1 +1,1 @@
-../../../../bower_components/groupjs/dest/group.js
+../../../../../groupJS/dest/group.js

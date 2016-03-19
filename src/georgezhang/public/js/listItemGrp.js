@@ -5,12 +5,6 @@ define(['jquery', 'group', 'list', 'item'
     var Item = Item.create('Item');
     ListItemGrp.join(List, Item);
     
-	ListItemGrp.extend({
-        render: function(opt) {
-            var listComp = this.call('List', 'render', opt);
-            return listComp;
-        },
-	});
-
+    ListItemGrp.setCallToMember('List');
 	return ListItemGrp;
 });

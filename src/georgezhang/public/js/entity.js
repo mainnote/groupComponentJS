@@ -1,16 +1,16 @@
 define(['jquery', 'group'
 	], function ($, Grp) {
-	var Data = Grp.obj.create('Data');
-	Data.extend({
+    var Entity = Grp.obj.create('Entity');
+    Entity.extend({
         value: null,
-        update: function(opt) {
+        update: function (opt) {
             this.value = opt.value;
             return this.command();
         },
-        get: function(opt) {
+        get: function (opt) {
             return this.value;
         },
-	});
+    });
 
-	return Data;
+    return Entity;
 });

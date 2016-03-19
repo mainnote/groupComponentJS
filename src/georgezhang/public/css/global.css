@@ -62,3 +62,19 @@ a:visited, a:hover, a:active, a:focus{
 .error {
     color: red;
 }
+.left {
+    float: left;
+}
+.right {
+    float: right;
+}
+.nav-item .btn {
+    margin: 2px;
+}
+.profile_image {
+    max-height: 40px;
+    max-width: 40px;
+    float: left;
+    margin-left: 2px;
+    margin-right: 4px;
+}

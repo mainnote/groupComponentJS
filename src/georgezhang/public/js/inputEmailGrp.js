@@ -7,7 +7,7 @@ define(['jquery', 'group', 'inputGrp', 'input'
 
 	inputEmail.extend({
 		checkValid : function (opt) {
-            if (re.test(opt.value)) {
+            if (re.test(opt.input_value)) {
                 input.checkValid.call(this, opt);
             }
 		},

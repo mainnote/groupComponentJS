@@ -1,0 +1,13 @@
+<li class="nav-item <% if (pullright){ %>pull-right<% } %> <% if (active){ %>active<% } %>">
+    <% if (!navUserItem_user) { %>
+        <a class="btn btn-secondary left" href="<%= navUserItem_signinUrl %>" role="button"><%= navUserItem_signText %></a>
+        <a class="btn btn-success left" href="<%= navUserItem_signupUrl %>" role="button"><%= navUserItem_signupText %></a>
+    <% } else { %>
+      <li class="nav-item dropdown pull-right">
+          <span class="label label-danger label-pill pull-right"><% if ( badge > 0 ){ %><%= badge %><% } %></span>
+          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="<%= navItem_url %>" role="button" aria-haspopup="true" aria-expanded="false"><img class="img-rounded profile_image" src="<%= navUserItem_user.profile_img %>"/><%= navUserItem_user.name %></a>
+          <div class="dropdown-menu">
+          </div>
+      </li>
+    <% } %>
+</li>

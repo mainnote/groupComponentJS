@@ -1,46 +1,52 @@
 define(['jquery', 'component', 'tpl!templates/input'
 	], function ($, Component, tpl) {
-	var Input = Component.create('Input');
-	Input.extend({
-		tpl : tpl,
+    var Input = Component.create('Input');
+    Input.extend({
+        tpl: tpl,
+        inputElem: null,
         defaultOpt: {
             input_required: false,
             input_autofocus: false,
             input_action: false,
+            input_value: '',
         },
-		setup : function (opt) {
-			var that = this;
-			var inputElem = this.comp.find('input');
-			inputElem.on('input', function (e) {
-				clearTimeout($.data(this, 'timer'));
-				var wait = setTimeout(function () {
-						var opt_ = {
-							value : inputElem.val()
-						};
-						that.checkValid(opt_);
-					}, 500);
-				$(this).data('timer', wait);
-			});
-		},
-		checkValid : function (opt) { //to be overriden
-			this.getResult({
-				invalidHints : false
-			});
-		},
-		getResult : function (opt) {
-			var inputElem = this.comp.find('input');
-			var hints = this.comp.find('.hints');
-			if (opt.invalidHints) {
-				this.comp.removeClass('has-success').addClass('has-warning');
-				inputElem.removeClass('form-control-success').addClass('form-control-warning');
-				hints.html(opt.invalidHints);
-			} else {
-				this.comp.removeClass('has-warning').addClass('has-success');
-				inputElem.removeClass('form-control-warning').addClass('form-control-success');
-				hints.html('');
-			}
-		},
-	});
+        setup: function (opt) {
+            var that = this;
+            this.inputElem = this.comp.find('input');
+            if (this.inputElem) {
+                var wait;
+                this.inputElem.on('input', function (e) {
+                    if (!wait) clearTimeout(wait);
+                    wait = setTimeout(function () {
+                        that.checkValid({
+                            input_value: that.inputElem.val()
+                        });
+                    }, 500);
+                });
+            }
+        },
+        checkValid: function (opt) { //to be overriden
+            this.getResult({
+                invalidHints: false
+            });
+        },
+        getResult: function (opt) {
+            var hints = this.comp.find('.hints');
+            if (opt && opt.invalidHints) {
+                this.comp.removeClass('has-success').addClass('has-warning');
+                if (this.inputElem) this.inputElem
+                                        .removeClass('form-control-success')
+                                        .addClass('form-control-warning');
+                hints.html(opt.invalidHints);
+            } else {
+                this.comp.removeClass('has-warning').addClass('has-success');
+                if (this.inputElem) this.inputElem
+                                        .removeClass('form-control-warning')
+                                        .addClass('form-control-success');
+                hints.html('');
+            }
+        },
+    });
 
-	return Input;
+    return Input;
 });

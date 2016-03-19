@@ -20,12 +20,6 @@ define(['jquery', 'component', 'tpl!templates/form'
 					}
 				}
 			}
-
-			this.comp.find('fieldset .submit').on('click', function (e) {
-				e.preventDefault();
-				that.submit();
-			});
-
 			return this.comp;
 		},
 		submitting : false,
@@ -59,6 +53,7 @@ define(['jquery', 'component', 'tpl!templates/form'
 		add : function (opt) {
 			var opt_ = $.extend({
 					container : this.comp.find('fieldset'),
+                    form : this
 				}, opt.compOpt);
 			opt.compCmd('render', opt_);
 		},
