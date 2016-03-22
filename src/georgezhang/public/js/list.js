@@ -5,6 +5,12 @@ define(['jquery', 'component', 'tpl!templates/list',
         tpl: tpl,
         items: [],
         reset: function (opt) {
+            //make the original frame firm by setting min-height and width
+            this.comp.css({
+                'min-height': this.comp.css('height'),
+                'min-width': this.comp.css('width')
+            });
+
             this.items = [];
             this.comp.empty();
         },
@@ -23,6 +29,14 @@ define(['jquery', 'component', 'tpl!templates/list',
                     var itemComp = itemCmd('render', opt_);
                     itemCmd('setup');
                     return itemComp;
+                });
+
+                //remove fixed css value so that less blank under the list
+                var minH = this.comp.css('min-height');
+                var winH = $(window).height()/2;
+                this.comp.css({
+                    'min-height': minH > winH ? winH : minH,
+                    'min-width': ''
                 });
             }
         }

@@ -389,48 +389,46 @@ return Grp;
 
 define('component',['jquery', 'group'
 	], function ($, Grp) {
-	var TAG = 'componentjs';
-	var Component = Grp.obj.create('Component');
-	Component.extend({
-		defaultOpt : {},
-		opt : {},
-		template : function (opt) {
-			return this.tpl ? this.tpl(opt) : '';
-		},
-		beforeRender : function (opt) {},
-		render : function (opt) {
-			if (!opt)
-				opt = {};
-			this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
+    var Component = Grp.obj.create('Component');
+    Component.extend({
+        defaultOpt: {},
+        opt: {},
+        template: function (opt) {
+            return this.tpl ? this.tpl(opt) : '';
+        },
+        beforeRender: function (opt) {},
+        render: function (opt) {
+            if (!opt)
+                opt = {};
+            this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
             this.beforeRender(this.opt);
-            
+
             var opt_ = this.opt;
-			var comp = $(this.template(opt_));
-			if (opt_.prepend) {
-				comp.prependTo(opt.container);
-			} else {
-				comp.appendTo(opt.container);
-			}
-			this.comp = comp;
-			if (window.LOG) {
-				LOG(TAG, opt.container, '$');
-				LOG(TAG, this.comp.prop('outerHTML'));
-			}
-			return opt.noSetup ? this.comp : this.setup(opt_);
-		},
 
-		setup : function (opt) {
-			return this.comp;
-		},
-		remove : function (opt) {
-			this.comp.remove();
-		},
-		setOpt : function (opt) {
-			this.opt = $.extend({}, this.opt, opt);
-		},
-	});
+            if (!this.comp) {
+                var comp = $(this.template(opt_));
+                if (opt_.prepend) {
+                    comp.prependTo(opt.container);
+                } else {
+                    comp.appendTo(opt.container);
+                }
+                this.comp = comp;
+            }
+            return opt.noSetup ? this.comp : this.setup(opt_);
+        },
 
-	return Component;
+        setup: function (opt) {
+            return this.comp;
+        },
+        remove: function (opt) {
+            this.comp.remove();
+        },
+        setOpt: function (opt) {
+            this.opt = $.extend({}, this.opt, opt);
+        },
+    });
+
+    return Component;
 });
 
 /**
@@ -2771,7 +2769,7 @@ define('item',['jquery', 'component', 'tpl!templates/item'
 define('tpl!templates/list', [],function () { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<ul></ul>';
+__p+='<ul class="clearfix"></ul>';
 }
 return __p;
 }; });
@@ -2783,6 +2781,12 @@ define('list',['jquery', 'component', 'tpl!templates/list',
         tpl: tpl,
         items: [],
         reset: function (opt) {
+            //make the original frame firm by setting min-height and width
+            this.comp.css({
+                'min-height': this.comp.css('height'),
+                'min-width': this.comp.css('width')
+            });
+
             this.items = [];
             this.comp.empty();
         },
@@ -2801,6 +2805,14 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                     var itemComp = itemCmd('render', opt_);
                     itemCmd('setup');
                     return itemComp;
+                });
+
+                //remove fixed css value so that less blank under the list
+                var minH = this.comp.css('min-height');
+                var winH = $(window).height()/2;
+                this.comp.css({
+                    'min-height': minH > winH ? winH : minH,
+                    'min-width': ''
                 });
             }
         }
@@ -3045,6 +3057,11 @@ define('input',['jquery', 'component', 'tpl!templates/input'
             input_autofocus: false,
             input_action: false,
             input_value: '',
+            input_id: 'input_id',
+            input_name: 'input_name',
+            input_type: 'text',
+            input_placeholder: '',
+            input_timeout: 700
         },
         setup: function (opt) {
             var that = this;
@@ -3052,12 +3069,15 @@ define('input',['jquery', 'component', 'tpl!templates/input'
             if (this.inputElem) {
                 var wait;
                 this.inputElem.on('input', function (e) {
-                    if (!wait) clearTimeout(wait);
+                    if (wait) {
+                        clearTimeout(wait);
+                        wait = null;
+                    }
                     wait = setTimeout(function () {
                         that.checkValid({
                             input_value: that.inputElem.val()
                         });
-                    }, 500);
+                    }, opt.input_timeout);
                 });
             }
         },
@@ -3071,14 +3091,14 @@ define('input',['jquery', 'component', 'tpl!templates/input'
             if (opt && opt.invalidHints) {
                 this.comp.removeClass('has-success').addClass('has-warning');
                 if (this.inputElem) this.inputElem
-                                        .removeClass('form-control-success')
-                                        .addClass('form-control-warning');
+                    .removeClass('form-control-success')
+                    .addClass('form-control-warning');
                 hints.html(opt.invalidHints);
             } else {
                 this.comp.removeClass('has-warning').addClass('has-success');
                 if (this.inputElem) this.inputElem
-                                        .removeClass('form-control-warning')
-                                        .addClass('form-control-success');
+                    .removeClass('form-control-warning')
+                    .addClass('form-control-success');
                 hints.html('');
             }
         },
@@ -3259,50 +3279,103 @@ define('navbar',['jquery', 'component', 'tpl!templates/navbar'
     return Navbar;
 });
 
-define('toggleHeaderScroll',['jquery', 'group'
-	], function ($, Grp) {
-    var ToggleHeaderScroll = Grp.obj.create('ToggleHeaderScroll');
-    ToggleHeaderScroll.extend({
-        setToggleHeaderScroll: function (opt) {
-            // Hide Header on on scroll down
-            var didScroll;
-            var lastScrollTop = 0;
-            var delta = 5;
-            var $header = opt && opt.hasOwnProperty('header') ? opt.header : $('header');
-            var navbarHeight = $header.outerHeight();
-
-            $(window).scroll(function (event) {
-                didScroll = true;
+/*
+    scroll : Since scroll event doesn't bubble up, we need one static object to handle all events for one element like window.
+*/
+define('scroll',['jquery', ], function ($) {
+    var Scroll = Grp.obj.create('Scroll');
+    Scroll.extend({
+        set: function (opt) {
+            var that = this;
+            $(window).on('scroll', function (event) {
+                that.triggerEvents(event);
             });
+        },
+        add: function (opt) {
+            //if set, skip
+            if (!this.isSet) {
+                this.set();
+                this.isSet = true;
+            }
+            //add to events array
+            if (!(this.events && $.isArray(this.events) && this.events.length > 0)) {
+                this.events = [];
+            }
+            if (opt && opt.fn && $.isFunction(opt.fn)) {
+                this.events.push({
+                    obj: opt.obj,
+                    fn: opt.fn
+                });
+            }
 
-            setInterval(function () {
-                if (didScroll) {
-                    hasScrolled();
-                    didScroll = false;
-                }
-            }, 250);
+        },
 
-            function hasScrolled() {
-                var st = $(this).scrollTop();
-
-                // Make sure they scroll more than delta
-                if (Math.abs(lastScrollTop - st) <= delta)
-                    return;
-
-                // If they scrolled down and are past the navbar, add class .nav-up.
-                // This is necessary so you never see what is "behind" the navbar.
-                if (st > lastScrollTop && st > navbarHeight) {
-                    // Scroll Down
-                    $header.hide();
-                } else {
-                    // Scroll Up
-                    if (st + $(window).height() < $(document).height()) {
-                        $header.show();
+        remove: function (opt) {
+            if (this.events && $.isArray(this.events) && this.events.length > 0 && opt && opt.obj) {
+                for (var i = 0, len = this.events.length; i < len; i++) {
+                    var eventObj = this.events[i];
+                    if (eventObj.obj === opt.obj) {
+                        this.events.splice(i, 1);
                     }
                 }
-
-                lastScrollTop = st;
             }
+        },
+
+        triggerEvents: function (event) {
+            if (this.events && $.isArray(this.events) && this.events.length > 0) {
+                for (var i = 0, len = this.events.length; i < len; i++) {
+                    var eventObj = this.events[i];
+                    eventObj.fn(event);
+
+                }
+            }
+        }
+    });
+
+    return Scroll;
+});
+
+define('toggleHeaderScroll',['jquery', 'group', 'scroll'
+	], function ($, Grp, Scroll) {
+    var ToggleHeaderScroll = Grp.obj.create('ToggleHeaderScroll');
+    ToggleHeaderScroll.extend({
+        scrollEventFn: function () {
+            var opt = arguments[0];
+            var event = arguments[1];
+            
+            var st = $(window).scrollTop();
+
+            // Make sure they scroll more than delta
+            if (Math.abs(opt.lastScrollTop - st) <= opt.delta)
+                return;
+
+            if (st > opt.lastScrollTop && st > opt.navbarHeight) {
+                // Scroll Down
+                opt.header.hide();
+            } else {
+                // Scroll Up
+                if (st + $(window).height() < $(document).height()) {
+                    opt.header.show();
+                }
+            }
+
+            opt.lastScrollTop = st;
+        },
+        setToggleHeaderScroll: function (opt) {
+            // Hide Header on on scroll down
+            var $header = opt && opt.hasOwnProperty('header') ? opt.header : $('header');
+
+            var opt_ = $.extend({}, {
+                lastScrollTop: 0,
+                delta: 5,
+                header: $header,
+                navbarHeight: $header.outerHeight()
+            }, opt);
+
+            Scroll.add({
+                obj: this,
+                fn: this.scrollEventFn.bind(this, opt_)
+            });
         }
     });
 
@@ -3580,11 +3653,12 @@ define('dropdownDivider',['jquery', 'component', 'tpl!templates/dropdownDivider'
 	return DropdownDivider;
 });
 
-define('fetcher',['jquery', 'group'
-	], function ($, Grp) {
+define('fetcher',['jquery', 'group', 'scroll'
+	], function ($, Grp, Scroll) {
     var Fetcher = Grp.obj.create('Fetcher');
     Fetcher.extend({
-        jqxhr: null, timeoutHandler: null,
+        jqxhr: null,
+        timeoutHandler: null,
         initOpt: {
             data: {},
             done: function () {},
@@ -3596,7 +3670,7 @@ define('fetcher',['jquery', 'group'
         },
         stop: function (opt) {
             if (this.jqxhr) this.jqxhr.abort();
-            $(window).unbind('scroll');
+            Scroll.remove({ obj: this });
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
         get: function (opt) {
@@ -3618,31 +3692,37 @@ define('fetcher',['jquery', 'group'
                 });
         },
         setScrollEndFetch: function (opt) {
+            Scroll.add({
+                obj: this,
+                fn: this.scrollEventFn.bind(this, opt)
+            });
+        },
+
+        scrollEventFn: function () {
+            var opt = arguments[0];
+            var event = arguments[1];
+
             var that = this;
             var nearToBottom = 100; //near 100 px from bottom, better to start loading
-            $(window).scroll(function () {
-
-                if ($(document).height() - nearToBottom <= $(window).scrollTop() + $(window).height()) {
-                    //fetch more content
-                    function fetchNext() {
-                        if (opt.pageLoading) { //we want it to match
-                            this.timeoutHandler = setTimeout(fetchNext, 50); //wait 50 millisecnds then recheck
-                            return;
-                        }
-                        if (!opt.lastPage) {
-                            opt.pageLoading = true;
-                            var opt_ = {
-                                url: opt.getUrl(),
-                                done: opt.afterNextFetch
-                            }
-                            that.get(opt_);
-                        }
+            if ($(document).height() - nearToBottom <= $(window).scrollTop() + $(window).height()) {
+                //fetch more content
+                function fetchNext() {
+                    if (opt.pageLoading) { //we want it to match
+                        this.timeoutHandler = setTimeout(fetchNext, 50); //wait 50 millisecnds then recheck
+                        return;
                     }
-
-                    fetchNext();
+                    if (!opt.lastPage) {
+                        opt.pageLoading = true;
+                        var opt_ = {
+                            url: opt.getUrl(),
+                            done: opt.afterNextFetch
+                        }
+                        that.get(opt_);
+                    }
                 }
 
-            });
+                fetchNext();
+            }
         }
     });
 
@@ -3663,8 +3743,8 @@ define('listScrollEndFetchGrp',['jquery', 'group', 'listItemGrp', 'collectionGrp
             this.call('listItemGrp', 'reset');
             this.call('collectionGrp', 'reset');
             var opt_ = {};
-            if (opt) $.extend(opt_, this.initOpt, opt);
-            this.setListScrollEndFetch(opt_);
+            $.extend(opt_, this.initOpt, opt||{});
+            this.set(opt_);
         },
         set: function (opt) {
             if (opt) $.extend(this.initOpt, opt);
@@ -3740,37 +3820,38 @@ define('listScrollEndFetchGrp',['jquery', 'group', 'listItemGrp', 'collectionGrp
 });
 
 require([
-'component',
-'count',
-'entity',
-'collection',
-'collectionGrp',
-'form',
-'formGrp',
-'item',
-'list',
-'listItemGrp',
-'prompt',
-'promptFormGrp',
-'textarea',
-'textareaCountGrp',
-'request',
-'button',
-'input',
-'inputPassword',
-'inputGrp',
-'inputEmailGrp',
-'navbar',
-'navbarGrp',
-'navBrand',
-'navItem',
-'navUserItem',
-'navDropdownItem',
-'dropdownItem',
-'dropdownDivider',
-'fetcher',
-'listScrollEndFetchGrp',
-'toggleHeaderScroll'
+    'component',
+    'count',
+    'entity',
+    'collection',
+    'collectionGrp',
+    'form',
+    'formGrp',
+    'item',
+    'list',
+    'listItemGrp',
+    'prompt',
+    'promptFormGrp',
+    'textarea',
+    'textareaCountGrp',
+    'request',
+    'button',
+    'input',
+    'inputPassword',
+    'inputGrp',
+    'inputEmailGrp',
+    'navbar',
+    'navbarGrp',
+    'navBrand',
+    'navItem',
+    'navUserItem',
+    'navDropdownItem',
+    'dropdownItem',
+    'dropdownDivider',
+    'fetcher',
+    'listScrollEndFetchGrp',
+    'toggleHeaderScroll',
+    'scroll'
 ], function () {});
 
 define("../../build/main", function(){});

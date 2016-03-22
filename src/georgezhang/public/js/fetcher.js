@@ -1,8 +1,9 @@
-define(['jquery', 'group'
-	], function ($, Grp) {
+define(['jquery', 'group', 'scroll'
+	], function ($, Grp, Scroll) {
     var Fetcher = Grp.obj.create('Fetcher');
     Fetcher.extend({
-        jqxhr: null, timeoutHandler: null,
+        jqxhr: null,
+        timeoutHandler: null,
         initOpt: {
             data: {},
             done: function () {},
@@ -14,7 +15,7 @@ define(['jquery', 'group'
         },
         stop: function (opt) {
             if (this.jqxhr) this.jqxhr.abort();
-            $(window).unbind('scroll');
+            Scroll.remove({ obj: this });
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
         get: function (opt) {
@@ -36,31 +37,37 @@ define(['jquery', 'group'
                 });
         },
         setScrollEndFetch: function (opt) {
+            Scroll.add({
+                obj: this,
+                fn: this.scrollEventFn.bind(this, opt)
+            });
+        },
+
+        scrollEventFn: function () {
+            var opt = arguments[0];
+            var event = arguments[1];
+
             var that = this;
             var nearToBottom = 100; //near 100 px from bottom, better to start loading
-            $(window).scroll(function () {
-
-                if ($(document).height() - nearToBottom <= $(window).scrollTop() + $(window).height()) {
-                    //fetch more content
-                    function fetchNext() {
-                        if (opt.pageLoading) { //we want it to match
-                            this.timeoutHandler = setTimeout(fetchNext, 50); //wait 50 millisecnds then recheck
-                            return;
-                        }
-                        if (!opt.lastPage) {
-                            opt.pageLoading = true;
-                            var opt_ = {
-                                url: opt.getUrl(),
-                                done: opt.afterNextFetch
-                            }
-                            that.get(opt_);
-                        }
+            if ($(document).height() - nearToBottom <= $(window).scrollTop() + $(window).height()) {
+                //fetch more content
+                function fetchNext() {
+                    if (opt.pageLoading) { //we want it to match
+                        this.timeoutHandler = setTimeout(fetchNext, 50); //wait 50 millisecnds then recheck
+                        return;
                     }
-
-                    fetchNext();
+                    if (!opt.lastPage) {
+                        opt.pageLoading = true;
+                        var opt_ = {
+                            url: opt.getUrl(),
+                            done: opt.afterNextFetch
+                        }
+                        that.get(opt_);
+                    }
                 }
 
-            });
+                fetchNext();
+            }
         }
     });
 

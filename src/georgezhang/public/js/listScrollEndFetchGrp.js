@@ -12,8 +12,8 @@ define(['jquery', 'group', 'listItemGrp', 'collectionGrp', 'fetcher'], function 
             this.call('listItemGrp', 'reset');
             this.call('collectionGrp', 'reset');
             var opt_ = {};
-            if (opt) $.extend(opt_, this.initOpt, opt);
-            this.setListScrollEndFetch(opt_);
+            $.extend(opt_, this.initOpt, opt||{});
+            this.set(opt_);
         },
         set: function (opt) {
             if (opt) $.extend(this.initOpt, opt);
