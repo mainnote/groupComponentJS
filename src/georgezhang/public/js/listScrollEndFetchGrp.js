@@ -1,5 +1,5 @@
-define(['jquery', 'group', 'listItemGrp', 'collectionGrp', 'fetcher'], function ($, Grp, ListItemGrp, CollectionGrp, Fetcher) {
-    var ListScrollEndFetchGrp = Grp.group.create('ListScrollEndFetchGrp');
+define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function ($, OptGrp, ListItemGrp, CollectionGrp, Fetcher) {
+    var ListScrollEndFetchGrp = OptGrp.create('ListScrollEndFetchGrp');
     var listItemGrp = ListItemGrp.create('listItemGrp');
     var collectionGrp = CollectionGrp.create('collectionGrp');
     var fetcher = Fetcher.create('fetcher');

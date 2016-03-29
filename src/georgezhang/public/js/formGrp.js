@@ -1,6 +1,6 @@
-define(['jquery', 'group', 'form', 'request'
-	], function ($, Grp, Form, Request) {
-	var FormGrp = Grp.group.create('FormGrp');
+define(['jquery', 'optGrp', 'form', 'request'
+	], function ($, OptGrp, Form, Request) {
+	var FormGrp = OptGrp.create('FormGrp');
 	var form = Form.create('form');
 	form.extend({
 		submit : function (opt) {

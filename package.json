@@ -34,7 +34,5 @@
     "grunt-template-jasmine-requirejs": "^0.2.3",
     "grunt-umd": "^2.3.3"
   },
-  "dependencies": {
-    "groupjs": "0.0.8"
-  }
+  "dependencies": {}
 }

@@ -1,40 +1,33 @@
-define(['jquery', 'group', 'prompt', 'formGrp' 
-	], function ($, Grp, Prompt, FormGrp) {
-	var PromptFormGrp = Grp.group.create('PromptFormGrp');
+define(['jquery', 'optGrp', 'prompt', 'formGrp'
+	], function ($, OptGrp, Prompt, FormGrp) {
+    var PromptFormGrp = OptGrp.create('PromptFormGrp');
+
     var prompt = Prompt.create('prompt');
-    var formGrp = FormGrp.create('formGrp');
-    var form = formGrp.call('form', 'create'); //create a form object from formGrp
-    form.extend({
-        done: function(opt){
-          this.group.group.call('prompt', 'donePrompt');
-        },
-    });
-    formGrp.override(form);
-    
-    PromptFormGrp.join(prompt, formGrp);
-    
     prompt.extend({
-        setup: function(opt) {
+        setup: function (opt) {
             var promptComp = Prompt.setup.call(this, opt);
             opt.container = promptComp;
             this.group.call('formGrp', 'render', opt);
             return promptComp;
         },
-        
-        donePrompt: function(opt) {
+
+        donePrompt: function (opt) {
             var formValue = this.group.call('formGrp', 'submit', opt);
             Prompt.donePrompt.call(this, opt);
         },
     });
-    
-	PromptFormGrp.extend({
-        render: function(opt) {
-            if (this.defaultOpt) {
-                opt = $.extend({}, this.defaultOpt, opt);
-            }
-            return this.call('prompt', 'render', opt);
-        },
-	});
 
-	return PromptFormGrp;
+    var formGrp = FormGrp.create('formGrp');
+    var form = formGrp.getMember('form');
+    form.extend({
+        done: function (opt) {
+            this.group.group.call('prompt', 'donePrompt');
+        },
+    });
+    formGrp.override(form);
+
+    PromptFormGrp.join(prompt, formGrp);
+    PromptFormGrp.setCallToMember('prompt');
+
+    return PromptFormGrp;
 });

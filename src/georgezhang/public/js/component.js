@@ -1,17 +1,13 @@
-define(['jquery', 'group'
-	], function ($, Grp) {
-    var Component = Grp.obj.create('Component');
+define(['jquery', 'optObj'
+	], function ($, OptObj) {
+    var Component = OptObj.create('Component');
     Component.extend({
-        defaultOpt: {},
-        opt: {},
         template: function (opt) {
             return this.tpl ? this.tpl(opt) : '';
         },
         beforeRender: function (opt) {},
         render: function (opt) {
-            if (!opt)
-                opt = {};
-            this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
+            this.setOpt(opt || {});
             this.beforeRender(this.opt);
 
             var opt_ = this.opt;
@@ -19,13 +15,13 @@ define(['jquery', 'group'
             if (!this.comp) {
                 var comp = $(this.template(opt_));
                 if (opt_.prepend) {
-                    comp.prependTo(opt.container);
+                    comp.prependTo(this.opt.container);
                 } else {
-                    comp.appendTo(opt.container);
+                    comp.appendTo(this.opt.container);
                 }
                 this.comp = comp;
             }
-            return opt.noSetup ? this.comp : this.setup(opt_);
+            return this.opt.noSetup ? this.comp : this.setup(opt_);
         },
 
         setup: function (opt) {
@@ -33,10 +29,8 @@ define(['jquery', 'group'
         },
         remove: function (opt) {
             this.comp.remove();
-        },
-        setOpt: function (opt) {
-            this.opt = $.extend({}, this.opt, opt);
-        },
+            this.comp = null;
+        }
     });
 
     return Component;

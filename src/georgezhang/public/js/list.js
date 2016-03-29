@@ -33,12 +33,17 @@ define(['jquery', 'component', 'tpl!templates/list',
 
                 //remove fixed css value so that less blank under the list
                 var minH = this.comp.css('min-height');
-                var winH = $(window).height()/2;
+                var winH = $(window).height() / 2;
                 this.comp.css({
                     'min-height': minH > winH ? winH : minH,
                     'min-width': ''
                 });
             }
+        },
+        removeItem: function (opt) {
+            this.items = $.grep(this.items, function (itemObj, idx) {
+                if (opt.itemObj === itemObj) return true;
+            });
         }
     });
 

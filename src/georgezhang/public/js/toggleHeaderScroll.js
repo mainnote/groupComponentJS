@@ -1,6 +1,6 @@
-define(['jquery', 'group', 'scroll'
-	], function ($, Grp, Scroll) {
-    var ToggleHeaderScroll = Grp.obj.create('ToggleHeaderScroll');
+define(['jquery', 'optObj', 'scroll'
+	], function ($, OptObj, Scroll) {
+    var ToggleHeaderScroll = OptObj.create('ToggleHeaderScroll');
     ToggleHeaderScroll.extend({
         scrollEventFn: function () {
             var opt = arguments[0];

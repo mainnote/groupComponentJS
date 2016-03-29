@@ -1,6 +1,6 @@
-define(['jquery', 'group'
-	], function ($, Grp) {
-    var Collection = Grp.obj.create('Collection');
+define(['jquery', 'optObj'
+	], function ($, OptObj) {
+    var Collection = OptObj.create('Collection');
     Collection.extend({
         values: [],
         reset: function (opt) {

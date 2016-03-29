@@ -1,6 +1,6 @@
-define(['jquery', 'group', 'textarea', 'count'
-	], function ($, Grp, Textarea, Count) {
-	var TextareaCountGrp = Grp.group.create('TextareaCountGrp');
+define(['jquery', 'optGrp', 'textarea', 'count'
+	], function ($, OptGrp, Textarea, Count) {
+	var TextareaCountGrp = OptGrp.create('TextareaCountGrp');
     var Textarea = Textarea.create('Textarea');
     var Count = Count.create('Count');
     TextareaCountGrp.join(Textarea, Count);

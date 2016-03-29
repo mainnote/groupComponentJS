@@ -1,7 +1,10 @@
 define(function (require) {
-	describe('test cases of georgezhang/public/js/*.js', function () {
+    describe('test cases of georgezhang/public/js/*.js', function () {
+        it('validate jasmine is working', function () {
+            expect(true).toBe(true);
+        });
 		it('group module is available.', function () {
-			window.LOG = function (tag, msg, type, result) {
+			window.LOG1 = function (tag, msg, type, result) {
 				var skipObj = true;
 
 				if (window.console) {
@@ -91,9 +94,9 @@ define(function (require) {
 		});
 		it('Component promptFormGrp test cases', function (done) {
 
-			define('requestMock', ['jquery', 'group'
-				], function ($, Grp) {
-				var RequestMock = Grp.obj.create('RequestMock');
+			define('requestMock', ['jquery', 'optObj'
+				], function ($, OptObj) {
+				var RequestMock = OptObj.create('RequestMock');
 				RequestMock.extend({
 					connect : function (opt) {
 						if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
@@ -190,21 +193,14 @@ define(function (require) {
 					var requestMock = RequestMock.create('request');
 					promptFormGrpCmd('override', requestMock);
                     promptFormGrpCmd('render', opt);
-
+                    
 					var value = $(testContainer.find('textarea')[1]).val();
 					expect(value).toBe('In prompt Value2');
 
-					
-					//testContainer.find('#inputtext').trigger('keypress').val('abc');
-					//console.log(testContainer.find('#inputtext').parents().html());
-					//var value = testContainer.find('#inputtext').parents().find('.hints').html();
-					//expect(value).toBe('this is wrong');
-					 
-
 					//click the submit button
-					button_submit.comp.trigger('click');
-					var value = $(testContainer.find('textarea')[1]).val();
-					expect(value).toBe(undefined);
+					expect($('.promptTop').length).toBe(1);
+                    testContainer.find('.btn-primary').trigger('click');
+					expect($('.promptTop').length).toBe(0);
 					done();
 				});
 				btn.trigger('click');
@@ -307,5 +303,5 @@ define(function (require) {
 				done();
 			});
 		});
-	});
+    });
 });

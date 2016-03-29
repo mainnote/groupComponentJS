@@ -1,6 +1,6 @@
-define(['jquery', 'group'
-	], function ($, Grp) {
-    var Entity = Grp.obj.create('Entity');
+define(['jquery', 'optObj'
+	], function ($, OptObj) {
+    var Entity = OptObj.create('Entity');
     Entity.extend({
         value: null,
         update: function (opt) {
@@ -9,7 +9,7 @@ define(['jquery', 'group'
         },
         get: function (opt) {
             return this.value;
-        },
+        }
     });
 
     return Entity;

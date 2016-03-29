@@ -1,8 +1,8 @@
 /*
     scroll : Since scroll event doesn't bubble up, we need one static object to handle all events for one element like window.
 */
-define(['jquery', ], function ($) {
-    var Scroll = Grp.obj.create('Scroll');
+define(['jquery', 'optObj'], function ($, OptObj) {
+    var Scroll = OptObj.create('Scroll');
     Scroll.extend({
         set: function (opt) {
             var that = this;

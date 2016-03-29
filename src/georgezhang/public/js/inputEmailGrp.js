@@ -1,5 +1,5 @@
-define(['jquery', 'group', 'inputGrp', 'input'
-	], function ($, Grp, InputGrp) {
+define(['jquery', 'inputGrp'
+	], function ($, InputGrp) {
 	var InputEmailGrp = InputGrp.create('InputEmailGrp');
     var input = InputEmailGrp.call('input', 'thisObj');
 	var inputEmail = InputEmailGrp.call('input', 'create');

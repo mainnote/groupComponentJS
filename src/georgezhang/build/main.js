@@ -1,4 +1,8 @@
 require([
+    'group',
+    'opt',
+    'optObj',
+    'optGrp',
     'component',
     'count',
     'entity',

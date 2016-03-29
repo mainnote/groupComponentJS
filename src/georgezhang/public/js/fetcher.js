@@ -1,10 +1,10 @@
-define(['jquery', 'group', 'scroll'
-	], function ($, Grp, Scroll) {
-    var Fetcher = Grp.obj.create('Fetcher');
+define(['jquery', 'optObj', 'scroll'
+	], function ($, OptObj, Scroll) {
+    var Fetcher = OptObj.create('Fetcher');
     Fetcher.extend({
         jqxhr: null,
         timeoutHandler: null,
-        initOpt: {
+        defaultOpt: {
             data: {},
             done: function () {},
             fail: function (err) {
@@ -19,21 +19,21 @@ define(['jquery', 'group', 'scroll'
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
         get: function (opt) {
-            var opt_ = $.extend({}, this.initOpt, opt);
+            this.setOpt(opt);
             this.jqxhr = $.get({
-                    url: opt_.url,
-                    data: opt_.data,
-                    dataType: opt_.dataType,
+                    url: this.opt.url,
+                    data: this.opt.data,
+                    dataType: this.opt.dataType,
                     context: this,
                 })
                 .done(function (result) {
-                    opt_.done(result);
+                    this.opt.done(result);
                 })
                 .fail(function (err) {
-                    opt_.fail(err);
+                    this.opt.fail(err);
                 })
                 .always(function () {
-                    opt_.always();
+                    this.opt.always();
                 });
         },
         setScrollEndFetch: function (opt) {

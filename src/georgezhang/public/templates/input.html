@@ -1,5 +1,5 @@
 <div class="form-group">
-    <label for="<%= input_id %>" class="sr-only"><%= input_name %></label>
+    <label for="<%= input_id %>" class="<%= input_label_class %>"><%= input_placeholder %></label>
     <input type="<%= input_type %>" id="<%= input_id %>" name="<%= input_name %>" class="form-control" placeholder="<%= input_placeholder %>" 
         <% if (input_required) {%>
          required 

@@ -78,3 +78,9 @@ a:visited, a:hover, a:active, a:focus{
     margin-left: 2px;
     margin-right: 4px;
 }
+.input_label {
+    color: #6464f0;
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: small;
+}

@@ -10,7 +10,7 @@ define(['jquery', 'component', 'tpl!templates/form'
 				var len = opt.form_elements.length;
 				for (var i = 0; i < len; i++) {
 					var elem = opt.form_elements[i];
-					var comp = elem.elem;
+					var comp = elem.elem.create();
 					var compOpt = elem.opt;
 					if (comp.hasOwnProperty('parentNames')) {
 						this.add({

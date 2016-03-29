@@ -13,7 +13,8 @@ define(['jquery', 'component', 'tpl!templates/input'
             input_name: 'input_name',
             input_type: 'text',
             input_placeholder: '',
-            input_timeout: 700
+            input_timeout: 700,
+            input_label_class: 'input_label' //sr-only to hide it
         },
         setup: function (opt) {
             var that = this;

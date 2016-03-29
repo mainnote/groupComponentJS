@@ -1,6 +1,6 @@
-define(['jquery', 'group', 'input', 'request'
-	], function ($, Grp, Input, Request) {
-	var InputGrp = Grp.group.create('InputGrp');
+define(['jquery', 'optGrp', 'input', 'request'
+	], function ($, OptGrp, Input, Request) {
+	var InputGrp = OptGrp.create('InputGrp');
 	var input = Input.create('input');
 	input.extend({
 		checkValid : function (opt) {
