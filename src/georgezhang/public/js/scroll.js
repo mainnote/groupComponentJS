@@ -4,6 +4,26 @@
 define(['jquery', 'optObj'], function ($, OptObj) {
     var Scroll = OptObj.create('Scroll');
     Scroll.extend({
+        disableScroll: function (opt) {
+            this.current = $(window).scrollTop();
+            
+            $('html, body').css({
+                'overflow': 'hidden',
+                'height': '100%'
+            });
+            $('html, body').on('mousewheel', function () {
+                return false;
+            });
+        },
+        enableScroll: function (opt) {
+            $('html, body').css({
+                'overflow': '',
+                'height': ''
+            });
+
+            if (this.current) $(window).scrollTop(this.current);
+            $('html, body').off('mousewheel');
+        },
         set: function (opt) {
             var that = this;
             $(window).on('scroll', function (event) {

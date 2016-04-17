@@ -1,5 +1,5 @@
-<li class="nav-item <% if (pullright){ %>pull-right<% } %> <% if (active){ %>active<% } %>">
-    <a class="nav-link" href="<%= navItem_url %>">
+<li class="nav-item <% if (pullright){ %>pull-right<% } %> <% if (active && activeOn === 'item'){ %>active<% } %>">
+    <a class="nav-link <% if (active && activeOn === 'link'){ %>active<% } %>" href="<%= navItem_url %>">
         <span class="label label-danger label-pill pull-right"><% if ( badge > 0 ){ %><%= badge %><% } %></span>
         <%= navItem_html %>
     </a>

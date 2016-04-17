@@ -1,0 +1,9 @@
+<div class="form-group">
+    <label for="<%= checkbox_id %>" class="<%= checkbox_label_class %>"><%= checkbox_placeholder %></label>
+    <input type="checkbox" id="<%= checkbox_id %>" name="<%= checkbox_name %>" class="form-control" 
+        <% if (checkbox_checked) {%>
+         checked
+        <% } %>
+    >
+    <p class="hints"></p>
+</div>

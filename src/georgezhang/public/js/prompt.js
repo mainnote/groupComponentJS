@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/prompt'
+define(['jquery', 'component', 'tpl!templates/prompt.html'
 	], function ($, Component, tpl) {
 	var Prompt = Component.create('Prompt');
 	Prompt.extend({
@@ -19,8 +19,11 @@ define(['jquery', 'component', 'tpl!templates/prompt'
             return this.comp;
         },
         donePrompt: function(opt) {
-            this.remove();
+            this.afterSubmit(opt);
         },
+        afterSubmit: function(opt) {
+            this.remove();
+        }
         
 	});
     

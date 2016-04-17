@@ -4,7 +4,13 @@ define(['jquery', 'optObj'
     Entity.extend({
         value: null,
         update: function (opt) {
-            this.value = opt.value;
+            if (opt.hasOwnProperty('value')) {
+                if ($.isPlainObject(opt.value)) {
+                    this.value = $.extend({}, this.value || {}, opt.value);
+                } else {
+                    this.value = opt.value;
+                }
+            }
             return this.command();
         },
         get: function (opt) {

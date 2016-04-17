@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/item'
+define(['jquery', 'component', 'tpl!templates/item.html'
 	], function ($, Component, tpl) {
     var Item = Component.create('Item');
     Item.extend({
@@ -39,6 +39,17 @@ define(['jquery', 'component', 'tpl!templates/item'
                 }
             };
             this.entityCmd('fetch', opt_);
+        },
+        update: function (opt) {
+            //update UI
+            this.updateUI(opt);
+            //update entity
+            this.entityCmd('update', {
+                value: opt.doc || {}
+            });
+        },
+        updateUI: function (opt) {
+            this.comp.html(opt.doc);
         }
     });
 

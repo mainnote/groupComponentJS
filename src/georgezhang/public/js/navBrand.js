@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/navBrand'
+define(['jquery', 'component', 'tpl!templates/navBrand.html'
 	], function ($, Component, tpl) {
 	var NavBrand = Component.create('NavBrand');
 	NavBrand.extend({

@@ -1,6 +1,5 @@
-define(['jquery', 'component', 'tpl!templates/navbar'
+define(['jquery', 'component', 'tpl!templates/navbar.html'
 	], function ($, Component, tpl) {
-    var TAG = 'navjs';
     var Navbar = Component.create('Navbar');
     Navbar.extend({
         defaultOpt: {
@@ -9,33 +8,17 @@ define(['jquery', 'component', 'tpl!templates/navbar'
         },
         tpl: tpl,
         setup: function (opt) {
-            var that = this;
-            if (opt.navbar_brand && opt.navbar_brand.cmd) {
-                var container = this.comp;
-                opt.navbar_brand.cmd('render', $.extend({}, opt.navbar_brand.opt || {}, {
-                    container: container
-                }));
-            } else {
-                if (window.LOG) LOG(TAG, 'Opt navbar_brand is not correct!', 'error');
+            if (opt.navbar_brand) {
+                this.setElements({
+                    elements: [opt.navbar_brand]
+                });
             }
 
             if (opt.navbar_items) {
-                if ($.isArray(opt.navbar_items)) {
-                    setNavItem(opt.navbar_items, opt.navbar_id);
-                } else {
-                    if (window.LOG) LOG(TAG, 'Opt navbar_items is not correct!', 'error');
-                }
-            }
-
-            function setNavItem(items, navId) {
-                var len = items.length;
-                var container = that.comp.find('#' + navId + ' ul');
-                for (var i = 0; i < len; i++) {
-                    var item = items[i];
-                    item.cmd('render', $.extend({}, item.opt || {}, {
-                        container: container
-                    }));
-                }
+                this.setElements({
+                    container: this.comp.find('#' + this.opt.navbar_id + ' ul'),
+                    elements: opt.navbar_items
+                });
             }
 
             //scoll
@@ -54,6 +37,13 @@ define(['jquery', 'component', 'tpl!templates/navbar'
                 });
                 this.group.call('ToggleHeaderScroll', 'setToggleHeaderScroll', opt_);
             }
+        },
+        onActive: function (opt) {},
+        clearActive: function (opt) {
+            if (this.elements && $.isArray(this.elements))
+                $.each(this.elements, function (index, elemObj) {
+                    elemObj.command()('clearActive');
+                });
         }
 
     });

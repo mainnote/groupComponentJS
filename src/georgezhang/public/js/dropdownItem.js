@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/dropdownItem'
+define(['jquery', 'component', 'tpl!templates/dropdownItem.html'
 	], function ($, Component, tpl) {
 	var DropdownItem = Component.create('DropdownItem');
 	DropdownItem.extend({

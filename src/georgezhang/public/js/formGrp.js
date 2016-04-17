@@ -1,53 +1,55 @@
 define(['jquery', 'optGrp', 'form', 'request'
 	], function ($, OptGrp, Form, Request) {
-	var FormGrp = OptGrp.create('FormGrp');
-	var form = Form.create('form');
-	form.extend({
-		submit : function (opt) {
-			if (!this.submitting) {
-				this.submitting = true;
-				var that = this;
-				this.comp.find('.error').each(function (index) {
-					$(this).remove();
-				});
-				var action = this.comp.attr('action');
-				var method = this.comp.attr('method');
-				var inputData = this.serializeArray();
-				//request
-				var opt_ = {
-					request_url : action,
-					request_method : method,
-					request_data : inputData,
-					request_done : function (data, textStatus, jqXHR) {
-						var opt0 = {
-							data : data
-						};
-						that.done(opt0);
-					},
-					request_fail : function (jqXHR, textStatus, errorThrown) {
-						var opt0 = {
-							error : errorThrown
-						};
-						that.error(opt0);
-					},
-					request_always : function (data_jqXHR, textStatus, jqXHR_errorThrow) {
+    var FormGrp = OptGrp.create('FormGrp');
+    var form = Form.create('form');
+    form.extend({
+        submit: function (opt) {
+            if (!this.submitting) {
+                this.submitting = true;
+                var that = this;
+                this.comp.find('.error').each(function (index) {
+                    $(this).remove();
+                });
+                var id;
+                if (this.opt && this.opt.doc && this.opt.doc._id) id = this.opt.doc._id;
+                var action = (this.opt.form_action || this.comp.attr('action')) + id || '';
+                var method = this.opt.form_method || this.comp.attr('method');
+                var inputData = this.serializeArray();
+                //request
+                var opt_ = {
+                    request_url: action,
+                    request_method: method,
+                    request_data: inputData,
+                    request_done: function (data, textStatus, jqXHR) {
+                        var opt0 = {
+                            data: data
+                        };
+                        that.done(opt0);
+                    },
+                    request_fail: function (jqXHR, textStatus, errorThrown) {
+                        var opt0 = {
+                            error: errorThrown
+                        };
+                        that.error(opt0);
+                    },
+                    request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {
                         that.always();
                     },
-				};
-				this.group.call('request', 'connect', opt_);
-			}
-		},
-		error : function (opt) {
-			this.comp.append('<div class="error">' + opt.error + '</div>');
-		},
+                };
+                this.group.call('request', 'connect', opt_);
+            }
+        },
+        error: function (opt) {
+            this.comp.append('<div class="error">' + opt.error + '</div>');
+        },
 
-	});
+    });
 
-	var request = Request.create('request');
+    var request = Request.create('request');
 
-	FormGrp.join(form, request);
+    FormGrp.join(form, request);
 
-	FormGrp.setCallToMember('form');
+    FormGrp.setCallToMember('form');
 
-	return FormGrp;
+    return FormGrp;
 });

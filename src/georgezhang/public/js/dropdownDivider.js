@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/dropdownDivider'
+define(['jquery', 'component', 'tpl!templates/dropdownDivider.html'
 	], function ($, Component, tpl) {
 	var DropdownDivider = Component.create('DropdownDivider');
 	DropdownDivider.extend({

@@ -1,4 +1,4 @@
-<li class="nav-item <% if (pullright){ %>pull-right<% } %> <% if (active){ %>active<% } %>">
+<li class="nav-item <% if (pullright){ %>pull-right<% } %> <% if (active && activeOn === 'item'){ %>active<% } %>">
     <% if (!navUserItem_user) { %>
         <a class="btn btn-secondary left" href="<%= navUserItem_signinUrl %>" role="button"><%= navUserItem_signText %></a>
         <a class="btn btn-success left" href="<%= navUserItem_signupUrl %>" role="button"><%= navUserItem_signupText %></a>

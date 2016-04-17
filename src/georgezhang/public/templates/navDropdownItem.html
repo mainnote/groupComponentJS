@@ -1,6 +1,6 @@
-<li class="nav-item dropdown <% if (pullright){ %>pull-right<% } %> <% if (active){ %>active<% } %>">
+<li class="nav-item dropdown <% if (pullright){ %>pull-right<% } %> <% if (active && activeOn === 'item'){ %>active<% } %>">
     <span class="label label-danger label-pill pull-right"><% if ( badge > 0 ){ %><%= badge %><% } %></span>
-    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><%= navItem_html %></a>
+    <a class="nav-link dropdown-toggle <% if (active && activeOn === 'link'){ %>active<% } %>" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><%= navItem_html %></a>
     <div class="dropdown-menu">
     </div>
 </li>

@@ -11,3 +11,5 @@ require(['memberName'], function(Member){console.log(Member.members());});
 
 6. setOpt() if necessary
 7. each iterable object should be created, each click of fetch should be created
+8. adding a jquery plugin, edit config.js, Gruntfile.js (requirejs and jasmine) and play.html
+9. Never call yourself prompt.call(this, opt). if will dead loop. e.g. getMember() to Prompt and use Prompt.call(this, opt)

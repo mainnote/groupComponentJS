@@ -1,4 +1,4 @@
-require([
+module.exports = [
     'group',
     'opt',
     'optObj',
@@ -19,11 +19,15 @@ require([
     'textareaCountGrp',
     'request',
     'button',
+    'checkbox',
+    'tagsinput',
     'input',
     'inputPassword',
     'inputGrp',
     'inputEmailGrp',
+    'inputUrlGrp',
     'navbar',
+    'navtags',
     'navbarGrp',
     'navBrand',
     'navItem',
@@ -35,4 +39,4 @@ require([
     'listScrollEndFetchGrp',
     'toggleHeaderScroll',
     'scroll'
-], function () {});
+]

@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/input'
+define(['jquery', 'component', 'tpl!templates/input.html'
 	], function ($, Component, tpl) {
     var Input = Component.create('Input');
     Input.extend({
