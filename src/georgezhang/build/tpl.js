@@ -1,1 +1,1 @@
-../../../node_modules/requirejs-tpl/tpl.js
+../../../bower_components/requirejs-tpl/tpl.js

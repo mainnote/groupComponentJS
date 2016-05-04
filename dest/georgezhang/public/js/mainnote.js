@@ -98,6 +98,8 @@ function _resetCallToMember(thisGrp) {
 var obj = {
     create: function (name) {
         var newObj = Object.create(this);
+
+        //copy all inherited parents list to new object
         if (this.hasOwnProperty('parentNames')) {
             newObj.parentNames = [];
             var len = this.parentNames.length;
@@ -106,6 +108,7 @@ var obj = {
             }
         }
 
+        //add current parent to the parents list
         if (this.hasOwnProperty('name')) {
             if (!newObj.hasOwnProperty('parentNames'))
                 newObj.parentNames = [];
@@ -131,6 +134,8 @@ var obj = {
     command: function () {
         var self = this;
         return function (cmd, opt) {
+            if (!(cmd in self)) throw 'This object ' + self.name + ' does not have key ' + cmd;
+
             if (typeof self[cmd] === 'function') {
                 if (global.LOG) {
                     var result = self[cmd](opt);
@@ -210,8 +215,10 @@ group.extend({
         return this;
     },
     call: function (memberName, methodName, opt) {
+        var found = false;
         //call member in this group
         if (memberName in this._memberList) {
+            found = true;
             var memberCmd = this._memberList[memberName];
             if (global.LOG) {
                 var result = memberCmd(methodName, opt);
@@ -232,6 +239,7 @@ group.extend({
                         var p_len = parentNames.length;
                         for (var j = 0; j < p_len; j++) {
                             if (memberName === parentNames[j]) {
+                                found = true;
                                 if (global.LOG) {
                                     var result = memberCmd(methodName, opt);
                                     LOG(TAG, ' SubGroup ' + this.name + ' [ ' + memberName + '.' + methodName + ' ] ', opt, result);
@@ -245,6 +253,7 @@ group.extend({
             }
         }
         //if not found, should we leave error?
+        if (!found)  throw 'This group ' + this.name + ' does not have member ' + memberName;
     },
 
     /* call through to specific member whom play as a major role*/
@@ -504,212 +513,93 @@ define('component',['jquery', 'optObj'
     return Component;
 });
 
-/**
- * Adapted from the official plugin text.js
- *
- * Uses UnderscoreJS micro-templates : http://documentcloud.github.com/underscore/#template
- * @author Julien Cabanès <julien@zeeagency.com>
- * @version 0.2
- * 
- * @license RequireJS text 0.24.0 Copyright (c) 2010-2011, The Dojo Foundation All Rights Reserved.
- * Available via the MIT or new BSD license.
- * see: http://github.com/jrburke/requirejs for details
- */
-/*jslint regexp: false, nomen: false, plusplus: false, strict: false */
-/*global require: false, XMLHttpRequest: false, ActiveXObject: false,
-  define: false, window: false, process: false, Packages: false,
-  java: false */
-
-(function () {
-	var progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
-	
-		xmlRegExp = /^\s*<\?xml(\s)+version=[\'\"](\d)*.(\d)*[\'\"](\s)*\?>/im,
-		
-		bodyRegExp = /<body[^>]*>\s*([\s\S]+)\s*<\/body>/im,
-		
-		buildMap = [],
-		
-		templateSettings = {
-			evaluate	: /<%([\s\S]+?)%>/g,
-			interpolate : /<%=([\s\S]+?)%>/g
-		},
-
-		/**
-		 * JavaScript micro-templating, similar to John Resig's implementation.
-		 * Underscore templating handles arbitrary delimiters, preserves whitespace,
-		 * and correctly escapes quotes within interpolated code.
-		 */
-		template = function(str, data) {
-			var c  = templateSettings;
-			var tmpl = 'var __p=[],print=function(){__p.push.apply(__p,arguments);};' +
-				'with(obj||{}){__p.push(\'' +
-				str.replace(/\\/g, '\\\\')
-					.replace(/'/g, "\\'")
-					.replace(c.interpolate, function(match, code) {
-					return "'," + code.replace(/\\'/g, "'") + ",'";
-					})
-					.replace(c.evaluate || null, function(match, code) {
-					return "');" + code.replace(/\\'/g, "'")
-										.replace(/[\r\n\t]/g, ' ') + "; __p.push('";
-					})
-					.replace(/\r/g, '')
-					.replace(/\n/g, '')
-					.replace(/\t/g, '')
-					+ "');}return __p.join('');";
-			return tmpl;
-			
-			/** /
-			var func = new Function('obj', tmpl);
-			return data ? func(data) : func;
-			/**/
-		};
-
-	define('tpl',[],function () {
-		var tpl;
-
-		var get, fs;
-		if (typeof window !== "undefined" && window.navigator && window.document) {
-			get = function (url, callback) {
-				
-				var xhr = tpl.createXhr();
-				xhr.open('GET', url, true);
-				xhr.onreadystatechange = function (evt) {
-					//Do not explicitly handle errors, those should be
-					//visible via console output in the browser.
-					if (xhr.readyState === 4) {
-						callback(xhr.responseText);
-					}
-				};
-				xhr.send(null);
-			};
-		} else if (typeof process !== "undefined" &&
- 				process.versions &&
- 				!!process.versions.node) {
-			//Using special require.nodeRequire, something added by r.js.
-			fs = require.nodeRequire('fs');
-
-			get = function (url, callback) {
-				
-				callback(fs.readFileSync(url, 'utf8'));
-			};
-		}
-		return tpl = {
-			version: '0.24.0',
-			strip: function (content) {
-				//Strips <?xml ...?> declarations so that external SVG and XML
-				//documents can be added to a document without worry. Also, if the string
-				//is an HTML document, only the part inside the body tag is returned.
-				if (content) {
-					content = content.replace(xmlRegExp, "");
-					var matches = content.match(bodyRegExp);
-					if (matches) {
-						content = matches[1];
-					}
-				} else {
-					content = "";
-				}
-				
-				return content;
-			},
-
-			jsEscape: function (content) {
-				return content.replace(/(['\\])/g, '\\$1')
-					.replace(/[\f]/g, "\\f")
-					.replace(/[\b]/g, "\\b")
-					.replace(/[\n]/g, "")
-					.replace(/[\t]/g, "")
-					.replace(/[\r]/g, "");
-			},
-
-			createXhr: function () {
-				//Would love to dump the ActiveX crap in here. Need IE 6 to die first.
-				var xhr, i, progId;
-				if (typeof XMLHttpRequest !== "undefined") {
-					return new XMLHttpRequest();
-				} else {
-					for (i = 0; i < 3; i++) {
-						progId = progIds[i];
-						try {
-							xhr = new ActiveXObject(progId);
-						} catch (e) {}
-
-						if (xhr) {
-							progIds = [progId];  // so faster next time
-							break;
-						}
-					}
-				}
-
-				if (!xhr) {
-					throw new Error("require.getXhr(): XMLHttpRequest not available");
-				}
-
-				return xhr;
-			},
-
-			get: get,
-
-			load: function (name, req, onLoad, config) {
-				
-				//Name has format: some.module.filext!strip
-				//The strip part is optional.
-				//if strip is present, then that means only get the string contents
-				//inside a body tag in an HTML string. For XML/SVG content it means
-				//removing the <?xml ...?> declarations so the content can be inserted
-				//into the current doc without problems.
-
-				var strip = false, url, index = name.indexOf("."),
-					modName = name.substring(0, index),
-					ext = name.substring(index + 1, name.length);
-
-				index = ext.indexOf("!");
-				
-				if (index !== -1) {
-					//Pull off the strip arg.
-					strip = ext.substring(index + 1, ext.length);
-					strip = strip === "strip";
-					ext = ext.substring(0, index);
-				}
-
-				//Load the tpl.
-				url = 'nameToUrl' in req ? req.nameToUrl(modName, "." + ext) : req.toUrl(modName + "." + ext);
-				
-				tpl.get(url, function (content) {
-					content = template(content);
-					
-					if(!config.isBuild) {
-					//if(typeof window !== "undefined" && window.navigator && window.document) {
-						content = new Function('obj', content);
-					}
-					content = strip ? tpl.strip(content) : content;
-					
-					if (config.isBuild && config.inlineText) {
-						buildMap[name] = content;
-					}
-					onLoad(content);
-				});
-
-			},
-
-			write: function (pluginName, moduleName, write) {
-				if (moduleName in buildMap) {
-					var content = tpl.jsEscape(buildMap[moduleName]);
-					write("define('" + pluginName + "!" + moduleName  +
-  						"', function() {return function(obj) { " +
-  							content.replace(/(\\')/g, "'").replace(/(\\\\)/g, "\\")+
-  						"}});\n");
-				}
-			}
-		};
-		return function() {};	
-	});
-//>>excludeEnd('excludeTpl')
-}());
 
 
-define('tpl!templates/count.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<p></p>');}return __p.join('');}});
+// RequireJS UnderscoreJS template plugin
+// http://github.com/jfparadis/requirejs-tpl
+//
+// An alternative to http://github.com/ZeeAgency/requirejs-tpl
+//
+// Using UnderscoreJS micro-templates at http://underscorejs.org/#template
+// Using and RequireJS text.js at http://requirejs.org/docs/api.html#text
+// @author JF Paradis
+// @version 0.0.2
+//
+// Released under the MIT license
+//
+// Usage:
+//   require(['backbone', 'tpl!mytemplate'], function (Backbone, mytemplate) {
+//     return Backbone.View.extend({
+//       initialize: function(){
+//         this.render();
+//       },
+//       render: function(){
+//         this.$el.html(mytemplate({message: 'hello'}));
+//     });
+//   });
+//
+// Configuration: (optional)
+//   require.config({
+//     tpl: {
+//       extension: '.tpl' // default = '.html'
+//     }
+//   });
 
-define('count',['jquery', 'component', 'tpl!templates/count.html'
+/*jslint nomen: true */
+/*global define: false */
+
+define('tpl',['text', 'underscore'], function (text, _) {
+    'use strict';
+
+    var buildMap = {},
+        buildTemplateSource = "define('{pluginName}!{moduleName}', [\'underscore\'], function (_) { return {source}; });\n";
+
+    return {
+        version: '0.0.2',
+
+        load: function (moduleName, parentRequire, onload, config) {
+
+            if (config.tpl && config.tpl.templateSettings) {
+                _.templateSettings = config.tpl.templateSettings;
+            }
+
+            if (buildMap[moduleName]) {
+                onload(buildMap[moduleName]);
+
+            } else {
+                var ext = (config.tpl && config.tpl.extension) || '.html';
+                var path = (config.tpl && config.tpl.path) || '';
+                text.load(path + moduleName + ext, parentRequire, function (source) {
+                    buildMap[moduleName] = _.template(source);
+                    onload(buildMap[moduleName]);
+                }, config);
+            }
+        },
+
+        write: function (pluginName, moduleName, write) {
+            var build = buildMap[moduleName],
+                source = build && build.source;
+            if (source) {
+                write.asModule(pluginName + '!' + moduleName,
+                    buildTemplateSource
+                    .replace('{pluginName}', pluginName)
+                    .replace('{moduleName}', moduleName)
+                    .replace('{source}', source));
+            }
+        }
+    };
+});
+
+
+define('tpl!templates/count', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<p></p>';
+}
+return __p;
+}; });
+
+define('count',['jquery', 'component', 'tpl!templates/count'
 	], function ($, Component, tpl) {
 	var Count = Component.create('Count');
 	Count.extend({
@@ -793,10 +683,10 @@ define('collection',['jquery', 'optObj'
         add: function (opt) {
             var that = this;
 
-            function addValue(values) {
-                var entityCmd = that.group.call('Entity', 'create', 'entityCmd').command();
+            function addValue(value) {
+                var entityCmd = that.group.call('entity', 'create', 'entityCmd').command();
                 var opt_ = {
-                    value: values,
+                    value: value,
                 };
                 var v = entityCmd('update', opt_);
                 that.values.push(v);
@@ -853,8 +743,8 @@ define('request',['jquery', 'optObj'
  define('collectionGrp',['jquery', 'optGrp', 'collection', 'entity', 'request'
 	], function ($, OptGrp, Collection, Entity, Request) {
      var CollectionGrp = OptGrp.create('CollectionGrp');
-     var Collection = Collection.create();
-     Collection.extend({
+     var collection = Collection.create('collection');
+     collection.extend({
          connectEntity: function (opt) {
              var that = this;
              this.setOpt(opt);
@@ -877,15 +767,14 @@ define('request',['jquery', 'optObj'
                      };
                      that.opt.callback(opt_callback);
                  },
-                 request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {
-                 },
+                 request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
              };
-             this.group.call('Request', 'connect', opt_);
+             this.group.call('request', 'connect', opt_);
          }
      });
 
-     var Entity = Entity.create();
-     Entity.extend({
+     var entity = Entity.create('entity');
+     entity.extend({
          remove: function (opt) {
              //back to collection to remove this entity
              var opt_ = {
@@ -895,7 +784,7 @@ define('request',['jquery', 'optObj'
                      opt.callback(opt_callback);
                  }
              };
-             this.group.call('Collection', 'connectEntity', opt_);
+             this.group.call('collection', 'connectEntity', opt_);
 
          },
          fetch: function (opt) {
@@ -906,23 +795,43 @@ define('request',['jquery', 'optObj'
                      opt.callback(opt_callback);
                  }
              };
-             this.group.call('Collection', 'connectEntity', opt_);
-
-         }
+             this.group.call('collection', 'connectEntity', opt_);
+         },
+         error: function (opt) {
+             //back to collection to remove this entity
+             var opt_ = {
+                 connectMethod: 'PUT',
+                 entity: this.value,
+                 callback: function (opt_callback) {
+                     opt.callback(opt_callback);
+                 }
+             };
+             this.group.call('collection', 'connectEntity', opt_);
+         },
      });
 
-     var Request = Request.create();
+     var request = Request.create('request');
 
-     CollectionGrp.join(Collection, Entity, Request);
+     CollectionGrp.join(collection, entity, request);
 
-     CollectionGrp.setCallToMember('Collection');
+     CollectionGrp.setCallToMember('collection');
      return CollectionGrp;
  });
 
 
-define('tpl!templates/form.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<form onsubmit="return false;" method="', form_method ,'" action="', form_action ,'"><fieldset></fieldset></form>');}return __p.join('');}});
+define('tpl!templates/form', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<form onsubmit="return false;" method="'+
+((__t=( form_method ))==null?'':__t)+
+'" action="'+
+((__t=( form_action ))==null?'':__t)+
+'">\r\n<fieldset>\r\n</fieldset>\r\n</form>';
+}
+return __p;
+}; });
 
-define('form',['jquery', 'component', 'tpl!templates/form.html'
+define('form',['jquery', 'component', 'tpl!templates/form'
 	], function ($, Component, tpl) {
     var Form = Component.create('Form');
     Form.extend({
@@ -1011,8 +920,38 @@ define('form',['jquery', 'component', 'tpl!templates/form.html'
     return Form;
 });
 
-define('formGrp',['jquery', 'optGrp', 'form', 'request'
-	], function ($, OptGrp, Form, Request) {
+
+define('tpl!templates/error', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<b>'+
+((__t=( message ))==null?'':_.escape(__t))+
+'</b>\n<ol>\n    ';
+ _.each(errors, function(msg){ 
+__p+='\n        <li>'+
+((__t=( msg ))==null?'':_.escape(__t))+
+'</li>\n    ';
+ }); 
+__p+='\n</ol>';
+}
+return __p;
+}; });
+
+define('error',['jquery', 'component', 'tpl!templates/error'
+	], function ($, Component, tpl) {
+	var Error = Component.create('Error');
+	Error.extend({
+        defaultOpt: {
+            message: '',
+            errors: []
+        },
+        tpl: tpl,
+	});
+    
+    return Error;
+});
+define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
+	], function ($, OptGrp, Form, Request, Error) {
     var FormGrp = OptGrp.create('FormGrp');
     var form = Form.create('form');
     form.extend({
@@ -1025,7 +964,7 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request'
                 });
                 var id;
                 if (this.opt && this.opt.doc && this.opt.doc._id) id = this.opt.doc._id;
-                var action = (this.opt.form_action || this.comp.attr('action')) + id || '';
+                var action = (this.opt.form_action || this.comp.attr('action')) + (id || '');
                 var method = this.opt.form_method || this.comp.attr('method');
                 var inputData = this.serializeArray();
                 //request
@@ -1034,9 +973,13 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request'
                     request_method: method,
                     request_data: inputData,
                     request_done: function (data, textStatus, jqXHR) {
+                        if (data && 'error' in data) {
+                            return that.error(data);
+                        }
                         var opt0 = {
                             data: data
                         };
+
                         that.done(opt0);
                     },
                     request_fail: function (jqXHR, textStatus, errorThrown) {
@@ -1053,7 +996,14 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request'
             }
         },
         error: function (opt) {
-            this.comp.append('<div class="error">' + opt.error + '</div>');
+            if ($.isPlainObject(opt.error)) {
+                var errorCmd = Error.create('errorCmd').command();
+                errorCmd('render', $.extend(opt.error, {
+                    container: $('<div class="error"></div>').appendTo(this.comp)
+                }));
+            } else {
+                this.comp.append('<div class="error">' + opt.error + '</div>');
+            }
         },
 
     });
@@ -1068,9 +1018,17 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request'
 });
 
 
-define('tpl!templates/item.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<li>', item_value ,'</li>');}return __p.join('');}});
+define('tpl!templates/item', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="list-group-item">'+
+((__t=( item_value ))==null?'':__t)+
+'</li>';
+}
+return __p;
+}; });
 
-define('item',['jquery', 'component', 'tpl!templates/item.html'
+define('item',['jquery', 'component', 'tpl!templates/item'
 	], function ($, Component, tpl) {
     var Item = Component.create('Item');
     Item.extend({
@@ -1129,9 +1087,15 @@ define('item',['jquery', 'component', 'tpl!templates/item.html'
 });
 
 
-define('tpl!templates/list.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<ul class="clearfix"></ul>');}return __p.join('');}});
+define('tpl!templates/list', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<ul class="list-group"></ul>';
+}
+return __p;
+}; });
 
-define('list',['jquery', 'component', 'tpl!templates/list.html',
+define('list',['jquery', 'component', 'tpl!templates/list',
 	], function ($, Component, tpl) {
     var List = Component.create('List');
     List.extend({
@@ -1154,13 +1118,11 @@ define('list',['jquery', 'component', 'tpl!templates/list.html',
                     var itemCmd = that.group.call('Item', 'create', 'itemCmd').command(); //member create
                     that.items.push(itemCmd);
                     var opt_ = {
-                        noSetup: true,
                         list: that,
                         container: that.comp,
                         item_data: data,
                     };
                     var itemComp = itemCmd('render', opt_);
-                    itemCmd('setup');
                     return itemComp;
                 });
 
@@ -1195,13 +1157,24 @@ define('listItemGrp',['jquery', 'optGrp', 'list', 'item'
 });
 
 
-define('tpl!templates/prompt.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<div class="promptTop">    <div class="promptHead">        <a class="top-left ios-button back" href="javascript:void(0)">Back</a>        <div class="promptTitle">', prompt_title ,'</div>        <a class="top-right ios-button done" href="javascript:void(0)">Done</a>    </div></div>');}return __p.join('');}});
+define('tpl!templates/prompt', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="promptTop">\r\n    <div class="promptHead">\r\n        <a class="top-left ios-button back" href="javascript:void(0)">Back</a>\r\n        <div class="promptTitle">'+
+((__t=( prompt_title ))==null?'':__t)+
+'</div>\r\n        <a class="top-right ios-button done" href="javascript:void(0)">Done</a>\r\n    </div>\r\n</div>';
+}
+return __p;
+}; });
 
-define('prompt',['jquery', 'component', 'tpl!templates/prompt.html'
+define('prompt',['jquery', 'component', 'tpl!templates/prompt'
 	], function ($, Component, tpl) {
 	var Prompt = Component.create('Prompt');
 	Prompt.extend({
         tpl: tpl,
+        defaultOpt: {
+            prompt_title: 'Prompt'  
+        },
         setup: function(opt) {
             var that = this;
             if (!window.layerCount) window.layerCount = 10000;
@@ -1237,7 +1210,9 @@ define('scroll',['jquery', 'optObj'], function ($, OptObj) {
     Scroll.extend({
         disableScroll: function (opt) {
             this.current = $(window).scrollTop();
+            $(window).scrollTop(0);
             
+            /*
             $('html, body').css({
                 'overflow': 'hidden',
                 'height': '100%'
@@ -1245,15 +1220,17 @@ define('scroll',['jquery', 'optObj'], function ($, OptObj) {
             $('html, body').on('mousewheel', function () {
                 return false;
             });
+            */
         },
         enableScroll: function (opt) {
+            /*
             $('html, body').css({
                 'overflow': '',
                 'height': ''
             });
-
+            */
             if (this.current) $(window).scrollTop(this.current);
-            $('html, body').off('mousewheel');
+            /* $('html, body').off('mousewheel'); */
         },
         set: function (opt) {
             var that = this;
@@ -1334,10 +1311,9 @@ define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
     var form = formGrp.getMember('form');
     form.extend({
         done: function (opt) {
-            this.group.group.call('prompt', 'afterSubmit', opt);
+            this.group.group.call('prompt', 'afterSubmit', opt); //fromGrp > promptFormGrp
         },
     });
-    formGrp.override(form);
 
     PromptFormGrp.join(prompt, formGrp);
     PromptFormGrp.setCallToMember('prompt');
@@ -1346,9 +1322,21 @@ define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
 });
 
 
-define('tpl!templates/textarea.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<textarea name="', textarea_name ,'" class="form-control" placeholder="', textarea_placeholder ,'">', textarea_value ,'</textarea>');}return __p.join('');}});
+define('tpl!templates/textarea', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<textarea name="'+
+((__t=( textarea_name ))==null?'':__t)+
+'" class="form-control" placeholder="'+
+((__t=( textarea_placeholder ))==null?'':__t)+
+'">'+
+((__t=( textarea_value ))==null?'':__t)+
+'</textarea>';
+}
+return __p;
+}; });
 
-define('textarea',['jquery', 'component', 'tpl!templates/textarea.html', 'autosize'
+define('textarea',['jquery', 'component', 'tpl!templates/textarea', 'autosize'
 	], function ($, Component, tpl, autosize) {
 	var Textarea = Component.create('Textarea');
 	Textarea.extend({
@@ -1389,9 +1377,23 @@ define('textareaCountGrp',['jquery', 'optGrp', 'textarea', 'count'
 });
 
 
-define('tpl!templates/button.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<button class="btn ', button_class ,'" type="', button_type ,'" title="', button_title ,'">', button_name ,'</button>');}return __p.join('');}});
+define('tpl!templates/button', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<button class="btn '+
+((__t=( button_class ))==null?'':__t)+
+'" type="'+
+((__t=( button_type ))==null?'':__t)+
+'" title="'+
+((__t=( button_title ))==null?'':__t)+
+'">'+
+((__t=( button_name ))==null?'':__t)+
+'</button>';
+}
+return __p;
+}; });
 
-define('button',['jquery', 'component', 'tpl!templates/button.html'
+define('button',['jquery', 'component', 'tpl!templates/button'
 	], function ($, Component, tpl) {
     var Button = Component.create('Button');
     Button.extend({
@@ -1416,9 +1418,29 @@ define('button',['jquery', 'component', 'tpl!templates/button.html'
 });
 
 
-define('tpl!templates/checkbox.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<div class="form-group">    <label for="', checkbox_id ,'" class="', checkbox_label_class ,'">', checkbox_placeholder ,'</label>    <input type="checkbox" id="', checkbox_id ,'" name="', checkbox_name ,'" class="form-control"         '); if (checkbox_checked) {; __p.push('         checked        '); } ; __p.push('    >    <p class="hints"></p></div>');}return __p.join('');}});
+define('tpl!templates/checkbox', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="form-group">\n    <label for="'+
+((__t=( checkbox_id ))==null?'':__t)+
+'" class="'+
+((__t=( checkbox_label_class ))==null?'':__t)+
+'">'+
+((__t=( checkbox_placeholder ))==null?'':__t)+
+'</label>\n    <input type="checkbox" id="'+
+((__t=( checkbox_id ))==null?'':__t)+
+'" name="'+
+((__t=( checkbox_name ))==null?'':__t)+
+'" class="form-control" \n        ';
+ if (checkbox_checked) {
+__p+='\n         checked\n        ';
+ } 
+__p+='\n    >\n    <p class="hints"></p>\n</div>';
+}
+return __p;
+}; });
 
-define('checkbox',['jquery', 'component', 'tpl!templates/checkbox.html', 'bootstrap-switch'
+define('checkbox',['jquery', 'component', 'tpl!templates/checkbox', 'bootstrap-switch'
 	], function ($, Component, tpl) {
     var Checkbox = Component.create('Checkbox');
     Checkbox.extend({
@@ -1448,9 +1470,23 @@ define('checkbox',['jquery', 'component', 'tpl!templates/checkbox.html', 'bootst
 });
 
 
-define('tpl!templates/tagsinput.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<div class="form-group">    <label for="', tagsinput_id ,'" class="', tagsinput_label_class ,'">        ', tagsinput_placeholder ,'    </label>    <select multiple name="', tagsinput_name ,'" class="form-control">    </select>    <p class="hints"></p></div>');}return __p.join('');}});
+define('tpl!templates/tagsinput', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="form-group">\n    <label for="'+
+((__t=( tagsinput_id ))==null?'':__t)+
+'" class="'+
+((__t=( tagsinput_label_class ))==null?'':__t)+
+'">\n        '+
+((__t=( tagsinput_placeholder ))==null?'':__t)+
+'\n    </label>\n    <select multiple name="'+
+((__t=( tagsinput_name ))==null?'':__t)+
+'" class="form-control">\n    </select>\n    <p class="hints"></p>\n</div>\n';
+}
+return __p;
+}; });
 
-define('tagsinput',['jquery', 'component', 'tpl!templates/tagsinput.html', 'bootstrap-tagsinput'
+define('tagsinput',['jquery', 'component', 'tpl!templates/tagsinput', 'bootstrap-tagsinput'
 	], function ($, Component, tpl) {
     var Tagsinput = Component.create('Tagsinput');
     Tagsinput.extend({
@@ -1476,9 +1512,45 @@ define('tagsinput',['jquery', 'component', 'tpl!templates/tagsinput.html', 'boot
 });
 
 
-define('tpl!templates/input.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<div class="form-group">    <label for="', input_id ,'" class="', input_label_class ,'">', input_placeholder ,'</label>    <input type="', input_type ,'" id="', input_id ,'" name="', input_name ,'" class="form-control" placeholder="', input_placeholder ,'"         '); if (input_required) {; __p.push('         required         '); } ; __p.push('        '); if (input_autofocus) {; __p.push('         autofocus         '); } ; __p.push('        '); if (input_action) {; __p.push('         action="', input_action ,'"         '); } ; __p.push('                value="', input_value ,'"    >    <p class="hints"></p></div>');}return __p.join('');}});
+define('tpl!templates/input', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="form-group">\r\n    <label for="'+
+((__t=( input_id ))==null?'':__t)+
+'" class="'+
+((__t=( input_label_class ))==null?'':__t)+
+'">'+
+((__t=( input_placeholder ))==null?'':__t)+
+'</label>\r\n    <input type="'+
+((__t=( input_type ))==null?'':__t)+
+'" id="'+
+((__t=( input_id ))==null?'':__t)+
+'" name="'+
+((__t=( input_name ))==null?'':__t)+
+'" class="form-control" placeholder="'+
+((__t=( input_placeholder ))==null?'':__t)+
+'" \r\n        ';
+ if (input_required) {
+__p+='\r\n         required \r\n        ';
+ } 
+__p+='\r\n        ';
+ if (input_autofocus) {
+__p+='\r\n         autofocus \r\n        ';
+ } 
+__p+='\r\n        ';
+ if (input_action) {
+__p+='\r\n         action="'+
+((__t=( input_action ))==null?'':__t)+
+'" \r\n        ';
+ } 
+__p+='\r\n        \r\n        value="'+
+((__t=( input_value ))==null?'':__t)+
+'"\r\n    >\r\n    <p class="hints"></p>\r\n</div>';
+}
+return __p;
+}; });
 
-define('input',['jquery', 'component', 'tpl!templates/input.html'
+define('input',['jquery', 'component', 'tpl!templates/input'
 	], function ($, Component, tpl) {
     var Input = Component.create('Input');
     Input.extend({
@@ -1660,7 +1732,6 @@ define('inputUrlGrp',['jquery', 'optGrp', 'input', 'validUrl'
 
     inputUrl.extend({
         checkValid: function (opt) {
-            console.log('checking');
             var opt_ = {
                 url: opt.input_value
             }
@@ -1684,9 +1755,21 @@ define('inputUrlGrp',['jquery', 'optGrp', 'input', 'validUrl'
 });
 
 
-define('tpl!templates/navbar.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<nav class="navbar ', navbar_placement ,'">  <div class="pull-right">      <button class="navbar-toggler pull-xs-right hidden-sm-up" type="button" data-toggle="collapse" data-target="#', navbar_id ,'">        &#9776;      </button>  </div>  <style>@media screen and (max-width: 542px) {    ul.nav li.nav-item {        width: 100%;        display: block;        clear: both;        text-align:left;        margin-left: 0 !important;    }        nav .nav-middle {        width: 80%;        height: 2.5em;    }}  </style>  <div class="nav-middle"></div>  <div class="collapse navbar-toggleable-xs menu-items" id="', navbar_id ,'">    <ul class="nav navbar-nav">    </ul>  </div></nav>');}return __p.join('');}});
+define('tpl!templates/navbar', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<nav class="navbar '+
+((__t=( navbar_placement ))==null?'':__t)+
+'">\r\n  <div class="pull-right">\r\n      <button class="navbar-toggler pull-xs-right hidden-sm-up" type="button" data-toggle="collapse" data-target="#'+
+((__t=( navbar_id ))==null?'':__t)+
+'">\r\n        &#9776;\r\n      </button>\r\n  </div>\r\n  <style>\r\n@media screen and (max-width: 542px) {\r\n    ul.nav li.nav-item {\r\n        width: 100%;\r\n        display: block;\r\n        clear: both;\r\n        text-align:left;\r\n        margin-left: 0 !important;\r\n    }\r\n    \r\n    nav .nav-middle {\r\n        width: 80%;\r\n        height: 2.5em;\r\n    }\r\n}\r\n  </style>\r\n  <div class="nav-middle"></div>\r\n  <div class="collapse navbar-toggleable-xs menu-items" id="'+
+((__t=( navbar_id ))==null?'':__t)+
+'">\r\n    <ul class="nav navbar-nav">\r\n    </ul>\r\n  </div>\r\n</nav>';
+}
+return __p;
+}; });
 
-define('navbar',['jquery', 'component', 'tpl!templates/navbar.html'
+define('navbar',['jquery', 'component', 'tpl!templates/navbar'
 	], function ($, Component, tpl) {
     var Navbar = Component.create('Navbar');
     Navbar.extend({
@@ -1740,9 +1823,15 @@ define('navbar',['jquery', 'component', 'tpl!templates/navbar.html'
 });
 
 
-define('tpl!templates/navtags.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<ul class="nav nav-tabs"></ul>');}return __p.join('');}});
+define('tpl!templates/navtags', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<ul class="nav nav-tabs">\n</ul>';
+}
+return __p;
+}; });
 
-define('navtags',['jquery', 'component', 'tpl!templates/navtags.html'
+define('navtags',['jquery', 'component', 'tpl!templates/navtags'
 	], function ($, Component, tpl) {
     var Navtags = Component.create('Navtags');
     Navtags.extend({
@@ -1825,9 +1914,19 @@ define('navbarGrp',['jquery', 'optGrp', 'navbar', 'toggleHeaderScroll'
 });
 
 
-define('tpl!templates/navBrand.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<a class="navbar-brand pull-left" href="', navBrand_url ,'">', navBrand_html ,'</a>');}return __p.join('');}});
+define('tpl!templates/navBrand', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<a class="navbar-brand pull-left" href="'+
+((__t=( navBrand_url ))==null?'':__t)+
+'">'+
+((__t=( navBrand_html ))==null?'':__t)+
+'</a>';
+}
+return __p;
+}; });
 
-define('navBrand',['jquery', 'component', 'tpl!templates/navBrand.html'
+define('navBrand',['jquery', 'component', 'tpl!templates/navBrand'
 	], function ($, Component, tpl) {
 	var NavBrand = Component.create('NavBrand');
 	NavBrand.extend({
@@ -1843,9 +1942,37 @@ define('navBrand',['jquery', 'component', 'tpl!templates/navBrand.html'
 });
 
 
-define('tpl!templates/navItem.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<li class="nav-item '); if (pullright){ ; __p.push('pull-right'); } ; __p.push(' '); if (active && activeOn === 'item'){ ; __p.push('active'); } ; __p.push('">    <a class="nav-link '); if (active && activeOn === 'link'){ ; __p.push('active'); } ; __p.push('" href="', navItem_url ,'">        <span class="label label-danger label-pill pull-right">'); if ( badge > 0 ){ ; __p.push('', badge ,''); } ; __p.push('</span>        ', navItem_html ,'    </a></li>');}return __p.join('');}});
+define('tpl!templates/navItem', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="nav-item ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+=' ';
+ if (active && activeOn === 'item'){ 
+__p+='active';
+ } 
+__p+='">\r\n    <a class="nav-link ';
+ if (active && activeOn === 'link'){ 
+__p+='active';
+ } 
+__p+='" href="'+
+((__t=( navItem_url ))==null?'':__t)+
+'">\r\n        <span class="label label-danger label-pill pull-right">';
+ if ( badge > 0 ){ 
+__p+=''+
+((__t=( badge ))==null?'':__t)+
+'';
+ } 
+__p+='</span>\r\n        '+
+((__t=( navItem_html ))==null?'':__t)+
+'\r\n    </a>\r\n</li>';
+}
+return __p;
+}; });
 
-define('navItem',['jquery', 'component', 'tpl!templates/navItem.html'
+define('navItem',['jquery', 'component', 'tpl!templates/navItem'
 	], function ($, Component, tpl) {
     var NavItem = Component.create('NavItem');
     NavItem.extend({
@@ -1918,9 +2045,35 @@ define('navItem',['jquery', 'component', 'tpl!templates/navItem.html'
 });
 
 
-define('tpl!templates/navDropdownItem.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<li class="nav-item dropdown '); if (pullright){ ; __p.push('pull-right'); } ; __p.push(' '); if (active && activeOn === 'item'){ ; __p.push('active'); } ; __p.push('">    <span class="label label-danger label-pill pull-right">'); if ( badge > 0 ){ ; __p.push('', badge ,''); } ; __p.push('</span>    <a class="nav-link dropdown-toggle '); if (active && activeOn === 'link'){ ; __p.push('active'); } ; __p.push('" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">', navItem_html ,'</a>    <div class="dropdown-menu">    </div></li>');}return __p.join('');}});
+define('tpl!templates/navDropdownItem', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="nav-item dropdown ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+=' ';
+ if (active && activeOn === 'item'){ 
+__p+='active';
+ } 
+__p+='">\r\n    <span class="label label-danger label-pill pull-right">';
+ if ( badge > 0 ){ 
+__p+=''+
+((__t=( badge ))==null?'':__t)+
+'';
+ } 
+__p+='</span>\r\n    <a class="nav-link dropdown-toggle ';
+ if (active && activeOn === 'link'){ 
+__p+='active';
+ } 
+__p+='" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">'+
+((__t=( navItem_html ))==null?'':__t)+
+'</a>\r\n    <div class="dropdown-menu">\r\n    </div>\r\n</li>';
+}
+return __p;
+}; });
 
-define('navDropdownItem',['jquery', 'navItem', 'tpl!templates/navDropdownItem.html'
+define('navDropdownItem',['jquery', 'navItem', 'tpl!templates/navDropdownItem'
 	], function ($, NavItem, tpl) {
     var NavDropdownItem = NavItem.create('NavDropdownItem');
     NavDropdownItem.extend({
@@ -1940,9 +2093,49 @@ define('navDropdownItem',['jquery', 'navItem', 'tpl!templates/navDropdownItem.ht
 });
 
 
-define('tpl!templates/navUserItem.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<li class="nav-item '); if (pullright){ ; __p.push('pull-right'); } ; __p.push(' '); if (active && activeOn === 'item'){ ; __p.push('active'); } ; __p.push('">    '); if (!navUserItem_user) { ; __p.push('        <a class="btn btn-secondary left" href="', navUserItem_signinUrl ,'" role="button">', navUserItem_signText ,'</a>        <a class="btn btn-success left" href="', navUserItem_signupUrl ,'" role="button">', navUserItem_signupText ,'</a>    '); } else { ; __p.push('      <li class="nav-item dropdown pull-right">          <span class="label label-danger label-pill pull-right">'); if ( badge > 0 ){ ; __p.push('', badge ,''); } ; __p.push('</span>          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="', navItem_url ,'" role="button" aria-haspopup="true" aria-expanded="false"><img class="img-rounded profile_image" src="', navUserItem_user.profile_img ,'"/>', navUserItem_user.name ,'</a>          <div class="dropdown-menu">          </div>      </li>    '); } ; __p.push('</li>');}return __p.join('');}});
+define('tpl!templates/navUserItem', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="nav-item ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+=' ';
+ if (active && activeOn === 'item'){ 
+__p+='active';
+ } 
+__p+='">\n    ';
+ if (!navUserItem_user) { 
+__p+='\n        <a class="btn btn-secondary left" href="'+
+((__t=( navUserItem_signinUrl ))==null?'':__t)+
+'" role="button">'+
+((__t=( navUserItem_signText ))==null?'':__t)+
+'</a>\n        <a class="btn btn-success left" href="'+
+((__t=( navUserItem_signupUrl ))==null?'':__t)+
+'" role="button">'+
+((__t=( navUserItem_signupText ))==null?'':__t)+
+'</a>\n    ';
+ } else { 
+__p+='\n      <li class="nav-item dropdown pull-right">\n          <span class="label label-danger label-pill pull-right">';
+ if ( badge > 0 ){ 
+__p+=''+
+((__t=( badge ))==null?'':__t)+
+'';
+ } 
+__p+='</span>\n          <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="'+
+((__t=( navItem_url ))==null?'':__t)+
+'" role="button" aria-haspopup="true" aria-expanded="false"><img class="img-rounded profile_image" src="'+
+((__t=( navUserItem_user.profile_img ))==null?'':__t)+
+'"/>'+
+((__t=( navUserItem_user.name ))==null?'':__t)+
+'</a>\n          <div class="dropdown-menu">\n          </div>\n      </li>\n    ';
+ } 
+__p+='\n</li>\n';
+}
+return __p;
+}; });
 
-define('navUserItem',['jquery', 'navDropdownItem', 'tpl!templates/navUserItem.html'
+define('navUserItem',['jquery', 'navDropdownItem', 'tpl!templates/navUserItem'
 	], function ($, NavDropdownItem, tpl) {
 	var NavUserItem = NavDropdownItem.create('NavUserItem');
 	NavUserItem.extend({
@@ -1968,9 +2161,23 @@ define('navUserItem',['jquery', 'navDropdownItem', 'tpl!templates/navUserItem.ht
 
 
 
-define('tpl!templates/dropdownItem.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<a class="dropdown-item '); if (pullright){ ; __p.push('pull-right'); } ; __p.push('" href="', dropdownItem_url ,'">', dropdownItem_html ,'</a>');}return __p.join('');}});
+define('tpl!templates/dropdownItem', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<a class="dropdown-item ';
+ if (pullright){ 
+__p+='pull-right';
+ } 
+__p+='" href="'+
+((__t=( dropdownItem_url ))==null?'':__t)+
+'">'+
+((__t=( dropdownItem_html ))==null?'':__t)+
+'</a>';
+}
+return __p;
+}; });
 
-define('dropdownItem',['jquery', 'component', 'tpl!templates/dropdownItem.html'
+define('dropdownItem',['jquery', 'component', 'tpl!templates/dropdownItem'
 	], function ($, Component, tpl) {
 	var DropdownItem = Component.create('DropdownItem');
 	DropdownItem.extend({
@@ -1986,9 +2193,15 @@ define('dropdownItem',['jquery', 'component', 'tpl!templates/dropdownItem.html'
 });
 
 
-define('tpl!templates/dropdownDivider.html', function() {return function(obj) { var __p=[],print=function(){__p.push.apply(__p,arguments);};with(obj||{}){__p.push('<div class="dropdown-divider"></div>');}return __p.join('');}});
+define('tpl!templates/dropdownDivider', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="dropdown-divider"></div>';
+}
+return __p;
+}; });
 
-define('dropdownDivider',['jquery', 'component', 'tpl!templates/dropdownDivider.html'
+define('dropdownDivider',['jquery', 'component', 'tpl!templates/dropdownDivider'
 	], function ($, Component, tpl) {
 	var DropdownDivider = Component.create('DropdownDivider');
 	DropdownDivider.extend({
@@ -2167,5 +2380,47 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
 
 
     return ListScrollEndFetchGrp;
+});
+
+
+define('tpl!templates/inputList', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="inputList">\n    <label>'+
+((__t=( inputList_lable ))==null?'':__t)+
+'</label>\n    <div class="list_items"></div>\n    <select class="c-select">\n        <option selected>'+
+((__t=( inputList_header ))==null?'':__t)+
+'</option>\n        ';
+ _.each(inputList_options, function(option){ 
+__p+='\n            <option value="'+
+((__t=( option.key ))==null?'':__t)+
+'">'+
+((__t=( option.value ))==null?'':__t)+
+'</option> \n        ';
+ }); 
+__p+='\n    </select>\n    <button class="btn btn-info btn-sm additem">Add</button>\n</div>\n';
+}
+return __p;
+}; });
+
+define('inputList',['jquery', 'component', 'tpl!templates/inputList'
+	], function ($, Component, tpl) {
+    var InputList = Component.create('InputList');
+    InputList.extend({
+        defaultOpt: {
+            inputList_lable: 'Choose and add: ',
+            inputList_header: 'Select a source',
+            inputList_options: [{
+                key: 1,
+                value: 'one'
+            }, {
+                key: 2,
+                value: 'two'
+            }]
+        },
+        tpl: tpl
+    });
+
+    return InputList;
 });
 

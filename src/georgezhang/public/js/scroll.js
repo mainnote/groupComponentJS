@@ -6,7 +6,9 @@ define(['jquery', 'optObj'], function ($, OptObj) {
     Scroll.extend({
         disableScroll: function (opt) {
             this.current = $(window).scrollTop();
+            $(window).scrollTop(0);
             
+            /*
             $('html, body').css({
                 'overflow': 'hidden',
                 'height': '100%'
@@ -14,15 +16,17 @@ define(['jquery', 'optObj'], function ($, OptObj) {
             $('html, body').on('mousewheel', function () {
                 return false;
             });
+            */
         },
         enableScroll: function (opt) {
+            /*
             $('html, body').css({
                 'overflow': '',
                 'height': ''
             });
-
+            */
             if (this.current) $(window).scrollTop(this.current);
-            $('html, body').off('mousewheel');
+            /* $('html, body').off('mousewheel'); */
         },
         set: function (opt) {
             var that = this;

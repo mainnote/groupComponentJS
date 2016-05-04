@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/tagsinput.html', 'bootstrap-tagsinput'
+define(['jquery', 'component', 'tpl!templates/tagsinput', 'bootstrap-tagsinput'
 	], function ($, Component, tpl) {
     var Tagsinput = Component.create('Tagsinput');
     Tagsinput.extend({

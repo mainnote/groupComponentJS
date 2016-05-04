@@ -9,10 +9,10 @@ define(['jquery', 'optObj'
         add: function (opt) {
             var that = this;
 
-            function addValue(values) {
-                var entityCmd = that.group.call('Entity', 'create', 'entityCmd').command();
+            function addValue(value) {
+                var entityCmd = that.group.call('entity', 'create', 'entityCmd').command();
                 var opt_ = {
-                    value: values,
+                    value: value,
                 };
                 var v = entityCmd('update', opt_);
                 that.values.push(v);

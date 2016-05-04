@@ -1,8 +1,11 @@
-define(['jquery', 'component', 'tpl!templates/prompt.html'
+define(['jquery', 'component', 'tpl!templates/prompt'
 	], function ($, Component, tpl) {
 	var Prompt = Component.create('Prompt');
 	Prompt.extend({
         tpl: tpl,
+        defaultOpt: {
+            prompt_title: 'Prompt'  
+        },
         setup: function(opt) {
             var that = this;
             if (!window.layerCount) window.layerCount = 10000;

@@ -27,10 +27,9 @@ define(['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
     var form = formGrp.getMember('form');
     form.extend({
         done: function (opt) {
-            this.group.group.call('prompt', 'afterSubmit', opt);
+            this.group.group.call('prompt', 'afterSubmit', opt); //fromGrp > promptFormGrp
         },
     });
-    formGrp.override(form);
 
     PromptFormGrp.join(prompt, formGrp);
     PromptFormGrp.setCallToMember('prompt');

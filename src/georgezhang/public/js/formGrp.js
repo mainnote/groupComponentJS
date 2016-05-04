@@ -1,5 +1,5 @@
-define(['jquery', 'optGrp', 'form', 'request'
-	], function ($, OptGrp, Form, Request) {
+define(['jquery', 'optGrp', 'form', 'request', 'error'
+	], function ($, OptGrp, Form, Request, Error) {
     var FormGrp = OptGrp.create('FormGrp');
     var form = Form.create('form');
     form.extend({
@@ -12,7 +12,7 @@ define(['jquery', 'optGrp', 'form', 'request'
                 });
                 var id;
                 if (this.opt && this.opt.doc && this.opt.doc._id) id = this.opt.doc._id;
-                var action = (this.opt.form_action || this.comp.attr('action')) + id || '';
+                var action = (this.opt.form_action || this.comp.attr('action')) + (id || '');
                 var method = this.opt.form_method || this.comp.attr('method');
                 var inputData = this.serializeArray();
                 //request
@@ -21,9 +21,13 @@ define(['jquery', 'optGrp', 'form', 'request'
                     request_method: method,
                     request_data: inputData,
                     request_done: function (data, textStatus, jqXHR) {
+                        if (data && 'error' in data) {
+                            return that.error(data);
+                        }
                         var opt0 = {
                             data: data
                         };
+
                         that.done(opt0);
                     },
                     request_fail: function (jqXHR, textStatus, errorThrown) {
@@ -40,7 +44,14 @@ define(['jquery', 'optGrp', 'form', 'request'
             }
         },
         error: function (opt) {
-            this.comp.append('<div class="error">' + opt.error + '</div>');
+            if ($.isPlainObject(opt.error)) {
+                var errorCmd = Error.create('errorCmd').command();
+                errorCmd('render', $.extend(opt.error, {
+                    container: $('<div class="error"></div>').appendTo(this.comp)
+                }));
+            } else {
+                this.comp.append('<div class="error">' + opt.error + '</div>');
+            }
         },
 
     });

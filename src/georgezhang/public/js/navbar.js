@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/navbar.html'
+define(['jquery', 'component', 'tpl!templates/navbar'
 	], function ($, Component, tpl) {
     var Navbar = Component.create('Navbar');
     Navbar.extend({

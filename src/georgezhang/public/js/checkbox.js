@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/checkbox.html', 'bootstrap-switch'
+define(['jquery', 'component', 'tpl!templates/checkbox', 'bootstrap-switch'
 	], function ($, Component, tpl) {
     var Checkbox = Component.create('Checkbox');
     Checkbox.extend({

@@ -1,4 +1,4 @@
-define(['jquery', 'navItem', 'tpl!templates/navDropdownItem.html'
+define(['jquery', 'navItem', 'tpl!templates/navDropdownItem'
 	], function ($, NavItem, tpl) {
     var NavDropdownItem = NavItem.create('NavDropdownItem');
     NavDropdownItem.extend({

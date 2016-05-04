@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/navtags.html'
+define(['jquery', 'component', 'tpl!templates/navtags'
 	], function ($, Component, tpl) {
     var Navtags = Component.create('Navtags');
     Navtags.extend({

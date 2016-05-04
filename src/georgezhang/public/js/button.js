@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/button.html'
+define(['jquery', 'component', 'tpl!templates/button'
 	], function ($, Component, tpl) {
     var Button = Component.create('Button');
     Button.extend({

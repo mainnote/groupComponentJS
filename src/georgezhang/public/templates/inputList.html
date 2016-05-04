@@ -1,0 +1,11 @@
+<div class="inputList">
+    <label><%= inputList_lable %></label>
+    <div class="list_items"></div>
+    <select class="c-select">
+        <option selected><%= inputList_header %></option>
+        <% _.each(inputList_options, function(option){ %>
+            <option value="<%= option.key %>"><%= option.value %></option> 
+        <% }); %>
+    </select>
+    <button class="btn btn-info btn-sm additem">Add</button>
+</div>

@@ -1,8 +1,8 @@
  define(['jquery', 'optGrp', 'collection', 'entity', 'request'
 	], function ($, OptGrp, Collection, Entity, Request) {
      var CollectionGrp = OptGrp.create('CollectionGrp');
-     var Collection = Collection.create();
-     Collection.extend({
+     var collection = Collection.create('collection');
+     collection.extend({
          connectEntity: function (opt) {
              var that = this;
              this.setOpt(opt);
@@ -25,15 +25,14 @@
                      };
                      that.opt.callback(opt_callback);
                  },
-                 request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {
-                 },
+                 request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
              };
-             this.group.call('Request', 'connect', opt_);
+             this.group.call('request', 'connect', opt_);
          }
      });
 
-     var Entity = Entity.create();
-     Entity.extend({
+     var entity = Entity.create('entity');
+     entity.extend({
          remove: function (opt) {
              //back to collection to remove this entity
              var opt_ = {
@@ -43,7 +42,7 @@
                      opt.callback(opt_callback);
                  }
              };
-             this.group.call('Collection', 'connectEntity', opt_);
+             this.group.call('collection', 'connectEntity', opt_);
 
          },
          fetch: function (opt) {
@@ -54,15 +53,25 @@
                      opt.callback(opt_callback);
                  }
              };
-             this.group.call('Collection', 'connectEntity', opt_);
-
-         }
+             this.group.call('collection', 'connectEntity', opt_);
+         },
+         error: function (opt) {
+             //back to collection to remove this entity
+             var opt_ = {
+                 connectMethod: 'PUT',
+                 entity: this.value,
+                 callback: function (opt_callback) {
+                     opt.callback(opt_callback);
+                 }
+             };
+             this.group.call('collection', 'connectEntity', opt_);
+         },
      });
 
-     var Request = Request.create();
+     var request = Request.create('request');
 
-     CollectionGrp.join(Collection, Entity, Request);
+     CollectionGrp.join(collection, entity, request);
 
-     CollectionGrp.setCallToMember('Collection');
+     CollectionGrp.setCallToMember('collection');
      return CollectionGrp;
  });

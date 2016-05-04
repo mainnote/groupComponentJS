@@ -38,5 +38,7 @@ module.exports = [
     'fetcher',
     'listScrollEndFetchGrp',
     'toggleHeaderScroll',
-    'scroll'
+    'scroll',
+    'error',
+    'inputList',
 ]

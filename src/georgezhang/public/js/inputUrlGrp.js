@@ -7,7 +7,6 @@ define(['jquery', 'optGrp', 'input', 'validUrl'
 
     inputUrl.extend({
         checkValid: function (opt) {
-            console.log('checking');
             var opt_ = {
                 url: opt.input_value
             }

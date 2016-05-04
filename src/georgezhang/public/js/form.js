@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/form.html'
+define(['jquery', 'component', 'tpl!templates/form'
 	], function ($, Component, tpl) {
     var Form = Component.create('Form');
     Form.extend({

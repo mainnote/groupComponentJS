@@ -2,7 +2,9 @@ define(['jquery', 'optObj'
 	], function ($, OptObj) {
     var Entity = OptObj.create('Entity');
     Entity.extend({
-        value: null,
+        initValues: function () {
+            this.value = null;
+        },
         update: function (opt) {
             if (opt.hasOwnProperty('value')) {
                 if ($.isPlainObject(opt.value)) {

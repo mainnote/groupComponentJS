@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/list.html',
+define(['jquery', 'component', 'tpl!templates/list',
 	], function ($, Component, tpl) {
     var List = Component.create('List');
     List.extend({
@@ -21,13 +21,11 @@ define(['jquery', 'component', 'tpl!templates/list.html',
                     var itemCmd = that.group.call('Item', 'create', 'itemCmd').command(); //member create
                     that.items.push(itemCmd);
                     var opt_ = {
-                        noSetup: true,
                         list: that,
                         container: that.comp,
                         item_data: data,
                     };
                     var itemComp = itemCmd('render', opt_);
-                    itemCmd('setup');
                     return itemComp;
                 });
 

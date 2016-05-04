@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/navItem.html'
+define(['jquery', 'component', 'tpl!templates/navItem'
 	], function ($, Component, tpl) {
     var NavItem = Component.create('NavItem');
     NavItem.extend({

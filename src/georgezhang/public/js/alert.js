@@ -1,4 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/alert.html'
+define(['jquery', 'component', 'tpl!templates/alert'
 	], function ($, Component, tpl) {
 	var Item = Component.create('Item');
 	Item.extend({

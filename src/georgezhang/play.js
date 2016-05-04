@@ -310,14 +310,17 @@ window.LOG1 = function (tag, msg, type, result) {
     });
     require(['jquery', 'listItemGrp', 'collectionGrp'], function ($, ListItemGrp, CollectionGrp) {
         var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd').command();
+        
         var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd').command();
         var opt = {
             container: $('#mnbody'),
             list_data: collectionGrpCmd('add', {
-                values: ['yes', 'haha']
+                values: ['yes', 'hahasss']
             }),
         };
         listItemGrpCmd('render', opt);
+        console.log('CollectionGrp 1', CollectionGrp.values);
+        console.log('collectionGrp 1', collectionGrpCmd('values'));
     });
     require(['jquery', 'checkbox'], function ($, Checkbox) {
         var checkboxCmd = Checkbox.create('checkboxCmd').command();
@@ -376,5 +379,30 @@ window.LOG1 = function (tag, msg, type, result) {
 			],
         };
         navtagsCmd('render', opt);
+    }); //require
+    require(['jquery', 'inputListGrp', 'input'], function ($, InputListGrp, Input) {
+        var input_user = Input.create('input_user');
+
+        var inputListGrpCmd = InputListGrp.create('inputListGrpCmd').command();
+        var opt = {
+            container: $('#mnbody'),
+            prompt_title: 'Test PromptFormGrp',
+            form_elements: [{
+                elem: input_user,
+                opt: {
+                    input_id: 'inputtext',
+                    input_name: 'inputtext',
+                    input_type: 'text',
+                    input_placeholder: 'User Name',
+                    input_required: true,
+                    input_autofocus: true,
+                    input_action: '/',
+                },
+					}],
+            list_data: [{
+                name: 'item 1'
+            }],
+        };
+        inputListGrpCmd('render', opt);
     }); //require
 })();

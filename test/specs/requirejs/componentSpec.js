@@ -99,10 +99,9 @@ define(function (require) {
                 var RequestMock = OptObj.create('RequestMock');
                 RequestMock.extend({
                     connect: function (opt) {
-                        if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
+                        if (true || opt.request_data.value === "test" || opt.request_data.value === "test@local.com") { //for always done
                             opt.request_done({
                                 data: {}
-
                             });
                         } else {
                             opt.request_done({
@@ -203,9 +202,10 @@ define(function (require) {
 
                     //click the submit button
                     expect($('.promptTop').length).toBe(1);
-                    //console.log(testContainer.prop('outerHTML'));
-                    testContainer.find('.btn-primary[type="submit"]').trigger('click');
-
+                    var btn_submit = testContainer.find('.btn-primary[type="submit"]');
+                    //console.log(btn_submit.attr('title'));
+                    btn_submit.trigger('click');
+                    
                     expect($('.promptTop').length).toBe(0);
 
                     done();
