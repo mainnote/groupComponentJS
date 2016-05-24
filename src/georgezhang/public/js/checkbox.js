@@ -2,6 +2,7 @@ define(['jquery', 'component', 'tpl!templates/checkbox', 'bootstrap-switch'
 	], function ($, Component, tpl) {
     var Checkbox = Component.create('Checkbox');
     Checkbox.extend({
+        tpl: tpl,
         defaultOpt: {
             checkbox_id: 'checkbox_id',
             checkbox_label_class: 'checkbox_label_class',
@@ -11,7 +12,6 @@ define(['jquery', 'component', 'tpl!templates/checkbox', 'bootstrap-switch'
             checkbox_onText: 'Yes',
             checkbox_offText: 'No'
         },
-        tpl: tpl,
         setup: function (opt) {
             var checkboxComp = this.comp.find('input');
             checkboxComp.bootstrapSwitch({

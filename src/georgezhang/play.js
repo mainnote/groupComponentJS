@@ -67,6 +67,7 @@ window.LOG1 = function (tag, msg, type, result) {
     require(['fastclick'], function (fastclick) {
         fastclick.attach(document.body);
     });
+
     require(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navUserItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider'], function ($, bootstrap, Navbar, NavBrand, NavItem, NavUserItem, NavDropdownItem, DropdownItem, DropdownDivider) {
         var navBrand = NavBrand.create('navBrand');
         navBrand.setOpt({
@@ -232,7 +233,7 @@ window.LOG1 = function (tag, msg, type, result) {
 
         return RequestMock;
     });
-    require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputPassword', 'inputEmailGrp', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputPassword, InputEmailGrp, InputGrp, RequestMock) {
+    require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputGrp, RequestMock) {
         var btn = $('<button class="btn btn-primary">PromptFormGrp</button>');
         $('#mnbody').append(btn);
 
@@ -242,11 +243,76 @@ window.LOG1 = function (tag, msg, type, result) {
             var thisTextarea = TextareaCountGrp.create();
             var thisTextarea2 = TextareaCountGrp.create();
 
-            var inputText = InputGrp.create('inputText');
-            inputText.override(requestMock);
-            var inputPassword = InputPassword.create('inputPassword');
-            var inputEmailGrp = InputEmailGrp.create('inputEmailGrp');
-            inputEmailGrp.override(requestMock);
+            var inputText = Input.create('inputText');
+            inputText.extend({
+                checkValid: function (opt) {
+                    var input_value = this.inputElem.val();
+                    if (input_value.length > 2) {
+                        this.getResult({
+                            invalidHints: false
+                        });
+                        return true;
+                    } else {
+                        this.getResult({
+                            invalidHints: 'User name must longer than 2 charactors'
+                        });
+                        return false;
+
+                    }
+                },
+            });
+
+            var inputPassword = Input.create('inputPassword');
+            inputPassword.extend({
+                checkValid: function (opt) {
+                    var input_value = this.inputElem.val();
+                    if (input_value.length < 6) {
+                        this.getResult({
+                            invalidHints: 'Error: Password must contain at least six characters!',
+                        });
+                        return false;
+                    } else if (!/[a-z]/.test(input_value)) {
+                        this.getResult({
+                            invalidHints: 'Error: password must contain at least one lowercase letter (a-z)!',
+                        });
+                        return false;
+                    } else if (!/[A-Z]/.test(input_value)) {
+                        this.getResult({
+                            invalidHints: 'Error: password must contain at least one uppercase letter (A-Z)!',
+                        });
+                        return false;
+                    } else if (!/[0-9]/.test(input_value)) {
+                        this.getResult({
+                            invalidHints: 'Error: password must contain at least one number (0-9)!',
+                        });
+                        return false;
+                    } else {
+                        this.getResult({
+                            invalidHints: false
+                        });
+                        return true;
+                    }
+                },
+            });
+
+            var inputEmail = Input.create('inputEmail');
+            inputEmail.extend({
+                checkValid: function (opt) {
+                    var input_value = this.inputElem.val();
+                    if (this.validator.isEmail(input_value)) {
+                        this.getResult({
+                            invalidHints: false
+                        });
+                        return true;
+                    } else {
+                        this.getResult({
+                            invalidHints: 'invalid email'
+                        });
+                        return false;
+
+                    }
+                },
+            });
 
             var button_submit = Button.create();
             var opt = {
@@ -273,7 +339,6 @@ window.LOG1 = function (tag, msg, type, result) {
                             input_placeholder: 'User Name',
                             input_required: true,
                             input_autofocus: true,
-                            input_action: '/',
                         },
 					}, {
                         elem: inputPassword,
@@ -285,7 +350,7 @@ window.LOG1 = function (tag, msg, type, result) {
                             input_required: true,
                         },
 					}, {
-                        elem: inputEmailGrp,
+                        elem: inputEmail,
                         opt: {
                             input_id: 'inputemail',
                             input_name: 'inputemail',
@@ -310,7 +375,7 @@ window.LOG1 = function (tag, msg, type, result) {
     });
     require(['jquery', 'listItemGrp', 'collectionGrp'], function ($, ListItemGrp, CollectionGrp) {
         var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd').command();
-        
+
         var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd').command();
         var opt = {
             container: $('#mnbody'),
@@ -319,8 +384,6 @@ window.LOG1 = function (tag, msg, type, result) {
             }),
         };
         listItemGrpCmd('render', opt);
-        console.log('CollectionGrp 1', CollectionGrp.values);
-        console.log('collectionGrp 1', collectionGrpCmd('values'));
     });
     require(['jquery', 'checkbox'], function ($, Checkbox) {
         var checkboxCmd = Checkbox.create('checkboxCmd').command();
@@ -337,17 +400,36 @@ window.LOG1 = function (tag, msg, type, result) {
         };
         tagsinputCmd('render', opt);
     }); //require
-    require(['jquery', 'inputUrlGrp'], function ($, InputUrlGrp) {
-        var inputUrlGrpCmd = InputUrlGrp.create('inputUrlGrpCmd').command();
+    require(['jquery', 'input'], function ($, Input) {
+        var inputUrl = Input.create('inputUrlCmd');
+        inputUrl.extend({
+            checkValid: function (opt) {
+                var input_value = this.inputElem.val();
+                if (this.validator.isURL(input_value)) {
+                    this.getResult({
+                        invalidHints: false
+                    });
+                    return true;
+                } else {
+                    this.getResult({
+                        invalidHints: 'invalid URL'
+                    });
+                    return false;
+
+                }
+            },
+        });
+
+        var inputUrlCmd = inputUrl.command();
         var opt = {
             container: $('#mnbody'),
-            input_id: 'inputUrlGrpCmd',
-            input_name: 'inputUrlGrpCmd',
+            input_id: 'inputUrlCmd',
+            input_name: 'inputUrlCmd',
             input_type: 'text',
-            input_placeholder: 'inputUrlGrpCmd',
+            input_placeholder: 'inputUrlCmd',
             input_value: 'http://yes.com'
         };
-        inputUrlGrpCmd('render', opt);
+        inputUrlCmd('render', opt);
     }); //require
     require(['jquery', 'navtags', 'navItem', 'bootstrap'], function ($, Navtags, NavItem, Bootstrap) {
         var link1 = NavItem.create('link1');
@@ -380,29 +462,109 @@ window.LOG1 = function (tag, msg, type, result) {
         };
         navtagsCmd('render', opt);
     }); //require
-    require(['jquery', 'inputListGrp', 'input'], function ($, InputListGrp, Input) {
-        var input_user = Input.create('input_user');
-
+    require(['jquery', 'inputListGrp'], function ($, InputListGrp) {
         var inputListGrpCmd = InputListGrp.create('inputListGrpCmd').command();
         var opt = {
             container: $('#mnbody'),
             prompt_title: 'Test PromptFormGrp',
-            form_elements: [{
-                elem: input_user,
-                opt: {
-                    input_id: 'inputtext',
-                    input_name: 'inputtext',
-                    input_type: 'text',
-                    input_placeholder: 'User Name',
-                    input_required: true,
-                    input_autofocus: true,
-                    input_action: '/',
-                },
-					}],
             list_data: [{
-                name: 'item 1'
+                heading: 'item 1',
+                text: 'this is a long text'
             }],
         };
         inputListGrpCmd('render', opt);
     }); //require
+
+    require(['jquery', 'inputListGrp_selection'], function ($, InputListGrp_selection) {
+        var InputListGrp_selectionCmd = InputListGrp_selection.create('InputListGrp_selectionCmd').command();
+        var list_data = [{
+            heading: 'item 1 selection',
+            text: 'this is a long text selection',
+            optionKey: '1'
+            }];
+        var opt = {
+            container: $('#mnbody'),
+            prompt_title: 'Test PromptFormGrp selection',
+            inputList_value: encodeURIComponent(JSON.stringify(list_data)),
+        };
+        InputListGrp_selectionCmd('render', opt);
+    }); //require
+
+    require(['jquery', 'form', 'input', 'button'], function ($, Form, Input, Button) {
+        var form = Form.create('form');
+        var button_submit = Button.create('button_submit');
+        var input_text = Input.create('input_text');
+        input_text.extend({
+            checkValid: function (opt) {
+                var val = this.inputElem.val();
+                if (val.length <= 2) {
+                    this.getResult({
+                        invalidHints: 'Input text must be longer than 2 charactors.'
+                    });
+                    return false;
+                } else {
+                    this.getResult({
+                        invalidHints: false
+                    });
+                    return true;
+                }
+
+            }
+        });
+        var input_text2 = Input.create('input_text2');
+        input_text2.extend({
+            checkValid: function (opt) {
+                var val = this.inputElem.val();
+                if (val.length <= 2) {
+                    this.getResult({
+                        invalidHints: 'Input text must be longer than 2 charactors.'
+                    });
+                    return false;
+                } else {
+                    this.getResult({
+                        invalidHints: false
+                    });
+                    return true;
+                }
+
+            }
+        });
+        var opt = {
+            container: $('#mnbody'),
+            form_elements: [{
+                        elem: input_text,
+                        opt: {
+                            input_id: 'inputtext',
+                            input_name: 'inputtext',
+                            input_type: 'text',
+                            input_placeholder: 'Test Validation',
+                            input_required: true,
+                            input_autofocus: true,
+                            input_action: '/',
+                        },
+					}, {
+                        elem: input_text2,
+                        opt: {
+                            input_id: 'inputtext2',
+                            input_name: 'inputtext2',
+                            input_type: 'text',
+                            input_placeholder: 'Test Validation2',
+                            input_required: true,
+                            input_action: '/',
+                        },
+					}, {
+                        elem: button_submit,
+                        opt: {
+                            button_name: 'Test Validate',
+                            button_type: 'submit',
+                            button_class: 'btn-sm btn-primary'
+                        },
+					},
+				],
+        };
+
+        var formCmd = form.command();
+        formCmd('render', opt);
+    }); //require
+
 })();

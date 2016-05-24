@@ -4,7 +4,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
     var collectionGrp = CollectionGrp.create('collectionGrp');
     var fetcher = Fetcher.create('fetcher');
     ListScrollEndFetchGrp.join(listItemGrp, collectionGrp, fetcher);
-    
+
     ListScrollEndFetchGrp.extend({
         initOpt: {},
         reset: function (opt) {
@@ -12,7 +12,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
             this.call('listItemGrp', 'reset');
             this.call('collectionGrp', 'reset');
             var opt_ = {};
-            $.extend(opt_, this.initOpt, opt||{});
+            $.extend(opt_, this.initOpt, opt || {});
             this.set(opt_);
         },
         set: function (opt) {
@@ -22,8 +22,9 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
             var container = opt.container;
             var page = 1;
             var pageLoading = false;
+
             function getUrl() {
-                return opt.getUrl(page, opt.input_vaule||null);
+                return opt.getUrl(page, opt.input_vaule || null);
             }
 
             //fetch data from server API for initial dataset

@@ -1,10 +1,10 @@
-define(['jquery', 'optGrp', 'list', 'item'
-	], function ($, OptGrp, List, Item) {
+define(['jquery', 'optGrp', 'list', 'itemGrp'
+	], function ($, OptGrp, List, ItemGrp) {
 	var ListItemGrp = OptGrp.create('ListItemGrp');
-    var List = List.create('List');
-    var Item = Item.create('Item');
-    ListItemGrp.join(List, Item);
+    var list = List.create('list');
+    var itemGrp = ItemGrp.create('itemGrp');
+    ListItemGrp.join(list, itemGrp);
     
-    ListItemGrp.setCallToMember('List');
+    ListItemGrp.setCallToMember('list');
 	return ListItemGrp;
 });

@@ -2,6 +2,7 @@ define(['jquery', 'component', 'tpl!templates/navItem'
 	], function ($, Component, tpl) {
     var NavItem = Component.create('NavItem');
     NavItem.extend({
+        tpl: tpl,
         defaultOpt: {
             navItem_url: '#',
             navItem_html: '',
@@ -11,7 +12,6 @@ define(['jquery', 'component', 'tpl!templates/navItem'
             active: false,
             badge: 0,
         },
-        tpl: tpl,
         setup: function (opt) {
             if (opt && opt.navitem_click) {
                 var that = this;

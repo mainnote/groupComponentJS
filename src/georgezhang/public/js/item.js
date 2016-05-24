@@ -3,8 +3,11 @@ define(['jquery', 'component', 'tpl!templates/item'
     var Item = Component.create('Item');
     Item.extend({
         tpl: tpl,
-        entityCmd: null,
-        list: null,
+        init: function () {
+            Component.init.call(this);
+            this.entityCmd = null;
+            this.list = null;
+        },
         render: function (opt) {
             this.entityCmd = opt.item_data;
             this.list = opt.list;
@@ -18,6 +21,7 @@ define(['jquery', 'component', 'tpl!templates/item'
         remove: function (opt) {
             var that = this;
             var opt_ = {
+                data: opt.data,
                 callback: function () {
                     //remove from list
                     that.list.removeItem({

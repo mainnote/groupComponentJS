@@ -2,11 +2,11 @@ define(['jquery', 'component', 'tpl!templates/navbar'
 	], function ($, Component, tpl) {
     var Navbar = Component.create('Navbar');
     Navbar.extend({
+        tpl: tpl,
         defaultOpt: {
             navbar_id: 'navbar_id',
             navbar_placement: 'navbar-fixed-top navbar-light bg-faded'
         },
-        tpl: tpl,
         setup: function (opt) {
             if (opt.navbar_brand) {
                 this.setElements({

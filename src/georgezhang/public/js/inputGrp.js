@@ -30,6 +30,7 @@ define(['jquery', 'optGrp', 'input', 'request'
 				request_always : function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
 			};
 			this.group.call('request', 'connect', opt_);
+            return true; //skip waiting for remote validation if submit
 		},
 	});
 

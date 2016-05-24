@@ -2,7 +2,8 @@ define(['jquery', 'optObj'
 	], function ($, OptObj) {
     var Entity = OptObj.create('Entity');
     Entity.extend({
-        initValues: function () {
+        init: function () {
+            OptObj.init.call(this);
             this.value = null;
         },
         update: function (opt) {

@@ -1,10 +1,9 @@
 define(['jquery'
 	], function ($) {
     return {
-        initValues: function () {
-            this.defaultOpt = {};
-            this.opt = {};
-        },
+        opt: {}, //should not be overriden
+        defaultOpt: {},
+        init: function () {},
         setOpt: function (opt) {
             this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
         }

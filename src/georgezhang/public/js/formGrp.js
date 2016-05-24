@@ -2,9 +2,10 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
 	], function ($, OptGrp, Form, Request, Error) {
     var FormGrp = OptGrp.create('FormGrp');
     var form = Form.create('form');
+    var form_checkValid = form.checkValid;
     form.extend({
         submit: function (opt) {
-            if (!this.submitting) {
+            if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var that = this;
                 this.comp.find('.error').each(function (index) {
@@ -41,6 +42,14 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
                     },
                 };
                 this.group.call('request', 'connect', opt_);
+            }
+        },
+        checkValid: function(opt){
+            var validFlag = form_checkValid.call(this, opt);
+            if (validFlag) {
+                return true;
+            } else {
+                this.error({error: 'Please correct the all fields above.'});
             }
         },
         error: function (opt) {

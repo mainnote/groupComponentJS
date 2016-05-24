@@ -1,13 +1,13 @@
 define(['jquery', 'component', 'tpl!templates/error'
 	], function ($, Component, tpl) {
-	var Error = Component.create('Error');
-	Error.extend({
+    var Error = Component.create('Error');
+    Error.extend({
+        tpl: tpl,
         defaultOpt: {
             message: '',
             errors: []
         },
-        tpl: tpl,
-	});
-    
+    });
+
     return Error;
 });

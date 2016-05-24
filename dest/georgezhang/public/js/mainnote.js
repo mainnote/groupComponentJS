@@ -101,7 +101,7 @@ var obj = {
 
         //copy all inherited parents list to new object
         if (this.hasOwnProperty('parentNames')) {
-            newObj.parentNames = [];
+            newObj.parentNames = []; //init
             var len = this.parentNames.length;
             for (var i = 0; i < len; i++) {
                 newObj.parentNames.push(this.parentNames[i]);
@@ -111,7 +111,7 @@ var obj = {
         //add current parent to the parents list
         if (this.hasOwnProperty('name')) {
             if (!newObj.hasOwnProperty('parentNames'))
-                newObj.parentNames = [];
+                newObj.parentNames = []; //init
             newObj.parentNames.push(this.name);
 
             if (!name) {
@@ -119,15 +119,18 @@ var obj = {
             }
         }
 
-        newObj.name = name;
+        newObj.name = name; //init
+        if ('init' in newObj && typeof newObj.init === 'function') newObj.init();
 
         return newObj;
     },
     extend: function () {
         for (var i = 0; i < arguments.length; i++) {
             var extObj = arguments[i];
-            for (var key in extObj)
+            for (var key in extObj) {
                 this[key] = extObj[key];
+                if (key === 'init' && typeof this.init === 'function') this.init();
+            }
         }
         return this;
     },
@@ -178,10 +181,10 @@ group.extend({
     },
     _buildMemberList: function () {
         if (!this._memberList) { //base group
-            this._memberList = {};
+            this._memberList = {}; //init
         } else if (!this.hasOwnProperty('_memberList')) { //inherited group
             var prototypeMemberList = this._memberList;
-            this._memberList = {}; //in object level memberList
+            this._memberList = {}; //init in object level memberList
             for (var key in prototypeMemberList) {
                 var memberCmd = prototypeMemberList[key];
                 var newMember = memberCmd('create');
@@ -227,33 +230,86 @@ group.extend({
             } else {
                 return memberCmd(methodName, opt);
             }
-            //deep call sub group's member
+         //check all members if anyone parent matched the memberName (inherited member)
         } else {
+            var result;
             var prototypeMemberList = this._memberList;
             for (var key in prototypeMemberList) {
                 var memberCmd = prototypeMemberList[key];
                 if (typeof memberCmd === 'function') {
                     var member = prototypeMemberList[key]('thisObj');
-                    if (member.hasOwnProperty('parentNames')) {
+                    if (member.hasOwnProperty('parentNames') && methodName in member && typeof member[methodName] === 'function') {
                         var parentNames = member.parentNames;
                         var p_len = parentNames.length;
                         for (var j = 0; j < p_len; j++) {
                             if (memberName === parentNames[j]) {
                                 found = true;
+                                var result = memberCmd(methodName, opt);
                                 if (global.LOG) {
-                                    var result = memberCmd(methodName, opt);
                                     LOG(TAG, ' SubGroup ' + this.name + ' [ ' + memberName + '.' + methodName + ' ] ', opt, result);
-                                } else {
-                                    memberCmd(methodName, opt); //no return till all members checked
                                 }
                             }
                         }
+                        
                     }
                 }
             }
+            if (found) return result; //last result
         }
         //if not found, should we leave error?
-        if (!found)  throw 'This group ' + this.name + ' does not have member ' + memberName;
+        if (!found) throw 'This group ' + this.name + ' does not have member ' + memberName;
+    },
+
+    //go up level group to find member and execute its method
+    upCall: function (memberName, methodName, opt) {
+        var result = this._upCall(memberName, methodName, opt);
+        if (typeof result === 'string' && result === '__NOTFOUND__') {
+            throw 'The upper groups from ' + this.name + ' does not have member ' + memberName;
+        } else {
+            return result;
+        }
+    },
+    _upCall: function (memberName, methodName, opt) {
+        if (memberName in this._memberList) { //check current group members
+            return this.call(memberName, methodName, opt);
+        } else {
+            if (this.group) {
+                return this.group.upCall(memberName, methodName, opt);
+            } else {
+                return '__NOTFOUND__';
+            }
+        }
+
+    },
+
+
+    //go up level group to find member and execute its method
+    downCall: function (memberName, methodName, opt) {
+        var result = this._downCall(memberName, methodName, opt);
+        if (typeof result === 'string' && result === '__NOTFOUND__') {
+            throw 'The downward groups from ' + this.name + ' does not have member ' + memberName;
+        } else {
+            return result;
+        }
+    },
+    _downCall: function (memberName, methodName, opt) {
+        if (memberName in this._memberList) { //check current group members
+            return this.call(memberName, methodName, opt);
+        } else {
+            var prototypeMemberList = this._memberList;
+            //loop members to find group
+            for (var key in prototypeMemberList) {
+                var memberCmd = prototypeMemberList[key];
+                if (typeof memberCmd === 'function') {
+                    var member = prototypeMemberList[key]('thisObj');
+                    if (member.hasOwnProperty('_memberList')) { //group
+                        return member._downCall(memberName, methodName, opt); //first hit
+                    }
+                }
+            }
+            return '__NOTFOUND__';
+        }
+
     },
 
     /* call through to specific member whom play as a major role*/
@@ -427,8 +483,9 @@ return Grp;
 define('opt',['jquery'
 	], function ($) {
     return {
+        opt: {}, //should not be overriden
         defaultOpt: {},
-        opt: {},
+        init: function () {},
         setOpt: function (opt) {
             this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
         }
@@ -601,12 +658,12 @@ return __p;
 
 define('count',['jquery', 'component', 'tpl!templates/count'
 	], function ($, Component, tpl) {
-	var Count = Component.create('Count');
-	Count.extend({
+    var Count = Component.create('Count');
+    Count.extend({
         tpl: tpl,
-        setup: function(opt) {
+        setup: function (opt) {
             var that = this;
-            this.watchComp.on('input', function(e){
+            this.watchComp.on('input', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var val = $(this).val();
@@ -617,17 +674,17 @@ define('count',['jquery', 'component', 'tpl!templates/count'
             });
             return this.comp;
         },
-        
-		render : function (opt) {
-			var showTpl = $(this.template());
-			opt.comp.after(showTpl);
+
+        render: function (opt) {
+            var showTpl = $(this.template());
+            opt.comp.after(showTpl);
             this.comp = showTpl;
             this.watchComp = opt.comp;
             this.maxCount = opt.maxCount;
-			return this.setup();
-		},
-        
-        count: function(opt) {
+            return this.setup();
+        },
+
+        count: function (opt) {
             var count = opt.val.length;
             if (this.maxCount) {
                 var remaining = this.maxCount - count;
@@ -640,20 +697,23 @@ define('count',['jquery', 'component', 'tpl!templates/count'
                 this.comp.text(count + ' characters totally');
             }
         },
-        
-        overMaxCount: function(opt) {
+
+        overMaxCount: function (opt) {
             this.watchComp.val(opt.val.substring(0, this.maxCount));
         },
-	});
+    });
 
-	return Count;
+    return Count;
 });
 
 define('entity',['jquery', 'optObj'
 	], function ($, OptObj) {
     var Entity = OptObj.create('Entity');
     Entity.extend({
-        value: null,
+        init: function () {
+            OptObj.init.call(this);
+            this.value = null;
+        },
         update: function (opt) {
             if (opt.hasOwnProperty('value')) {
                 if ($.isPlainObject(opt.value)) {
@@ -676,7 +736,10 @@ define('collection',['jquery', 'optObj'
 	], function ($, OptObj) {
     var Collection = OptObj.create('Collection');
     Collection.extend({
-        values: [],
+        init: function () {
+            OptObj.init.call(this);
+            this.values = [];
+        },
         reset: function (opt) {
             this.values = [];
         },
@@ -707,6 +770,20 @@ define('collection',['jquery', 'optObj'
             var startIndex = this.values.length;
             this.add(opt);
             return this.values.slice(startIndex);
+        },
+        getValues: function (opt) {
+            return $.map(this.values, function (entityCmd, i) {
+                return entityCmd('get');
+            });
+        },
+        remove: function (opt) {
+            var values = this.values;
+            $.each(values, function (i, entityCmd) {
+                if (entityCmd('thisObj') === opt.entity) {
+                    values.splice(i, 1);
+                    return false;
+                }
+            });
         }
     });
 
@@ -717,11 +794,8 @@ define('request',['jquery', 'optObj'
 	], function ($, OptObj) {
     var Request = OptObj.create('Request');
     Request.extend({
-        defaultOpt: {},
-        opt: {},
         connect: function (opt) {
             this.setOpt(opt);
-            
             $.ajax({
                     url: this.opt.request_url,
                     method: this.opt.request_method,
@@ -731,9 +805,6 @@ define('request',['jquery', 'optObj'
                 .done(this.opt.request_done)
                 .fail(this.opt.request_fail)
                 .always(this.opt.request_always);
-        },
-        setOpt: function (opt) {
-            this.opt = $.extend({}, this.opt, opt);
         },
     });
 
@@ -745,31 +816,55 @@ define('request',['jquery', 'optObj'
      var CollectionGrp = OptGrp.create('CollectionGrp');
      var collection = Collection.create('collection');
      collection.extend({
+         defaultOpt: {
+             remote: true
+         },
          connectEntity: function (opt) {
              var that = this;
              this.setOpt(opt);
-             var opt_ = {
-                 request_url: (this.opt.request_baseUrl || '/') + opt.entity._id,
-                 request_method: opt.connectMethod,
-                 request_done: function (data, textStatus, jqXHR) {
-                     if (data.hasOwnProperty('error')) {
+             if (this.defaultOpt.remote) {
+                 var opt_ = {
+                     request_url: (this.opt.request_baseUrl || '/') + (opt.entity.value._id || ''),
+                     request_method: opt.connectMethod,
+                     request_done: function (data, textStatus, jqXHR) {
+                         if (data.hasOwnProperty('error')) {
+                             var opt_callback = {
+                                 error: data.error
+                             };
+                             opt.callback(opt_callback);
+                         } else {
+                             that.update(opt);
+                             opt.callback(data);
+                         }
+                     },
+                     request_fail: function (jqXHR, textStatus, errorThrown) {
                          var opt_callback = {
-                             error: data.error
+                             error: errorThrown
                          };
-                         that.opt.callback(opt_callback);
-                     } else {
-                         that.opt.callback(data);
-                     }
-                 },
-                 request_fail: function (jqXHR, textStatus, errorThrown) {
-                     var opt_callback = {
-                         error: errorThrown
-                     };
-                     that.opt.callback(opt_callback);
-                 },
-                 request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
-             };
-             this.group.call('request', 'connect', opt_);
+                         opt.callback(opt_callback);
+                     },
+                     request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
+                 };
+
+                 if (opt.data) {
+                     opt_.request_data = opt.data;
+                     opt_.request_method = 'POST';
+                 }
+                 this.group.call('request', 'connect', opt_);
+
+             } else {
+                 if (opt.connectMethod === 'GET') {
+                     opt.callback(opt.entity.get());
+                 } else {
+                     this.update(opt);
+                     opt.callback();
+                 }
+             }
+         },
+         update: function (opt) {
+             if (opt.connectMethod === 'DELETE' || opt.connectMethod === 'PUT') {
+                 this.remove(opt);
+             }
          }
      });
 
@@ -779,10 +874,9 @@ define('request',['jquery', 'optObj'
              //back to collection to remove this entity
              var opt_ = {
                  connectMethod: 'DELETE',
-                 entity: this.value,
-                 callback: function (opt_callback) {
-                     opt.callback(opt_callback);
-                 }
+                 entity: this,
+                 data: opt.data,
+                 callback: opt.callback
              };
              this.group.call('collection', 'connectEntity', opt_);
 
@@ -790,10 +884,8 @@ define('request',['jquery', 'optObj'
          fetch: function (opt) {
              var opt_ = {
                  connectMethod: 'GET',
-                 entity: this.value,
-                 callback: function (opt_callback) {
-                     opt.callback(opt_callback);
-                 }
+                 entity: this,
+                 callback: opt.callback
              };
              this.group.call('collection', 'connectEntity', opt_);
          },
@@ -801,10 +893,8 @@ define('request',['jquery', 'optObj'
              //back to collection to remove this entity
              var opt_ = {
                  connectMethod: 'PUT',
-                 entity: this.value,
-                 callback: function (opt_callback) {
-                     opt.callback(opt_callback);
-                 }
+                 entity: this,
+                 callback: opt.callback
              };
              this.group.call('collection', 'connectEntity', opt_);
          },
@@ -835,11 +925,16 @@ define('form',['jquery', 'component', 'tpl!templates/form'
 	], function ($, Component, tpl) {
     var Form = Component.create('Form');
     Form.extend({
+        tpl: tpl,
         defaultOpt: {
             form_action: '/',
             form_method: 'GET'
         },
-        tpl: tpl,
+        init: function () {
+            Component.init.call(this);
+            this.submitting = false;
+            this.compCmds = [];
+        },
         setup: function (opt) {
             var that = this;
             //build fieldset from JSON
@@ -869,9 +964,8 @@ define('form',['jquery', 'component', 'tpl!templates/form'
             }
             return this.comp;
         },
-        submitting: false,
         submit: function (opt) {
-            if (!this.submitting) {
+            if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var id;
                 if (this.opt && this.opt.doc && this.opt.doc._id) id = this.opt.doc._id;
@@ -895,18 +989,38 @@ define('form',['jquery', 'component', 'tpl!templates/form'
                 });
             }
         },
+        checkValid: function (opt) {
+            var validFlag = true;
+            $.each(this.compCmds, function (index, cmd) {
+                if ('checkValid' in cmd('thisObj')) {
+                    var result = cmd('checkValid'); //valid?
+                    if (!result) validFlag = false;
+                }
+            });
+            return validFlag;
+        },
         done: function (opt) {},
         always: function (opt) {
             this.submitting = false;
         },
         add: function (opt) {
+            this.compCmds.push(opt.compCmd);
             var opt_ = $.extend({
                 container: this.comp.find('fieldset'),
                 form: this
             }, opt.compOpt);
             opt.compCmd('render', opt_);
         },
-
+        find: function (opt) {
+            var subComp;
+            $.each(this.compCmds, function(i, compCmd){
+                if (compCmd('name') === opt.name) {
+                    subComp = compCmd;
+                    return false;
+                }
+            });
+            return subComp;
+        },
         serialize: function (opt) {
             return this.comp.serialize();
         },
@@ -939,24 +1053,26 @@ return __p;
 
 define('error',['jquery', 'component', 'tpl!templates/error'
 	], function ($, Component, tpl) {
-	var Error = Component.create('Error');
-	Error.extend({
+    var Error = Component.create('Error');
+    Error.extend({
+        tpl: tpl,
         defaultOpt: {
             message: '',
             errors: []
         },
-        tpl: tpl,
-	});
-    
+    });
+
     return Error;
 });
+
 define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
 	], function ($, OptGrp, Form, Request, Error) {
     var FormGrp = OptGrp.create('FormGrp');
     var form = Form.create('form');
+    var form_checkValid = form.checkValid;
     form.extend({
         submit: function (opt) {
-            if (!this.submitting) {
+            if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var that = this;
                 this.comp.find('.error').each(function (index) {
@@ -993,6 +1109,14 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
                     },
                 };
                 this.group.call('request', 'connect', opt_);
+            }
+        },
+        checkValid: function(opt){
+            var validFlag = form_checkValid.call(this, opt);
+            if (validFlag) {
+                return true;
+            } else {
+                this.error({error: 'Please correct the all fields above.'});
             }
         },
         error: function (opt) {
@@ -1033,8 +1157,11 @@ define('item',['jquery', 'component', 'tpl!templates/item'
     var Item = Component.create('Item');
     Item.extend({
         tpl: tpl,
-        entityCmd: null,
-        list: null,
+        init: function () {
+            Component.init.call(this);
+            this.entityCmd = null;
+            this.list = null;
+        },
         render: function (opt) {
             this.entityCmd = opt.item_data;
             this.list = opt.list;
@@ -1048,6 +1175,7 @@ define('item',['jquery', 'component', 'tpl!templates/item'
         remove: function (opt) {
             var that = this;
             var opt_ = {
+                data: opt.data,
                 callback: function () {
                     //remove from list
                     that.list.removeItem({
@@ -1100,7 +1228,10 @@ define('list',['jquery', 'component', 'tpl!templates/list',
     var List = Component.create('List');
     List.extend({
         tpl: tpl,
-        items: [],
+        init: function () {
+            Component.init.call(this);
+            this.items = [];
+        },
         reset: function (opt) {
             //make the original frame firm by setting min-height and width
             this.comp.css({
@@ -1115,7 +1246,7 @@ define('list',['jquery', 'component', 'tpl!templates/list',
             var that = this;
             if (opt.list_data && $.isArray(opt.list_data)) {
                 $.each(opt.list_data, function (index, data) {
-                    var itemCmd = that.group.call('Item', 'create', 'itemCmd').command(); //member create
+                    var itemCmd = that.group.call('itemGrp', 'create', 'itemGrpCmd').command(); //member create
                     that.items.push(itemCmd);
                     var opt_ = {
                         list: that,
@@ -1145,14 +1276,24 @@ define('list',['jquery', 'component', 'tpl!templates/list',
     return List;
 });
 
-define('listItemGrp',['jquery', 'optGrp', 'list', 'item'
-	], function ($, OptGrp, List, Item) {
-	var ListItemGrp = OptGrp.create('ListItemGrp');
-    var List = List.create('List');
-    var Item = Item.create('Item');
-    ListItemGrp.join(List, Item);
+define('itemGrp',['jquery', 'optGrp', 'item'
+	], function ($, OptGrp, Item) {
+	var ItemGrp = OptGrp.create('ItemGrp');
+    var item = Item.create('item');
+    ItemGrp.join(item);
     
-    ListItemGrp.setCallToMember('List');
+    ItemGrp.setCallToMember('item');
+	return ItemGrp;
+});
+
+define('listItemGrp',['jquery', 'optGrp', 'list', 'itemGrp'
+	], function ($, OptGrp, List, ItemGrp) {
+	var ListItemGrp = OptGrp.create('ListItemGrp');
+    var list = List.create('list');
+    var itemGrp = ItemGrp.create('itemGrp');
+    ListItemGrp.join(list, itemGrp);
+    
+    ListItemGrp.setCallToMember('list');
 	return ListItemGrp;
 });
 
@@ -1169,36 +1310,36 @@ return __p;
 
 define('prompt',['jquery', 'component', 'tpl!templates/prompt'
 	], function ($, Component, tpl) {
-	var Prompt = Component.create('Prompt');
-	Prompt.extend({
+    var Prompt = Component.create('Prompt');
+    Prompt.extend({
         tpl: tpl,
         defaultOpt: {
-            prompt_title: 'Prompt'  
+            prompt_title: 'Prompt'
         },
-        setup: function(opt) {
+        setup: function (opt) {
             var that = this;
             if (!window.layerCount) window.layerCount = 10000;
             this.comp.css('z-index', window.layerCount++);
             var btn_done = this.comp.find('.promptHead .done');
             var btn_back = this.comp.find('.promptHead .back');
-            btn_done.on('click', function(e) {
+            btn_done.on('click', function (e) {
                 that.donePrompt();
             });
-            
-            btn_back.on('click', function(e) {
+
+            btn_back.on('click', function (e) {
                 that.remove();
             });
             return this.comp;
         },
-        donePrompt: function(opt) {
+        donePrompt: function (opt) {
             this.afterSubmit(opt);
         },
-        afterSubmit: function(opt) {
+        afterSubmit: function (opt) {
             this.remove();
         }
-        
-	});
-    
+
+    });
+
     return Prompt;
 });
 
@@ -1311,7 +1452,7 @@ define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
     var form = formGrp.getMember('form');
     form.extend({
         done: function (opt) {
-            this.group.group.call('prompt', 'afterSubmit', opt); //fromGrp > promptFormGrp
+            this.group.upCall('prompt', 'afterSubmit', opt); //fromGrp > promptFormGrp
         },
     });
 
@@ -1338,20 +1479,20 @@ return __p;
 
 define('textarea',['jquery', 'component', 'tpl!templates/textarea', 'autosize'
 	], function ($, Component, tpl, autosize) {
-	var Textarea = Component.create('Textarea');
-	Textarea.extend({
+    var Textarea = Component.create('Textarea');
+    Textarea.extend({
         tpl: tpl,
         defaultOpt: {
             textarea_name: 'defaultTextareaName',
             textarea_value: '',
             textarea_placeholder: '',
         },
-        setup: function(opt) {
+        setup: function (opt) {
             autosize(this.comp);
             return this.comp;
         },
-	});
-    
+    });
+
     return Textarea;
 });
 
@@ -1397,13 +1538,13 @@ define('button',['jquery', 'component', 'tpl!templates/button'
 	], function ($, Component, tpl) {
     var Button = Component.create('Button');
     Button.extend({
+        tpl: tpl,
         defaultOpt: {
             button_name: 'Button',
             button_title: 'button title',
             button_type: 'button',
             button_class: 'btn-sm btn-primary'
         },
-        tpl: tpl,
         setup: function (opt) {
             if (opt && opt.form && opt.button_type === 'submit') {
                 this.comp.on('click', function (e) {
@@ -1444,6 +1585,7 @@ define('checkbox',['jquery', 'component', 'tpl!templates/checkbox', 'bootstrap-s
 	], function ($, Component, tpl) {
     var Checkbox = Component.create('Checkbox');
     Checkbox.extend({
+        tpl: tpl,
         defaultOpt: {
             checkbox_id: 'checkbox_id',
             checkbox_label_class: 'checkbox_label_class',
@@ -1453,7 +1595,6 @@ define('checkbox',['jquery', 'component', 'tpl!templates/checkbox', 'bootstrap-s
             checkbox_onText: 'Yes',
             checkbox_offText: 'No'
         },
-        tpl: tpl,
         setup: function (opt) {
             var checkboxComp = this.comp.find('input');
             checkboxComp.bootstrapSwitch({
@@ -1490,21 +1631,28 @@ define('tagsinput',['jquery', 'component', 'tpl!templates/tagsinput', 'bootstrap
 	], function ($, Component, tpl) {
     var Tagsinput = Component.create('Tagsinput');
     Tagsinput.extend({
+        tpl: tpl,
         defaultOpt: {
             tagsinput_id: 'tagsinput_id',
             tagsinput_label_class: 'tagsinput_label_class',
             tagsinput_name: 'tagsinput_name',
             tagsinput_placeholder: 'tagsinput_placeholder',
             tagsinput_values: [],
-            tagsinput_options: null
+            tagsinput_options: null,
         },
-        tpl: tpl,
+        init: function(){
+            this.tagsinputComp = null;
+        },
         setup: function (opt) {
-            var tagsinputComp = this.comp.find('select');
-            tagsinputComp.tagsinput(opt.tagsinput_options);
+            this.tagsinputComp = this.comp.find('select');
+            this.tagsinputComp.tagsinput(opt.tagsinput_options);
             for (var i = 0; i < opt.tagsinput_values.length; i++) {
-                tagsinputComp.tagsinput('add', opt.tagsinput_values[i]);
+                this.tagsinputComp.tagsinput('add', opt.tagsinput_values[i]);
             }
+            return this.comp;
+        },
+        val: function(opt) {
+            return this.tagsinputComp.val();
         },
     });
 
@@ -1550,12 +1698,12 @@ __p+='\r\n        \r\n        value="'+
 return __p;
 }; });
 
-define('input',['jquery', 'component', 'tpl!templates/input'
-	], function ($, Component, tpl) {
+define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
+	], function ($, Component, validator, tpl) {
     var Input = Component.create('Input');
     Input.extend({
         tpl: tpl,
-        inputElem: null,
+        validator: validator,
         defaultOpt: {
             input_required: false,
             input_autofocus: false,
@@ -1566,7 +1714,11 @@ define('input',['jquery', 'component', 'tpl!templates/input'
             input_type: 'text',
             input_placeholder: '',
             input_timeout: 700,
-            input_label_class: 'input_label' //sr-only to hide it
+            input_label_class: 'input_label', //sr-only to hide it
+        },
+        init: function () {
+            Component.init.call(this);
+            this.inputElem = null;
         },
         setup: function (opt) {
             var that = this;
@@ -1579,17 +1731,29 @@ define('input',['jquery', 'component', 'tpl!templates/input'
                         wait = null;
                     }
                     wait = setTimeout(function () {
-                        that.checkValid({
-                            input_value: that.inputElem.val()
-                        });
+                        that.checkValid();
                     }, opt.input_timeout);
                 });
             }
+
+            if (opt.input_type.toLowerCase() === 'hidden') this.comp.hide();
+            return this.comp;
         },
         checkValid: function (opt) { //to be overriden
-            this.getResult({
-                invalidHints: false
-            });
+/*            var input_value = this.inputElem.val();
+            if (this.validator.isEmail(input_value)) {
+                this.getResult({
+                    invalidHints: false
+                });
+                return true;
+            } else {
+                this.getResult({
+                    invalidHints: 'invalid email'
+                });
+                return false;
+
+            }*/
+            return true; //to be removed
         },
         getResult: function (opt) {
             var hints = this.comp.find('.hints');
@@ -1610,38 +1774,6 @@ define('input',['jquery', 'component', 'tpl!templates/input'
     });
 
     return Input;
-});
-
-define('inputPassword',['jquery', 'component', 'input'
-	], function ($, Component, Input) {
-	var InputPassword = Input.create('InputPassword');
-	InputPassword.extend({
-		checkValid : function (opt) {
-            if (opt.input_value.length < 6) {
-                this.getResult({
-                    invalidHints : 'Error: Password must contain at least six characters!',
-                });
-            } else if (!/[a-z]/.test(opt.input_value)) {
-                this.getResult({
-                    invalidHints : 'Error: password must contain at least one lowercase letter (a-z)!',
-                });                
-            } else if (!/[A-Z]/.test(opt.input_value)) {
-                this.getResult({
-                    invalidHints : 'Error: password must contain at least one uppercase letter (A-Z)!',
-                });                
-            } else if (!/[0-9]/.test(opt.input_value)) {
-                this.getResult({
-                    invalidHints : 'Error: password must contain at least one number (0-9)!',
-                });                
-            } else {
-                this.getResult({
-                    invalidHints : false
-                });
-            }
-		}
-	});
-
-	return InputPassword;
 });
 
 define('inputGrp',['jquery', 'optGrp', 'input', 'request'
@@ -1676,6 +1808,7 @@ define('inputGrp',['jquery', 'optGrp', 'input', 'request'
 				request_always : function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
 			};
 			this.group.call('request', 'connect', opt_);
+            return true; //skip waiting for remote validation if submit
 		},
 	});
 
@@ -1684,74 +1817,6 @@ define('inputGrp',['jquery', 'optGrp', 'input', 'request'
 	InputGrp.setCallToMember('input');
 
 	return InputGrp;
-});
-
-define('inputEmailGrp',['jquery', 'inputGrp'
-	], function ($, InputGrp) {
-	var InputEmailGrp = InputGrp.create('InputEmailGrp');
-    var input = InputEmailGrp.call('input', 'thisObj');
-	var inputEmail = InputEmailGrp.call('input', 'create');
-    var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-	inputEmail.extend({
-		checkValid : function (opt) {
-            if (re.test(opt.input_value)) {
-                input.checkValid.call(this, opt);
-            }
-		},
-	});
-    
-	InputEmailGrp.override(inputEmail);
-
-	return InputEmailGrp;
-});
-
-define('validUrl',['jquery', 'optObj'
-	], function ($, OptObj) {
-    var ValidUrl = OptObj.create('ValidUrl');
-
-    function isUrlValid(url) {
-        return /^(https?|s?ftp):\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(url);
-    }
-
-    ValidUrl.extend({
-        checkValid: function (opt) {
-            return isUrlValid(opt.url);
-        }
-    });
-
-    return ValidUrl;
-});
-
-define('inputUrlGrp',['jquery', 'optGrp', 'input', 'validUrl'
-	], function ($, OptGrp, Input, ValidUrl) {
-    var InputUrlGrp = OptGrp.create('InputUrlGrp');
-
-    var validUrl = ValidUrl.create('validUrl');
-    var inputUrl = Input.create('inputUrl');
-
-    inputUrl.extend({
-        checkValid: function (opt) {
-            var opt_ = {
-                url: opt.input_value
-            }
-            if (!this.group.call('validUrl', 'checkValid', opt_)) {
-                this.getResult({
-                    invalidHints: 'Invalid URL'
-                });
-            } else {
-                this.getResult({
-                    invalidHints : false
-                });
-            }
-
-        }
-    });
-
-    InputUrlGrp.join(inputUrl, validUrl);
-    InputUrlGrp.setCallToMember('inputUrl');
-
-    return InputUrlGrp;
 });
 
 
@@ -1773,11 +1838,11 @@ define('navbar',['jquery', 'component', 'tpl!templates/navbar'
 	], function ($, Component, tpl) {
     var Navbar = Component.create('Navbar');
     Navbar.extend({
+        tpl: tpl,
         defaultOpt: {
             navbar_id: 'navbar_id',
             navbar_placement: 'navbar-fixed-top navbar-light bg-faded'
         },
-        tpl: tpl,
         setup: function (opt) {
             if (opt.navbar_brand) {
                 this.setElements({
@@ -1928,17 +1993,17 @@ return __p;
 
 define('navBrand',['jquery', 'component', 'tpl!templates/navBrand'
 	], function ($, Component, tpl) {
-	var NavBrand = Component.create('NavBrand');
-	NavBrand.extend({
+    var NavBrand = Component.create('NavBrand');
+    NavBrand.extend({
+        tpl: tpl,
         defaultOpt: {
             navBrand_url: '#',
             navBrand_html: '',
             prepend: true,
         },
-        tpl: tpl,
-	});
+    });
 
-	return NavBrand;
+    return NavBrand;
 });
 
 
@@ -1976,6 +2041,7 @@ define('navItem',['jquery', 'component', 'tpl!templates/navItem'
 	], function ($, Component, tpl) {
     var NavItem = Component.create('NavItem');
     NavItem.extend({
+        tpl: tpl,
         defaultOpt: {
             navItem_url: '#',
             navItem_html: '',
@@ -1985,7 +2051,6 @@ define('navItem',['jquery', 'component', 'tpl!templates/navItem'
             active: false,
             badge: 0,
         },
-        tpl: tpl,
         setup: function (opt) {
             if (opt && opt.navitem_click) {
                 var that = this;
@@ -2137,28 +2202,27 @@ return __p;
 
 define('navUserItem',['jquery', 'navDropdownItem', 'tpl!templates/navUserItem'
 	], function ($, NavDropdownItem, tpl) {
-	var NavUserItem = NavDropdownItem.create('NavUserItem');
-	NavUserItem.extend({
+    var NavUserItem = NavDropdownItem.create('NavUserItem');
+    NavUserItem.extend({
+        tpl: tpl,
         defaultOpt: $.extend({}, NavDropdownItem.defaultOpt, {
             navUserItem_user: null,
-            navUserItem_signinUrl:'/login',
-            navUserItem_signText:'Login',
+            navUserItem_signinUrl: '/login',
+            navUserItem_signText: 'Login',
             navUserItem_signupUrl: '/signup',
             navUserItem_signupText: 'Signup'
         }),
-        tpl: tpl,
-        setup: function(opt) {
+        setup: function (opt) {
             if (opt.navUserItem_user) {
                 return NavDropdownItem.setup.call(this, opt);
             }
-            
+
             return this.comp;
         }
-	});
+    });
 
-	return NavUserItem;
+    return NavUserItem;
 });
-
 
 
 define('tpl!templates/dropdownItem', ['underscore'], function (_) { return function(obj){
@@ -2179,17 +2243,17 @@ return __p;
 
 define('dropdownItem',['jquery', 'component', 'tpl!templates/dropdownItem'
 	], function ($, Component, tpl) {
-	var DropdownItem = Component.create('DropdownItem');
-	DropdownItem.extend({
+    var DropdownItem = Component.create('DropdownItem');
+    DropdownItem.extend({
+        tpl: tpl,
         defaultOpt: {
             dropdownItem_url: '#',
             dropdownItem_html: '',
             pullright: false,
         },
-        tpl: tpl,
-	});
+    });
 
-	return DropdownItem;
+    return DropdownItem;
 });
 
 
@@ -2203,25 +2267,23 @@ return __p;
 
 define('dropdownDivider',['jquery', 'component', 'tpl!templates/dropdownDivider'
 	], function ($, Component, tpl) {
-	var DropdownDivider = Component.create('DropdownDivider');
-	DropdownDivider.extend({
+    var DropdownDivider = Component.create('DropdownDivider');
+    DropdownDivider.extend({
+        tpl: tpl,
         defaultOpt: {
             navItem_url: '#',
             navItem_html: '',
             pullright: false,
         },
-        tpl: tpl,
-	});
+    });
 
-	return DropdownDivider;
+    return DropdownDivider;
 });
 
 define('fetcher',['jquery', 'optObj', 'scroll'
 	], function ($, OptObj, Scroll) {
     var Fetcher = OptObj.create('Fetcher');
     Fetcher.extend({
-        jqxhr: null,
-        timeoutHandler: null,
         defaultOpt: {
             data: {},
             done: function () {},
@@ -2231,28 +2293,37 @@ define('fetcher',['jquery', 'optObj', 'scroll'
             always: function () {},
             dataType: 'json'
         },
+        init: function () {
+            OptObj.init.call(this);
+            this.jqxhr = null;
+            this.timeoutHandler = null;
+        },
         stop: function (opt) {
             if (this.jqxhr) this.jqxhr.abort();
-            Scroll.remove({ obj: this });
+            Scroll.remove({
+                obj: this
+            });
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
         get: function (opt) {
             this.setOpt(opt);
-            this.jqxhr = $.get({
-                    url: this.opt.url,
-                    data: this.opt.data,
-                    dataType: this.opt.dataType,
-                    context: this,
-                })
-                .done(function (result) {
-                    this.opt.done(result);
-                })
-                .fail(function (err) {
-                    this.opt.fail(err);
-                })
-                .always(function () {
-                    this.opt.always();
-                });
+            if (this.opt.url) {
+                this.jqxhr = $.get({
+                        url: this.opt.url,
+                        data: this.opt.data,
+                        dataType: this.opt.dataType,
+                        context: this,
+                    })
+                    .done(function (result) {
+                        this.opt.done(result);
+                    })
+                    .fail(function (err) {
+                        this.opt.fail(err);
+                    })
+                    .always(function () {
+                        this.opt.always();
+                    });
+            } //no error if no url
         },
         setScrollEndFetch: function (opt) {
             Scroll.add({
@@ -2298,7 +2369,7 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
     var collectionGrp = CollectionGrp.create('collectionGrp');
     var fetcher = Fetcher.create('fetcher');
     ListScrollEndFetchGrp.join(listItemGrp, collectionGrp, fetcher);
-    
+
     ListScrollEndFetchGrp.extend({
         initOpt: {},
         reset: function (opt) {
@@ -2306,7 +2377,7 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
             this.call('listItemGrp', 'reset');
             this.call('collectionGrp', 'reset');
             var opt_ = {};
-            $.extend(opt_, this.initOpt, opt||{});
+            $.extend(opt_, this.initOpt, opt || {});
             this.set(opt_);
         },
         set: function (opt) {
@@ -2316,8 +2387,9 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
             var container = opt.container;
             var page = 1;
             var pageLoading = false;
+
             function getUrl() {
-                return opt.getUrl(page, opt.input_vaule||null);
+                return opt.getUrl(page, opt.input_vaule || null);
             }
 
             //fetch data from server API for initial dataset
@@ -2388,7 +2460,329 @@ var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments
 with(obj||{}){
 __p+='<div class="inputList">\n    <label>'+
 ((__t=( inputList_lable ))==null?'':__t)+
-'</label>\n    <div class="list_items"></div>\n    <select class="c-select">\n        <option selected>'+
+'</label>\n    <input name="'+
+((__t=( inputList_name ))==null?'':__t)+
+'" type="hidden" value="'+
+((__t=( inputList_value ))==null?'':__t)+
+'" />\n    <button class="btn btn-info btn-sm additem"><i class="fa fa-plus-circle" aria-hidden="true"></i>Add</button>\n    <div class="list_items"></div>\n</div>\n';
+}
+return __p;
+}; });
+
+define('inputList',['jquery', 'component', 'tpl!templates/inputList'
+	], function ($, Component, tpl) {
+    var InputList = Component.create('InputList');
+    InputList.extend({
+        tpl: tpl,
+        defaultOpt: {
+            inputList_name: 'inputList_name',
+            inputList_lable: 'Add: ',
+            inputList_value: '',
+        },
+    });
+
+    return InputList;
+});
+
+
+define('tpl!templates/item_inputList', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<li class="list-group-item">\n    <h4 class="list-group-item-heading">'+
+((__t=( item_value.heading ))==null?'':__t)+
+'</h4>\n    <p class="list-group-item-text">\n        '+
+((__t=( item_value.text ))==null?'':__t)+
+'\n    </p>\n    <div class="accessories"></div>\n</li>\n';
+}
+return __p;
+}; });
+
+define('formOption',['jquery', 'optObj', 'button', 'input'], function ($, OptObj, Button, Input) {
+    var FormOption = OptObj.create('FormOption');
+    FormOption.extend({
+        get: function (opt) {
+            //setup form
+            var input_user = Input.create('input_user');
+            var input_desc = Input.create('input_desc');
+
+            return {
+                form_action: '/',
+                form_method: 'POST',
+                form_elements: [{
+                        elem: input_user,
+                        opt: {
+                            keyColumnMap: {
+                                input_value: 'heading'
+                            },
+                            input_id: 'inputtext',
+                            input_name: 'heading',
+                            input_type: 'text',
+                            input_placeholder: 'User Name',
+                            input_action: '/',
+                        },
+					},
+                    {
+                        elem: input_desc,
+                        opt: {
+                            keyColumnMap: {
+                                input_value: 'text'
+                            },
+                            input_id: 'input_desc',
+                            input_name: 'text',
+                            input_type: 'text',
+                            input_placeholder: 'Description',
+                            input_action: '/',
+                        },
+					}]
+            };
+        },
+        extractForm: function (opt) {
+            var data = {};
+            $.each(opt.inputData, function (index, obj) {
+                if (obj.name == 'heading') data.heading = obj.value;
+                if (obj.name == 'text') data.text = obj.value;
+            });
+
+            return data;
+        },
+    });
+    return FormOption;
+});
+
+define('inputListGrp',['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collectionGrp', 'tpl!templates/item_inputList', 'button', 'formOption'
+	], function ($, OptGrp, InputList, PromptFormGrp, ListItemGrp, CollectionGrp, tpl, Button, FormOption) {
+    var inputList = InputList.create('inputList');
+    var promptFormGrp_Add = PromptFormGrp.create('promptFormGrp_Add');
+    var listItemGrp = ListItemGrp.create('listItemGrp');
+    var InputListGrp = OptGrp.create('InputListGrp');
+    var collectionGrp = CollectionGrp.create('collectionGrp');
+    var formOption = FormOption.create('formOption');
+    InputListGrp.join(inputList, promptFormGrp_Add, listItemGrp, collectionGrp, formOption);
+    InputListGrp.setCallToMember('inputList');
+
+    //form customization for add
+    var form_Add = promptFormGrp_Add.getMember('form');
+    form_Add.extend({
+        beforeRender: function (opt) {
+            var opt_ = {
+                form_btn: 'Add',
+                optionKey: null
+            };
+
+            this.setOpt(this.group.upCall('formOption', 'get', opt_)); //fromGrp > promptFormGrp_Add > inputListGrp
+        },
+        submit: function (opt) {
+            if (!this.submitting && this.checkValid()) {
+                this.submitting = true;
+                var that = this;
+                this.comp.find('.error').each(function (index) {
+                    $(this).remove();
+                });
+
+                var inputData = this.serializeArray();
+
+                var opt_ = $.extend({}, opt, {
+                    inputData: inputData,
+                    formOption: this.opt.formOption,
+                });
+                this.group.upCall('inputList', 'addItem', opt_); //fromGrp > promptFormGrp_Add > inputListGrp
+                this.done(opt_);
+            }
+        }
+    });
+
+    //form customization for edit
+    var promptFormGrp_Edit = PromptFormGrp.create('promptFormGrp_Edit');
+    var form_Edit = promptFormGrp_Edit.getMember('form');
+    form_Edit.extend({
+        beforeRender: function (opt) {
+            var opt_ = {
+                form_btn: 'Edit',
+                optionKey: opt.doc.optionKey || null
+            };
+            this.setOpt(this.group.upCall('formOption', 'get', opt_)); //formGrp > promptFormGrp_Edit > itemGrp
+        },
+        submit: function (opt) {
+            if (!this.submitting) {
+                this.submitting = true;
+                var that = this;
+                this.comp.find('.error').each(function (index) {
+                    $(this).remove();
+                });
+
+                var inputData = this.serializeArray();
+
+                //form_Edit will call its form Grp > promptFormGrp_Edit > itemGrp - item from the same group, then item will update its value
+                //how item will update it value
+                var opt_ = {
+                    doc: this.group.upCall('formOption', 'extractForm', {
+                        inputData: inputData
+                    })
+                };
+                this.group.upCall('item', 'update', opt_); //formGrp > promptFormGrp_Edit > itemGrp
+                this.group.upCall('inputList', 'updateInputValue'); //formGrp > promptFormGrp_Edit > itemGrp > listItemGrp > inputListGrp
+                this.done(opt_);
+            }
+        }
+    });
+
+    //collectionGrp customization
+    var collection = InputListGrp.getMember('collection');
+    collection.extend({
+        defaultOpt: $.extend({}, collection.defaultOpt, {
+            remote: false
+        }),
+    });
+
+
+    //item customization
+    var itemGrp = InputListGrp.getMember('itemGrp');
+
+    var button_edit = Button.create('button_edit');
+    button_edit.extend({
+        defaultOpt: $.extend({}, Button.defaultOpt, {
+            button_name: '<i class="fa fa-pencil-square-o"></i>&nbsp;Edit',
+            button_class: 'btn-sm btn-primary edit',
+            button_title: 'Edit'
+        }),
+        setup: function (opt) {
+            var that = this;
+            this.comp.on('click', function (e) {
+                var opt_ = {
+                    callback: function (opt_callback) {
+                        var opt_prompt = {
+                            container: $('#mnbody'),
+                            doc: opt_callback
+                        };
+                        var promptCmd = that.group.getMember('promptFormGrp_Edit').create().command(); //itemGrp
+                        promptCmd('render', opt_prompt);
+                    }
+                };
+                that.group.call('item', 'fetch', opt_);
+            });
+        },
+    });
+
+    var button_delete = Button.create('button_delete');
+    button_delete.extend({
+        defaultOpt: $.extend({}, Button.defaultOpt, {
+            button_name: '<i class="fa fa-trash-o"></i>',
+            button_class: 'btn-sm btn-danger delete',
+            button_title: 'Delete'
+        }),
+        setup: function (opt) {
+            var that = this;
+            this.comp.on('click', function (e) {
+                that.group.call('item', 'remove');
+                that.group.upCall('inputList', 'updateInputValue'); //itemGrp > listItemGrp > inputListGrp
+            });
+        },
+    });
+
+    itemGrp.join(button_edit, button_delete, promptFormGrp_Edit);
+
+    var item = InputListGrp.getMember('item');
+    item.extend({
+        tpl: tpl,
+        setAccessories: function (opt) {
+            var $accessories = this.comp.find('.accessories');
+            var opt_ = {
+                container: $accessories
+            };
+            this.group.call('button_edit', 'render', opt_);
+            this.group.call('button_delete', 'render', opt_);
+        },
+        setup: function (opt) {
+            var that = this;
+            //set accessories
+            this.setAccessories(opt);
+            return this.comp;
+        },
+        updateUI: function (opt) {
+            if (opt && opt.doc) {
+                var newHeading = opt.doc.heading;
+                var newText = opt.doc.text;
+
+
+                var oldHeading = this.comp.find('h4').html();
+                if (newHeading && newHeading !== oldHeading) {
+                    this.comp.find('h4').html(newHeading);
+                }
+
+                var oldText = this.comp.find('p').html();
+                if (newText && newText !== oldText) {
+                    this.comp.find('p').html(newText);
+                }
+            }
+        }
+    });
+
+    //inputList customization
+    inputList.extend({
+        setup: function (opt) {
+            var that = this;
+            //setup button
+            InputList.setup.call(this, opt);
+            var btn = this.comp.find('button.additem');
+            btn.on('click', function (e) {
+                var opt_ = $.extend({}, opt, {
+                    container: $('#mnbody'),
+                });
+                var prompt_formCmd = (that.group.call('promptFormGrp_Add', 'create')).command();
+                prompt_formCmd('render', opt_)
+            });
+
+            //setup list items            
+            var list_data = this.group.call('collectionGrp', 'add', {
+                values: opt.list_data || this.getInputValue(),
+            });
+            var opt_ = {
+                container: this.comp.find('.list_items'),
+                list_data: list_data,
+            };
+            this.group.call('listItemGrp', 'render', opt_);
+            this.updateInputValue();
+            //return
+            return this.comp;
+        },
+        getInputValue: function (opt) {
+            var value = this.comp.find('input[type="hidden"]').val();
+            try {
+                return JSON.parse(decodeURIComponent(value));
+            } catch (e) {
+                return null;
+            }
+        },
+        addItem: function (opt) {
+            //rendering list next time
+            var opt_next = {
+                list_data: this.group.call('collectionGrp', 'addExtra', {
+                    values: this.group.call('formOption', 'extractForm', opt)
+                }),
+            };
+            this.group.call('listItemGrp', 'setup', opt_next);
+            this.updateInputValue();
+        },
+        updateInputValue: function (opt) {
+            var values = this.group.call('collectionGrp', 'getValues');
+            this.comp.find('input[type="hidden"]').val(encodeURIComponent(JSON.stringify(values)));
+        }
+    });
+
+    return InputListGrp;
+});
+
+
+define('tpl!templates/inputList_selection', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="inputList">\n    <label>'+
+((__t=( inputList_lable ))==null?'':__t)+
+'</label>\n    <input name="'+
+((__t=( inputList_name ))==null?'':__t)+
+'" type="hidden" value="'+
+((__t=( inputList_value ))==null?'':__t)+
+'" />\n    <select class="c-select">\n        <option selected>'+
 ((__t=( inputList_header ))==null?'':__t)+
 '</option>\n        ';
  _.each(inputList_options, function(option){ 
@@ -2398,29 +2792,191 @@ __p+='\n            <option value="'+
 ((__t=( option.value ))==null?'':__t)+
 '</option> \n        ';
  }); 
-__p+='\n    </select>\n    <button class="btn btn-info btn-sm additem">Add</button>\n</div>\n';
+__p+='\n    </select>\n    <button class="btn btn-info btn-sm additem"><i class="fa fa-plus-circle" aria-hidden="true"></i>Add</button>\n    <div class="list_items"></div>\n</div>\n';
 }
 return __p;
 }; });
 
-define('inputList',['jquery', 'component', 'tpl!templates/inputList'
-	], function ($, Component, tpl) {
-    var InputList = Component.create('InputList');
-    InputList.extend({
-        defaultOpt: {
+define('formOption_selection',['jquery', 'optObj', 'button', 'input'], function ($, OptObj, Button, Input) {
+    var FormOption = OptObj.create('FormOption');
+    FormOption.extend({
+        init: function () {
+            this.optionKey = 1;
+        },
+        setKey: function(opt) {
+            this.optionKey = opt.optionKey;
+        },
+        get: function (opt) {
+            var optionKey = opt.optionKey || this.optionKey;
+            if (optionKey == '1') {
+                //setup form
+                var input_optionKey = Input.create('input_optionKey');
+                var input_user = Input.create('input_user');
+                var input_desc = Input.create('input_desc');
+
+                return {
+                    form_action: '/',
+                    form_method: 'POST',
+                    form_elements: [{
+                            elem: input_user,
+                            opt: {
+                                keyColumnMap: {
+                                    input_value: 'heading'
+                                },
+                                input_id: 'inputtext',
+                                input_name: 'heading',
+                                input_type: 'text',
+                                input_placeholder: 'User Name',
+                                input_action: '/',
+                            },
+					},
+                        {
+                            elem: input_desc,
+                            opt: {
+                                keyColumnMap: {
+                                    input_value: 'text'
+                                },
+                                input_id: 'input_desc',
+                                input_name: 'text',
+                                input_type: 'text',
+                                input_placeholder: 'Description',
+                                input_action: '/',
+                            },
+					},
+                        {
+                            elem: input_optionKey,
+                            opt: {
+                                keyColumnMap: {
+                                    input_value: 'optionKey'
+                                },
+                                input_id: 'input_optionKey',
+                                input_name: 'optionKey',
+                                input_type: 'hidden',
+                                input_value: '1'
+                            },
+					}]
+                };
+            } else if (optionKey == '2') {
+                //setup form
+                var input_optionKey = Input.create('input_optionKey');
+                var input_book = Input.create('input_book');
+                var input_author = Input.create('input_author');
+
+                return {
+                    form_action: '/',
+                    form_method: 'POST',
+                    form_elements: [{
+                            elem: input_book,
+                            opt: {
+                                keyColumnMap: {
+                                    input_value: 'heading'
+                                },
+                                input_id: 'inputtext',
+                                input_name: 'heading',
+                                input_type: 'text',
+                                input_placeholder: 'Book Name',
+                                input_action: '/',
+                            },
+					},
+                        {
+                            elem: input_author,
+                            opt: {
+                                keyColumnMap: {
+                                    input_value: 'text'
+                                },
+                                input_id: 'input_author',
+                                input_name: 'text',
+                                input_type: 'text',
+                                input_placeholder: 'Author',
+                                input_action: '/',
+                            },
+					},
+                        {
+                            elem: input_optionKey,
+                            opt: {
+                                keyColumnMap: {
+                                    input_value: 'optionKey'
+                                },
+                                input_id: 'input_optionKey',
+                                input_name: 'optionKey',
+                                input_type: 'hidden',
+                                input_value: '2'
+                            },
+					}]
+                };
+            }
+        },
+        extractForm: function (opt) {
+            var data = {};
+            $.each(opt.inputData, function (index, obj) {
+                if (obj.name == 'optionKey') data.optionKey = obj.value;
+                if (obj.name == 'heading') data.heading = obj.value;
+                if (obj.name == 'text') data.text = obj.value;
+            });
+
+            return data;
+        },
+    });
+    return FormOption;
+});
+
+define('inputListGrp_selection',['jquery', 'inputListGrp', 'tpl!templates/inputList_selection', 'formOption_selection'
+	], function ($, InputListGrp, tpl, FormOption_selection) {
+    var formOption = FormOption_selection.create('formOption');
+    var inputListGrp_selection = InputListGrp.create('inputListGrp_selection');
+    var inputList = inputListGrp_selection.getMember('inputList');
+    var inputList_setup = inputList.setup;
+    inputList.extend({
+        tpl: tpl,
+        defaultOpt: $.extend({}, inputList.defaultOpt, {
             inputList_lable: 'Choose and add: ',
             inputList_header: 'Select a source',
             inputList_options: [{
-                key: 1,
+                key: '1',
                 value: 'one'
             }, {
-                key: 2,
+                key: '2',
                 value: 'two'
             }]
+        }),
+        setup: function (opt) {
+            var that = this;
+            inputList_setup.call(this, opt);
+            var selection = this.comp.find('select');
+            selection.on('change', function () {
+                var option = selection.find('option:selected');
+                that.group.call('formOption', 'setKey', {
+                    optionKey: option.val()
+                });
+            });
+            return this.comp;
         },
+    });
+
+    inputListGrp_selection.override(formOption);
+
+
+    return inputListGrp_selection;
+});
+
+
+define('tpl!templates/alert', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div class="alert">'+
+((__t=( message ))==null?'':__t)+
+'</div>';
+}
+return __p;
+}; });
+
+define('alert',['jquery', 'component', 'tpl!templates/alert'
+	], function ($, Component, tpl) {
+    var Item = Component.create('Item');
+    Item.extend({
         tpl: tpl
     });
 
-    return InputList;
+    return Item;
 });
 

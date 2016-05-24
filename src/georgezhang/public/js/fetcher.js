@@ -2,8 +2,6 @@ define(['jquery', 'optObj', 'scroll'
 	], function ($, OptObj, Scroll) {
     var Fetcher = OptObj.create('Fetcher');
     Fetcher.extend({
-        jqxhr: null,
-        timeoutHandler: null,
         defaultOpt: {
             data: {},
             done: function () {},
@@ -13,28 +11,37 @@ define(['jquery', 'optObj', 'scroll'
             always: function () {},
             dataType: 'json'
         },
+        init: function () {
+            OptObj.init.call(this);
+            this.jqxhr = null;
+            this.timeoutHandler = null;
+        },
         stop: function (opt) {
             if (this.jqxhr) this.jqxhr.abort();
-            Scroll.remove({ obj: this });
+            Scroll.remove({
+                obj: this
+            });
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
         get: function (opt) {
             this.setOpt(opt);
-            this.jqxhr = $.get({
-                    url: this.opt.url,
-                    data: this.opt.data,
-                    dataType: this.opt.dataType,
-                    context: this,
-                })
-                .done(function (result) {
-                    this.opt.done(result);
-                })
-                .fail(function (err) {
-                    this.opt.fail(err);
-                })
-                .always(function () {
-                    this.opt.always();
-                });
+            if (this.opt.url) {
+                this.jqxhr = $.get({
+                        url: this.opt.url,
+                        data: this.opt.data,
+                        dataType: this.opt.dataType,
+                        context: this,
+                    })
+                    .done(function (result) {
+                        this.opt.done(result);
+                    })
+                    .fail(function (err) {
+                        this.opt.fail(err);
+                    })
+                    .always(function () {
+                        this.opt.always();
+                    });
+            } //no error if no url
         },
         setScrollEndFetch: function (opt) {
             Scroll.add({

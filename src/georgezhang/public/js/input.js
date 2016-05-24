@@ -1,9 +1,9 @@
-define(['jquery', 'component', 'tpl!templates/input'
-	], function ($, Component, tpl) {
+define(['jquery', 'component', 'validator', 'tpl!templates/input'
+	], function ($, Component, validator, tpl) {
     var Input = Component.create('Input');
     Input.extend({
         tpl: tpl,
-        inputElem: null,
+        validator: validator,
         defaultOpt: {
             input_required: false,
             input_autofocus: false,
@@ -14,7 +14,11 @@ define(['jquery', 'component', 'tpl!templates/input'
             input_type: 'text',
             input_placeholder: '',
             input_timeout: 700,
-            input_label_class: 'input_label' //sr-only to hide it
+            input_label_class: 'input_label', //sr-only to hide it
+        },
+        init: function () {
+            Component.init.call(this);
+            this.inputElem = null;
         },
         setup: function (opt) {
             var that = this;
@@ -27,17 +31,29 @@ define(['jquery', 'component', 'tpl!templates/input'
                         wait = null;
                     }
                     wait = setTimeout(function () {
-                        that.checkValid({
-                            input_value: that.inputElem.val()
-                        });
+                        that.checkValid();
                     }, opt.input_timeout);
                 });
             }
+
+            if (opt.input_type.toLowerCase() === 'hidden') this.comp.hide();
+            return this.comp;
         },
         checkValid: function (opt) { //to be overriden
-            this.getResult({
-                invalidHints: false
-            });
+/*            var input_value = this.inputElem.val();
+            if (this.validator.isEmail(input_value)) {
+                this.getResult({
+                    invalidHints: false
+                });
+                return true;
+            } else {
+                this.getResult({
+                    invalidHints: 'invalid email'
+                });
+                return false;
+
+            }*/
+            return true; //to be removed
         },
         getResult: function (opt) {
             var hints = this.comp.find('.hints');

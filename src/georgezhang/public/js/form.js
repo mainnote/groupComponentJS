@@ -2,11 +2,16 @@ define(['jquery', 'component', 'tpl!templates/form'
 	], function ($, Component, tpl) {
     var Form = Component.create('Form');
     Form.extend({
+        tpl: tpl,
         defaultOpt: {
             form_action: '/',
             form_method: 'GET'
         },
-        tpl: tpl,
+        init: function () {
+            Component.init.call(this);
+            this.submitting = false;
+            this.compCmds = [];
+        },
         setup: function (opt) {
             var that = this;
             //build fieldset from JSON
@@ -36,9 +41,8 @@ define(['jquery', 'component', 'tpl!templates/form'
             }
             return this.comp;
         },
-        submitting: false,
         submit: function (opt) {
-            if (!this.submitting) {
+            if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var id;
                 if (this.opt && this.opt.doc && this.opt.doc._id) id = this.opt.doc._id;
@@ -62,18 +66,38 @@ define(['jquery', 'component', 'tpl!templates/form'
                 });
             }
         },
+        checkValid: function (opt) {
+            var validFlag = true;
+            $.each(this.compCmds, function (index, cmd) {
+                if ('checkValid' in cmd('thisObj')) {
+                    var result = cmd('checkValid'); //valid?
+                    if (!result) validFlag = false;
+                }
+            });
+            return validFlag;
+        },
         done: function (opt) {},
         always: function (opt) {
             this.submitting = false;
         },
         add: function (opt) {
+            this.compCmds.push(opt.compCmd);
             var opt_ = $.extend({
                 container: this.comp.find('fieldset'),
                 form: this
             }, opt.compOpt);
             opt.compCmd('render', opt_);
         },
-
+        find: function (opt) {
+            var subComp;
+            $.each(this.compCmds, function(i, compCmd){
+                if (compCmd('name') === opt.name) {
+                    subComp = compCmd;
+                    return false;
+                }
+            });
+            return subComp;
+        },
         serialize: function (opt) {
             return this.comp.serialize();
         },

@@ -3,7 +3,10 @@ define(['jquery', 'component', 'tpl!templates/list',
     var List = Component.create('List');
     List.extend({
         tpl: tpl,
-        items: [],
+        init: function () {
+            Component.init.call(this);
+            this.items = [];
+        },
         reset: function (opt) {
             //make the original frame firm by setting min-height and width
             this.comp.css({
@@ -18,7 +21,7 @@ define(['jquery', 'component', 'tpl!templates/list',
             var that = this;
             if (opt.list_data && $.isArray(opt.list_data)) {
                 $.each(opt.list_data, function (index, data) {
-                    var itemCmd = that.group.call('Item', 'create', 'itemCmd').command(); //member create
+                    var itemCmd = that.group.call('itemGrp', 'create', 'itemGrpCmd').command(); //member create
                     that.items.push(itemCmd);
                     var opt_ = {
                         list: that,

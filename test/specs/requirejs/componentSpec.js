@@ -118,7 +118,7 @@ define(function (require) {
                 return RequestMock;
             });
 
-            require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputPassword', 'inputEmailGrp', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputPassword, InputEmailGrp, InputGrp, RequestMock) {
+            require(['jquery', 'promptFormGrp', 'textareaCountGrp', 'button', 'input', 'inputGrp', 'requestMock'], function ($, PromptFormGrp, TextareaCountGrp, Button, Input, InputGrp, RequestMock) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
                 var btn = $('<button>PromptFormGrp</button>');
@@ -131,11 +131,9 @@ define(function (require) {
                     var thisTextarea = TextareaCountGrp.create();
                     var thisTextarea2 = TextareaCountGrp.create();
 
-                    var inputText = InputGrp.create('inputText');
-                    inputText.override(requestMock);
-                    var inputPassword = InputPassword.create('inputPassword');
-                    var inputEmailGrp = InputEmailGrp.create('inputEmailGrp');
-                    inputEmailGrp.override(requestMock);
+                    var inputText = Input.create('inputText');
+                    var inputPassword = Input.create('inputPassword');
+                    var inputEmail = Input.create('inputEmail');
 
                     var button_submit = Button.create();
 
@@ -175,7 +173,7 @@ define(function (require) {
                                     input_required: true,
                                 },
 							}, {
-                                elem: inputEmailGrp,
+                                elem: inputEmail,
                                 opt: {
                                     input_id: 'inputemail',
                                     input_name: 'inputemail',
@@ -205,7 +203,7 @@ define(function (require) {
                     var btn_submit = testContainer.find('.btn-primary[type="submit"]');
                     //console.log(btn_submit.attr('title'));
                     btn_submit.trigger('click');
-                    
+
                     expect($('.promptTop').length).toBe(0);
 
                     done();
@@ -374,16 +372,17 @@ define(function (require) {
                 tagsinputCmd('render', opt);
                 //console.log(testContainer.prop('outerHTML'));
                 expect(testContainer.find('select').val()[0]).toBe('ok');
+                expect(tagsinputCmd('val')[0]).toBe('ok');
                 done();
             }); //require
         }); //test case
 
 
-        it('Component inputUrlGrp test cases', function (done) {
-            require(['jquery', 'inputUrlGrp'], function ($, InputUrlGrp) {
+        it('Component input test cases', function (done) {
+            require(['jquery', 'input'], function ($, Input) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var inputUrlGrpCmd = InputUrlGrp.create('inputUrlGrpCmd').command();
+                var inputUrlGrpCmd = Input.create('inputUrlGrpCmd').command();
                 var opt = {
                     container: testContainer,
                     input_id: 'inputUrlGrpCmd',
@@ -393,7 +392,6 @@ define(function (require) {
                     input_value: 'http://yes.com'
                 };
                 inputUrlGrpCmd('render', opt);
-                //console.log(testContainer.prop('outerHTML'));
                 expect(testContainer.find('input').val()).toBe('http://yes.com');
                 done();
             }); //require
@@ -438,5 +436,56 @@ define(function (require) {
                 done();
             }); //require
         }); //test case
+
+
+        it('Component inputListGrp test cases', function (done) {
+            require(['jquery', 'inputListGrp', 'jasmine-jquery'], function ($, InputListGrp) {
+                var testContainer = $('<div></div>');
+                testContainer.appendTo('body');
+                var inputListGrpCmd = InputListGrp.create('inputListGrpCmd').command();
+                var opt = {
+                    container: testContainer,
+                    prompt_title: 'Test PromptFormGrp',
+                    list_data: [{
+                        heading: 'item 1',
+                        text: 'this is a long text'
+                        }],
+                };
+                inputListGrpCmd('render', opt);
+
+                expect($(testContainer.find('h4')[0]).text()).toEqual('item 1');
+
+/*                foo = {
+                    setBar: function (value) {
+                        bar = value;
+                    }
+                };
+
+                spyOn(foo, 'setBar');
+
+                foo.setBar(123);
+                foo.setBar(456, 'another param');
+                expect(foo.setBar).toHaveBeenCalled();*/
+
+                //edit
+/*                var editBtn = $(testContainer.find('.btn.edit')[0]);
+                console.log(editBtn.prop('outerHTML'));
+                var spyEvent = spyOnEvent(editBtn, 'click');
+                editBtn.trigger('click');*/
+                //expect('click').toHaveBeenTriggeredOn(editBtn);
+                //expect(spyEvent).toHaveBeenTriggered();
+/*
+                console.log($('.promptTop').prop('outerHTML'));
+                var user_name = $('.promptTop').find('input[name="heading"]').val();
+                expect(user_name).toEqual('item 1');*/
+
+                //delete
+                $(testContainer.find('.btn.delete')[0]).trigger('click');
+                //console.log(testContainer.prop('outerHTML'));
+                expect(testContainer.find('h4').length).toEqual(0);
+                done();
+            }); //require
+        }); //test case
+
     }); //describe
 }); //define

@@ -2,7 +2,10 @@ define(['jquery', 'optObj'
 	], function ($, OptObj) {
     var Collection = OptObj.create('Collection');
     Collection.extend({
-        values: [],
+        init: function () {
+            OptObj.init.call(this);
+            this.values = [];
+        },
         reset: function (opt) {
             this.values = [];
         },
@@ -33,6 +36,20 @@ define(['jquery', 'optObj'
             var startIndex = this.values.length;
             this.add(opt);
             return this.values.slice(startIndex);
+        },
+        getValues: function (opt) {
+            return $.map(this.values, function (entityCmd, i) {
+                return entityCmd('get');
+            });
+        },
+        remove: function (opt) {
+            var values = this.values;
+            $.each(values, function (i, entityCmd) {
+                if (entityCmd('thisObj') === opt.entity) {
+                    values.splice(i, 1);
+                    return false;
+                }
+            });
         }
     });
 

@@ -27,6 +27,7 @@
   ],
   "devDependencies": {},
   "dependencies": {
-    "groupjs": "*"
+    "groupjs": "*",
+    "jasmine-jquery": "^2.1.1"
   }
 }

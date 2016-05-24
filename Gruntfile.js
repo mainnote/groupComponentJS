@@ -20,6 +20,7 @@ module.exports = function (grunt) {
                         'fastclick': 'empty:',
                         'bootstrap-switch': 'empty:',
                         'bootstrap-tagsinput': 'empty:',
+                        'validator': 'empty:',
                         'templates': '../templates',
                         'tpl': '../../build/tpl',
                         'underscore': '../../build/underscore',
@@ -96,6 +97,14 @@ module.exports = function (grunt) {
                                 'bootstrap-tagsinput': 'http://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min',
                                 'underscore': 'http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min',
                                 'text': 'http://cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text.min',
+                                'jasmine-jquery': '../../../../bower_components/jasmine-jquery/lib/jasmine-jquery',
+                                'validator': 'http://cdnjs.cloudflare.com/ajax/libs/validator/5.2.0/validator.min',
+                            },
+                            shim: {
+                                'jasmine-jquery': {
+                                    deps: ['jquery'],
+                                    exports: 'jasmine-jquery'
+                                }
                             },
                         },
                     }

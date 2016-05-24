@@ -1,17 +1,56 @@
-define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collectionGrp'
-	], function ($, OptGrp, InputList, PromptFormGrp, ListItemGrp, CollectionGrp) {
+define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collectionGrp', 'tpl!templates/item_inputList', 'button', 'formOption'
+	], function ($, OptGrp, InputList, PromptFormGrp, ListItemGrp, CollectionGrp, tpl, Button, FormOption) {
     var inputList = InputList.create('inputList');
-    var promptFormGrp = PromptFormGrp.create('promptFormGrp');
+    var promptFormGrp_Add = PromptFormGrp.create('promptFormGrp_Add');
     var listItemGrp = ListItemGrp.create('listItemGrp');
     var InputListGrp = OptGrp.create('InputListGrp');
     var collectionGrp = CollectionGrp.create('collectionGrp');
-    console.log('CollectionGrp', CollectionGrp.values);
-    console.log('collectionGrp', collectionGrp.values);
-    InputListGrp.join(inputList, promptFormGrp, listItemGrp, collectionGrp);
+    var formOption = FormOption.create('formOption');
+    InputListGrp.join(inputList, promptFormGrp_Add, listItemGrp, collectionGrp, formOption);
     InputListGrp.setCallToMember('inputList');
 
-    var form = promptFormGrp.getMember('form');
-    form.extend({
+    //form customization for add
+    var form_Add = promptFormGrp_Add.getMember('form');
+    form_Add.extend({
+        beforeRender: function (opt) {
+            var opt_ = {
+                form_btn: 'Add',
+                optionKey: null
+            };
+
+            this.setOpt(this.group.upCall('formOption', 'get', opt_)); //fromGrp > promptFormGrp_Add > inputListGrp
+        },
+        submit: function (opt) {
+            if (!this.submitting && this.checkValid()) {
+                this.submitting = true;
+                var that = this;
+                this.comp.find('.error').each(function (index) {
+                    $(this).remove();
+                });
+
+                var inputData = this.serializeArray();
+
+                var opt_ = $.extend({}, opt, {
+                    inputData: inputData,
+                    formOption: this.opt.formOption,
+                });
+                this.group.upCall('inputList', 'addItem', opt_); //fromGrp > promptFormGrp_Add > inputListGrp
+                this.done(opt_);
+            }
+        }
+    });
+
+    //form customization for edit
+    var promptFormGrp_Edit = PromptFormGrp.create('promptFormGrp_Edit');
+    var form_Edit = promptFormGrp_Edit.getMember('form');
+    form_Edit.extend({
+        beforeRender: function (opt) {
+            var opt_ = {
+                form_btn: 'Edit',
+                optionKey: opt.doc.optionKey || null
+            };
+            this.setOpt(this.group.upCall('formOption', 'get', opt_)); //formGrp > promptFormGrp_Edit > itemGrp
+        },
         submit: function (opt) {
             if (!this.submitting) {
                 this.submitting = true;
@@ -22,15 +61,112 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
 
                 var inputData = this.serializeArray();
 
-                var opt_ = $.extend({}, opt, {
-                    inputData: inputData
-                });
-                this.group.group.group.call('inputList', 'addItem', opt_); //fromGrp > promptFormGrp > inputListGrp
+                //form_Edit will call its form Grp > promptFormGrp_Edit > itemGrp - item from the same group, then item will update its value
+                //how item will update it value
+                var opt_ = {
+                    doc: this.group.upCall('formOption', 'extractForm', {
+                        inputData: inputData
+                    })
+                };
+                this.group.upCall('item', 'update', opt_); //formGrp > promptFormGrp_Edit > itemGrp
+                this.group.upCall('inputList', 'updateInputValue'); //formGrp > promptFormGrp_Edit > itemGrp > listItemGrp > inputListGrp
                 this.done(opt_);
             }
         }
     });
 
+    //collectionGrp customization
+    var collection = InputListGrp.getMember('collection');
+    collection.extend({
+        defaultOpt: $.extend({}, collection.defaultOpt, {
+            remote: false
+        }),
+    });
+
+
+    //item customization
+    var itemGrp = InputListGrp.getMember('itemGrp');
+
+    var button_edit = Button.create('button_edit');
+    button_edit.extend({
+        defaultOpt: $.extend({}, Button.defaultOpt, {
+            button_name: '<i class="fa fa-pencil-square-o"></i>&nbsp;Edit',
+            button_class: 'btn-sm btn-primary edit',
+            button_title: 'Edit'
+        }),
+        setup: function (opt) {
+            var that = this;
+            this.comp.on('click', function (e) {
+                var opt_ = {
+                    callback: function (opt_callback) {
+                        var opt_prompt = {
+                            container: $('#mnbody'),
+                            doc: opt_callback
+                        };
+                        var promptCmd = that.group.getMember('promptFormGrp_Edit').create().command(); //itemGrp
+                        promptCmd('render', opt_prompt);
+                    }
+                };
+                that.group.call('item', 'fetch', opt_);
+            });
+        },
+    });
+
+    var button_delete = Button.create('button_delete');
+    button_delete.extend({
+        defaultOpt: $.extend({}, Button.defaultOpt, {
+            button_name: '<i class="fa fa-trash-o"></i>',
+            button_class: 'btn-sm btn-danger delete',
+            button_title: 'Delete'
+        }),
+        setup: function (opt) {
+            var that = this;
+            this.comp.on('click', function (e) {
+                that.group.call('item', 'remove');
+                that.group.upCall('inputList', 'updateInputValue'); //itemGrp > listItemGrp > inputListGrp
+            });
+        },
+    });
+
+    itemGrp.join(button_edit, button_delete, promptFormGrp_Edit);
+
+    var item = InputListGrp.getMember('item');
+    item.extend({
+        tpl: tpl,
+        setAccessories: function (opt) {
+            var $accessories = this.comp.find('.accessories');
+            var opt_ = {
+                container: $accessories
+            };
+            this.group.call('button_edit', 'render', opt_);
+            this.group.call('button_delete', 'render', opt_);
+        },
+        setup: function (opt) {
+            var that = this;
+            //set accessories
+            this.setAccessories(opt);
+            return this.comp;
+        },
+        updateUI: function (opt) {
+            if (opt && opt.doc) {
+                var newHeading = opt.doc.heading;
+                var newText = opt.doc.text;
+
+
+                var oldHeading = this.comp.find('h4').html();
+                if (newHeading && newHeading !== oldHeading) {
+                    this.comp.find('h4').html(newHeading);
+                }
+
+                var oldText = this.comp.find('p').html();
+                if (newText && newText !== oldText) {
+                    this.comp.find('p').html(newText);
+                }
+            }
+        }
+    });
+
+    //inputList customization
     inputList.extend({
         setup: function (opt) {
             var that = this;
@@ -39,39 +175,47 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
             var btn = this.comp.find('button.additem');
             btn.on('click', function (e) {
                 var opt_ = $.extend({}, opt, {
-                    container: opt.inputList_listItem_container || $('#mnbody'),
+                    container: $('#mnbody'),
                 });
-                that.group.call('promptFormGrp', 'render', opt_);
+                var prompt_formCmd = (that.group.call('promptFormGrp_Add', 'create')).command();
+                prompt_formCmd('render', opt_)
             });
 
-            //setup list items
-            console.log('this.group', this.group.name)
-            console.log('collectionGrp', this.group.call('collectionGrp', 'values'));
-            
+            //setup list items            
             var list_data = this.group.call('collectionGrp', 'add', {
-                    values: opt.list_data,
-                });
+                values: opt.list_data || this.getInputValue(),
+            });
             var opt_ = {
                 container: this.comp.find('.list_items'),
                 list_data: list_data,
             };
             this.group.call('listItemGrp', 'render', opt_);
-
+            this.updateInputValue();
             //return
             return this.comp;
         },
-        extractItem: function (opt) {
-
+        getInputValue: function (opt) {
+            var value = this.comp.find('input[type="hidden"]').val();
+            try {
+                return JSON.parse(decodeURIComponent(value));
+            } catch (e) {
+                return null;
+            }
         },
         addItem: function (opt) {
             //rendering list next time
             var opt_next = {
                 list_data: this.group.call('collectionGrp', 'addExtra', {
-                    values: this.extractItem(opt)
+                    values: this.group.call('formOption', 'extractForm', opt)
                 }),
             };
             this.group.call('listItemGrp', 'setup', opt_next);
+            this.updateInputValue();
         },
+        updateInputValue: function (opt) {
+            var values = this.group.call('collectionGrp', 'getValues');
+            this.comp.find('input[type="hidden"]').val(encodeURIComponent(JSON.stringify(values)));
+        }
     });
 
     return InputListGrp;
