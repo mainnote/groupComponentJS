@@ -2,7 +2,6 @@
     margin: 0;
     padding: 0;
 }
-
 @media screen and (min-width: 650px) {
     body {
         -webkit-background-size: cover;
@@ -11,54 +10,75 @@
         background-size: cover;
     }
 }
+@media screen and (max-width: 542px) {
+    ul.nav li.nav-item {
+        width: 100%;
+        display: block;
+        clear: both;
+        text-align: left;
+        margin-left: 0 !important;
+    }
+    nav .nav-middle {
+        width: 80%;
+        height: 2.5em;
+    }
+    div.menu-items {
+        width: 100%;
+    }
+}
 body {
     font-family: "Open Sans";
     line-height: 26px;
     margin: 0 auto;
     position: relative;
 }
-img{
+img {
     vertical-align: middle;
 }
 ul li {
-    list-style:none;
+    list-style: none;
 }
-a{
+a {
     color: #2095FE;
     outline: 0;
     text-decoration: none !important;
     display: inline-block;
 }
-a:visited, a:hover, a:active, a:focus{
+a:visited,
+a:hover,
+a:active,
+a:focus {
     outline: 0;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
-
-
 .clearfix:before,
 .clearfix:after {
-    content: ".";    
-    display: block;    
-    height: 0;    
-    overflow: hidden; 
+    content: ".";
+    display: block;
+    height: 0;
+    overflow: hidden;
 }
-.clearfix:after { clear: both; }
-.clearfix { zoom: 1; } /* IE < 8 */
+.clearfix:after {
+    clear: both;
+}
+.clearfix {
+    zoom: 1;
+}
+
+/* IE < 8 */
 
 .top-left {
-  position: absolute;
-  top: 5px;
-  left: 15px;
-  font-size: 18px
+    position: absolute;
+    top: 5px;
+    left: 15px;
+    font-size: 18px
 }
-
 .top-right {
-  position: absolute;
-  top: 5px;
-  right: 15px;
-  font-size: 18px
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    font-size: 18px
 }
-
 .error {
     color: red;
 }
@@ -85,9 +105,9 @@ label {
     font-size: small;
 }
 #mnbody {
-  padding-top: 60px;
+    padding-top: 60px;
 }
-.inputList{
+.inputList {
     padding: 5px;
 }
 .btn.edit {

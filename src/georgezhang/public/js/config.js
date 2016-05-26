@@ -12,9 +12,13 @@ require.config({
         'text': '//cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text.min',
         'templates': '../templates',
         'validator': '//cdnjs.cloudflare.com/ajax/libs/validator/5.2.0/validator.min',
+        'notify': '//cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min',
     },
     shim: {
         'bootstrap': {
+            "deps": ['jquery']
+        },
+        'notify': {
             "deps": ['jquery']
         },
         'bootstrap-switch': {

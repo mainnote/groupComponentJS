@@ -40,7 +40,7 @@ module.exports = [
     'inputList',
     'inputListGrp',
     'inputListGrp_selection',
-    'alert',
     'formOption',
     'formOption_selection',
+    'content',
 ]

@@ -846,7 +846,7 @@ define('request',['jquery', 'optObj'
                      request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
                  };
 
-                 if (opt.data) {
+                 if (opt && opt.data) {
                      opt_.request_data = opt.data;
                      opt_.request_method = 'POST';
                  }
@@ -875,9 +875,11 @@ define('request',['jquery', 'optObj'
              var opt_ = {
                  connectMethod: 'DELETE',
                  entity: this,
-                 data: opt.data,
                  callback: opt.callback
              };
+             
+             if (opt && opt.data) opt_.data = opt.data;
+             
              this.group.call('collection', 'connectEntity', opt_);
 
          },
@@ -1175,7 +1177,6 @@ define('item',['jquery', 'component', 'tpl!templates/item'
         remove: function (opt) {
             var that = this;
             var opt_ = {
-                data: opt.data,
                 callback: function () {
                     //remove from list
                     that.list.removeItem({
@@ -1186,6 +1187,7 @@ define('item',['jquery', 'component', 'tpl!templates/item'
                     that.comp.remove();
                 }
             };
+            if (opt && opt.data) opt_.data = opt.data;
             this.entityCmd('remove', opt_);
         },
         fetch: function (opt) {
@@ -1827,9 +1829,9 @@ __p+='<nav class="navbar '+
 ((__t=( navbar_placement ))==null?'':__t)+
 '">\r\n  <div class="pull-right">\r\n      <button class="navbar-toggler pull-xs-right hidden-sm-up" type="button" data-toggle="collapse" data-target="#'+
 ((__t=( navbar_id ))==null?'':__t)+
-'">\r\n        &#9776;\r\n      </button>\r\n  </div>\r\n  <style>\r\n@media screen and (max-width: 542px) {\r\n    ul.nav li.nav-item {\r\n        width: 100%;\r\n        display: block;\r\n        clear: both;\r\n        text-align:left;\r\n        margin-left: 0 !important;\r\n    }\r\n    \r\n    nav .nav-middle {\r\n        width: 80%;\r\n        height: 2.5em;\r\n    }\r\n}\r\n  </style>\r\n  <div class="nav-middle"></div>\r\n  <div class="collapse navbar-toggleable-xs menu-items" id="'+
+'">\r\n        &#9776;\r\n      </button>\r\n  </div>\r\n  <div class="nav-middle"></div>\r\n  <div class="collapse navbar-toggleable-xs menu-items" id="'+
 ((__t=( navbar_id ))==null?'':__t)+
-'">\r\n    <ul class="nav navbar-nav">\r\n    </ul>\r\n  </div>\r\n</nav>';
+'">\r\n    <ul class="nav navbar-nav">\r\n    </ul>\r\n  </div>\r\n</nav>\r\n\r\n';
 }
 return __p;
 }; });
@@ -2960,23 +2962,40 @@ define('inputListGrp_selection',['jquery', 'inputListGrp', 'tpl!templates/inputL
 });
 
 
-define('tpl!templates/alert', ['underscore'], function (_) { return function(obj){
+define('tpl!templates/content', ['underscore'], function (_) { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<div class="alert">'+
-((__t=( message ))==null?'':__t)+
-'</div>';
+__p+='<p class="'+
+((__t=( content_class ))==null?'':__t)+
+'">'+
+((__t=( content_content ))==null?'':_.escape(__t))+
+'</p>';
 }
 return __p;
 }; });
 
-define('alert',['jquery', 'component', 'tpl!templates/alert'
+define('content',['jquery', 'component', 'tpl!templates/content'
 	], function ($, Component, tpl) {
-    var Item = Component.create('Item');
-    Item.extend({
-        tpl: tpl
+    var Content = Component.create('Content');
+    Content.extend({
+        tpl: tpl,
+        defaultOpt: {
+            content_class: 'text-muted',
+            content_content: ''
+        },
+        reset: function (opt) {
+            var content = this.comp;
+            content.empty().html(opt.content_content);
+            if (opt.content_class) {
+                content.attr('class',
+                    function (i, c) {
+                        return c.replace(/(^|\s)text-\S+/g, '');
+                    });
+                content.addClass(opt.content_class);
+            }
+        },
     });
 
-    return Item;
+    return Content;
 });
 

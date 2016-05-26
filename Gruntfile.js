@@ -21,6 +21,7 @@ module.exports = function (grunt) {
                         'bootstrap-switch': 'empty:',
                         'bootstrap-tagsinput': 'empty:',
                         'validator': 'empty:',
+                        'notify': 'empty:',
                         'templates': '../templates',
                         'tpl': '../../build/tpl',
                         'underscore': '../../build/underscore',
@@ -99,6 +100,7 @@ module.exports = function (grunt) {
                                 'text': 'http://cdnjs.cloudflare.com/ajax/libs/require-text/2.0.12/text.min',
                                 'jasmine-jquery': '../../../../bower_components/jasmine-jquery/lib/jasmine-jquery',
                                 'validator': 'http://cdnjs.cloudflare.com/ajax/libs/validator/5.2.0/validator.min',
+                                'notify': 'http://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min',
                             },
                             shim: {
                                 'jasmine-jquery': {

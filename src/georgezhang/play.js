@@ -532,33 +532,33 @@ window.LOG1 = function (tag, msg, type, result) {
         var opt = {
             container: $('#mnbody'),
             form_elements: [{
-                        elem: input_text,
-                        opt: {
-                            input_id: 'inputtext',
-                            input_name: 'inputtext',
-                            input_type: 'text',
-                            input_placeholder: 'Test Validation',
-                            input_required: true,
-                            input_autofocus: true,
-                            input_action: '/',
-                        },
+                    elem: input_text,
+                    opt: {
+                        input_id: 'inputtext',
+                        input_name: 'inputtext',
+                        input_type: 'text',
+                        input_placeholder: 'Test Validation',
+                        input_required: true,
+                        input_autofocus: true,
+                        input_action: '/',
+                    },
 					}, {
-                        elem: input_text2,
-                        opt: {
-                            input_id: 'inputtext2',
-                            input_name: 'inputtext2',
-                            input_type: 'text',
-                            input_placeholder: 'Test Validation2',
-                            input_required: true,
-                            input_action: '/',
-                        },
+                    elem: input_text2,
+                    opt: {
+                        input_id: 'inputtext2',
+                        input_name: 'inputtext2',
+                        input_type: 'text',
+                        input_placeholder: 'Test Validation2',
+                        input_required: true,
+                        input_action: '/',
+                    },
 					}, {
-                        elem: button_submit,
-                        opt: {
-                            button_name: 'Test Validate',
-                            button_type: 'submit',
-                            button_class: 'btn-sm btn-primary'
-                        },
+                    elem: button_submit,
+                    opt: {
+                        button_name: 'Test Validate',
+                        button_type: 'submit',
+                        button_class: 'btn-sm btn-primary'
+                    },
 					},
 				],
         };
@@ -567,4 +567,29 @@ window.LOG1 = function (tag, msg, type, result) {
         formCmd('render', opt);
     }); //require
 
+    require(['jquery', 'content'], function ($, Content) {
+        var content = Content.create('content');
+        content.extend({
+            setup: function (opt) {
+                var that = this;
+                this.comp.on('click', function (e) {
+                    that.reset({
+                        content_class: 'text-success',
+                        content_content: 'www.google.ca'
+                    });
+                });
+            }
+        });
+        var contentCmd = content.command();
+        var opt = {
+            container: $('.mncontent'),
+            content_class: 'text-primary',
+            content_content: 'This is my content'
+        };
+        contentCmd('render', opt);
+    }); //require
+    
+    require(['jquery', 'notify'], function ($) {
+        //$.notify('hello world');
+    }); //require
 })();

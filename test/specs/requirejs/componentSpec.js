@@ -455,34 +455,63 @@ define(function (require) {
 
                 expect($(testContainer.find('h4')[0]).text()).toEqual('item 1');
 
-/*                foo = {
-                    setBar: function (value) {
-                        bar = value;
-                    }
-                };
+                /*                foo = {
+                                    setBar: function (value) {
+                                        bar = value;
+                                    }
+                                };
 
-                spyOn(foo, 'setBar');
+                                spyOn(foo, 'setBar');
 
-                foo.setBar(123);
-                foo.setBar(456, 'another param');
-                expect(foo.setBar).toHaveBeenCalled();*/
+                                foo.setBar(123);
+                                foo.setBar(456, 'another param');
+                                expect(foo.setBar).toHaveBeenCalled();*/
 
                 //edit
-/*                var editBtn = $(testContainer.find('.btn.edit')[0]);
-                console.log(editBtn.prop('outerHTML'));
-                var spyEvent = spyOnEvent(editBtn, 'click');
-                editBtn.trigger('click');*/
+                /*                var editBtn = $(testContainer.find('.btn.edit')[0]);
+                                console.log(editBtn.prop('outerHTML'));
+                                var spyEvent = spyOnEvent(editBtn, 'click');
+                                editBtn.trigger('click');*/
                 //expect('click').toHaveBeenTriggeredOn(editBtn);
                 //expect(spyEvent).toHaveBeenTriggered();
-/*
-                console.log($('.promptTop').prop('outerHTML'));
-                var user_name = $('.promptTop').find('input[name="heading"]').val();
-                expect(user_name).toEqual('item 1');*/
+                /*
+                                console.log($('.promptTop').prop('outerHTML'));
+                                var user_name = $('.promptTop').find('input[name="heading"]').val();
+                                expect(user_name).toEqual('item 1');*/
 
                 //delete
                 $(testContainer.find('.btn.delete')[0]).trigger('click');
                 //console.log(testContainer.prop('outerHTML'));
                 expect(testContainer.find('h4').length).toEqual(0);
+                done();
+            }); //require
+        }); //test case
+
+
+        it('Component content test cases', function (done) {
+            require(['jquery', 'content'], function ($, Content) {
+                var testContainer = $('<div></div>');
+                testContainer.appendTo('body');
+                var content = Content.create('content');
+                content.extend({
+                    setup: function (opt) {
+                        var that = this;
+                        this.comp.on('click', function (e) {
+                            that.reset({
+                                content_class: 'text-success',
+                                content_content: 'www.google.ca'
+                            });
+                        });
+                    }
+                });
+                var contentCmd = content.command();
+                var opt = {
+                    container: testContainer,
+                    content_class: 'text-primary',
+                    content_content: 'This is my content'
+                };
+                contentCmd('render', opt);
+                expect(testContainer.find('p').html()).toBe('This is my content');
                 done();
             }); //require
         }); //test case

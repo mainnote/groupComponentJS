@@ -33,7 +33,7 @@
                      request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
                  };
 
-                 if (opt.data) {
+                 if (opt && opt.data) {
                      opt_.request_data = opt.data;
                      opt_.request_method = 'POST';
                  }
@@ -62,9 +62,11 @@
              var opt_ = {
                  connectMethod: 'DELETE',
                  entity: this,
-                 data: opt.data,
                  callback: opt.callback
              };
+             
+             if (opt && opt.data) opt_.data = opt.data;
+             
              this.group.call('collection', 'connectEntity', opt_);
 
          },

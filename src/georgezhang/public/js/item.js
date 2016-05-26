@@ -21,7 +21,6 @@ define(['jquery', 'component', 'tpl!templates/item'
         remove: function (opt) {
             var that = this;
             var opt_ = {
-                data: opt.data,
                 callback: function () {
                     //remove from list
                     that.list.removeItem({
@@ -32,6 +31,7 @@ define(['jquery', 'component', 'tpl!templates/item'
                     that.comp.remove();
                 }
             };
+            if (opt && opt.data) opt_.data = opt.data;
             this.entityCmd('remove', opt_);
         },
         fetch: function (opt) {
