@@ -38,16 +38,22 @@ define(['jquery', 'optObj'
             if (opt.elements && $.isArray(opt.elements)) {
                 for (var i = 0, len = opt.elements.length; i < len; i++) {
                     var elem = opt.elements[i];
-                    var elemObj = elem.elem.create();
 
-                    if (elemObj.hasOwnProperty('parentNames')) {
-                        this.addElement({
-                            elemCmd: elemObj.command(),
-                            elemOpt: elem.opt,
-                            container: opt.container || this.comp
-                        });
-                        if (!this.elements) this.elements = [];
-                        this.elements.push(elemObj);
+                    if (typeof elem === 'string') {
+                        opt.container.append(elem);
+                    } else {
+                        var elemObj = elem.elem.create();
+                        if (elemObj.hasOwnProperty('parentNames')) {
+                            this.addElement({
+                                elemCmd: elemObj.command(),
+                                elemOpt: elem.opt,
+                                container: opt.container || this.comp
+                            });
+                            if (!this.elements) this.elements = [];
+                            this.elements.push(elemObj);
+                        } else {
+                            throw 'invalid element object';
+                        }
                     }
                 }
             }

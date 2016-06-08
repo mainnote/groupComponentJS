@@ -43,4 +43,5 @@ module.exports = [
     'formOption',
     'formOption_selection',
     'content',
+    'footer',
 ]

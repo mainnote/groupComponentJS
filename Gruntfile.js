@@ -26,6 +26,8 @@ module.exports = function (grunt) {
                         'tpl': '../../build/tpl',
                         'underscore': '../../build/underscore',
                         'text': '../../build/text',
+                        'ckeditor-core': 'empty:',
+                        'ckeditor-jquery': 'empty:',
                     },
                     shim: {
                         underscore: {
@@ -101,6 +103,8 @@ module.exports = function (grunt) {
                                 'jasmine-jquery': '../../../../bower_components/jasmine-jquery/lib/jasmine-jquery',
                                 'validator': 'http://cdnjs.cloudflare.com/ajax/libs/validator/5.2.0/validator.min',
                                 'notify': 'http://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min',
+                                'ckeditor-core': 'http://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/ckeditor',
+                                'ckeditor-jquery': 'http://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/adapters/jquery',
                             },
                             shim: {
                                 'jasmine-jquery': {

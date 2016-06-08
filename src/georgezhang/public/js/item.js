@@ -21,14 +21,18 @@ define(['jquery', 'component', 'tpl!templates/item'
         remove: function (opt) {
             var that = this;
             var opt_ = {
-                callback: function () {
-                    //remove from list
-                    that.list.removeItem({
-                        itemObj: that
-                    });
+                callback: function (opt_callback) {
+                    if (opt_callback && opt_callback.error) {
+                        if (opt && opt.callback) opt.callback(opt_callback);
+                    } else {
+                        //remove from list
+                        that.list.removeItem({
+                            itemObj: that
+                        });
 
-                    //remove UI
-                    that.comp.remove();
+                        //remove UI
+                        that.comp.remove();
+                    }
                 }
             };
             if (opt && opt.data) opt_.data = opt.data;

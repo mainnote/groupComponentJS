@@ -23,7 +23,7 @@ define(['jquery', 'component', 'tpl!templates/form'
 
                     var compOpt;
                     if (opt.doc && elem.opt && elem.opt.keyColumnMap) {
-                        compOpt = elem.opt || {};
+                        compOpt = elem.opt ? $.extend({}, elem.opt) : {};
                         var keyColumnMap = elem.opt.keyColumnMap;
                         for (var key in keyColumnMap) {
                             compOpt[key] = opt.doc[keyColumnMap[key]];
@@ -90,7 +90,7 @@ define(['jquery', 'component', 'tpl!templates/form'
         },
         find: function (opt) {
             var subComp;
-            $.each(this.compCmds, function(i, compCmd){
+            $.each(this.compCmds, function (i, compCmd) {
                 if (compCmd('name') === opt.name) {
                     subComp = compCmd;
                     return false;

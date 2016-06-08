@@ -588,8 +588,27 @@ window.LOG1 = function (tag, msg, type, result) {
         };
         contentCmd('render', opt);
     }); //require
-    
+
     require(['jquery', 'notify'], function ($) {
         //$.notify('hello world');
     }); //require
+
+    require(['jquery', 'footer'], function ($, Footer) {
+        var footerCmd = Footer.create('footerCmd').command();
+        footerCmd('render', {
+            container: $('body'),
+            footer_link: ['<li><a href="/public/privacy">Privacy</a></li>', '<li><a href="/public/about">About</a></li>'],
+            footer_p: ['<p>&copy; All rights reservied.</p>'],
+        });
+    }); //require
+
+    require(['jquery', 'ckeditor-jquery'], function ($, CJ) {
+        var editor = $('<textarea id="myTextEditor">kjkjojojosjojs</textarea>');
+        editor.appendTo('#mnbody');
+        editor.ckeditor();
+        //console.log('instances', CKEDITOR.instances.myTextEditor.getData());
+        
+    }); //require
+
+
 })();

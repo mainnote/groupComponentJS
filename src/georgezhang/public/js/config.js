@@ -13,6 +13,8 @@ require.config({
         'templates': '../templates',
         'validator': '//cdnjs.cloudflare.com/ajax/libs/validator/5.2.0/validator.min',
         'notify': '//cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min',
+        'ckeditor-core': '//cdn.ckeditor.com/4.5.9/full/ckeditor',
+        'ckeditor-jquery': '//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/adapters/jquery',
     },
     shim: {
         'bootstrap': {
@@ -29,6 +31,9 @@ require.config({
         },
         underscore: {
             exports: '_'
+        },
+        'ckeditor-jquery': {
+            deps: ['jquery', 'ckeditor-core']
         },
     },
     waitSeconds: 15,

@@ -6,25 +6,23 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
     ListScrollEndFetchGrp.join(listItemGrp, collectionGrp, fetcher);
 
     ListScrollEndFetchGrp.extend({
-        initOpt: {},
         reset: function (opt) {
             this.call('fetcher', 'stop');
             this.call('listItemGrp', 'reset');
             this.call('collectionGrp', 'reset');
-            var opt_ = {};
-            $.extend(opt_, this.initOpt, opt || {});
-            this.set(opt_);
+            this.set(opt);
         },
+        getUrl: function(){}, //to be overriden
         set: function (opt) {
-            if (opt) $.extend(this.initOpt, opt);
+            this.setOpt(opt);
             var thatGrp = this;
             //declaration
-            var container = opt.container;
+            var container = this.opt.container;
             var page = 1;
             var pageLoading = false;
 
             function getUrl() {
-                return opt.getUrl(page, opt.input_vaule || null);
+                return thatGrp.getUrl(page);
             }
 
             //fetch data from server API for initial dataset

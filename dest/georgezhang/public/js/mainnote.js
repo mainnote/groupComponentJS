@@ -55,6 +55,16 @@ if (typeof Array.isArray === 'undefined') {
         return Object.prototype.toString.call(obj) === '[object Array]';
     }
 };
+
+function contains(a, obj) {
+    var i = a.length;
+    while (i--) {
+        if (a[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}
 /*Object.prototype.renameProperty = function (oldName, newName) {
     // Do nothing if the names are the same
     if (oldName == newName) {
@@ -69,15 +79,6 @@ if (typeof Array.isArray === 'undefined') {
 };*/
 
 //----------------------------
-function reservedAttr(attribute) {
-    if ((attribute in obj) || (attribute in group) || attribute === 'parentNames' || attribute === 'group' || attribute === '_memberList' || attribute === 'name' || attribute === '_callToMembers') {
-        return true;
-    } else {
-        return false;
-    }
-};
-
-
 function _resetCallToMember(thisGrp) {
     if ('_callToMembers' in thisGrp) { //reset setCallToMembers and level up
         //clone first since it will reset later
@@ -142,7 +143,7 @@ var obj = {
             if (typeof self[cmd] === 'function') {
                 if (global.LOG) {
                     var result = self[cmd](opt);
-                    if (!(reservedAttr(cmd))) {
+                    if (!(self.isReservedAttr(cmd))) {
                         LOG(TAG, ' Method ' + self.name + '.' + cmd + ' ', opt, result);
                     }
                     return result;
@@ -152,7 +153,7 @@ var obj = {
             } else {
                 if (global.LOG) {
                     var result = self[cmd];
-                    if (!(reservedAttr(cmd))) {
+                    if (!(self.isReservedAttr(cmd))) {
                         LOG(TAG, ' Attribute ' + self.name + '.' + cmd + ' ', '', result);
                     }
                     return result;
@@ -164,6 +165,13 @@ var obj = {
     },
     thisObj: function () {
         return this;
+    },
+    isReservedAttr: function (attribute) {
+        if ((attribute in obj) || (attribute in group) || contains(['parentNames', 'group', '_memberList', 'name', '_callToMembers'], attribute) || (this.reservedAttr && Array.isArray(this.reservedAttr) && contains(this.reservedAttr, attribute))) {
+            return true;
+        } else {
+            return false;
+        }
     },
 };
 
@@ -230,7 +238,7 @@ group.extend({
             } else {
                 return memberCmd(methodName, opt);
             }
-         //check all members if anyone parent matched the memberName (inherited member)
+            //check all members if anyone parent matched the memberName (inherited member)
         } else {
             var result;
             var prototypeMemberList = this._memberList;
@@ -250,7 +258,7 @@ group.extend({
                                 }
                             }
                         }
-                        
+
                     }
                 }
             }
@@ -345,7 +353,7 @@ group.extend({
             }
 
             function _setMethod(attribute, memberObj) {
-                if (!reservedAttr(attribute)) { //skip those attributes exist in group!!!
+                if (!that.isReservedAttr(attribute)) { //skip those attributes exist in group!!!
                     if (typeof memberObj[attribute] === 'function' && !memberObj[attribute].binded) {
                         that[attribute] = memberObj[attribute].bind(memberObj);
                         that[attribute].binded = true;
@@ -485,9 +493,10 @@ define('opt',['jquery'
     return {
         opt: {}, //should not be overriden
         defaultOpt: {},
+        reservedAttr: ['opt', 'defaultOpt', 'init', 'setOpt'],
         init: function () {},
         setOpt: function (opt) {
-            this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
+            if(opt) this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
         }
     };
 });
@@ -545,16 +554,22 @@ define('component',['jquery', 'optObj'
             if (opt.elements && $.isArray(opt.elements)) {
                 for (var i = 0, len = opt.elements.length; i < len; i++) {
                     var elem = opt.elements[i];
-                    var elemObj = elem.elem.create();
 
-                    if (elemObj.hasOwnProperty('parentNames')) {
-                        this.addElement({
-                            elemCmd: elemObj.command(),
-                            elemOpt: elem.opt,
-                            container: opt.container || this.comp
-                        });
-                        if (!this.elements) this.elements = [];
-                        this.elements.push(elemObj);
+                    if (typeof elem === 'string') {
+                        opt.container.append(elem);
+                    } else {
+                        var elemObj = elem.elem.create();
+                        if (elemObj.hasOwnProperty('parentNames')) {
+                            this.addElement({
+                                elemCmd: elemObj.command(),
+                                elemOpt: elem.opt,
+                                container: opt.container || this.comp
+                            });
+                            if (!this.elements) this.elements = [];
+                            this.elements.push(elemObj);
+                        } else {
+                            throw 'invalid element object';
+                        }
                     }
                 }
             }
@@ -948,7 +963,7 @@ define('form',['jquery', 'component', 'tpl!templates/form'
 
                     var compOpt;
                     if (opt.doc && elem.opt && elem.opt.keyColumnMap) {
-                        compOpt = elem.opt || {};
+                        compOpt = elem.opt ? $.extend({}, elem.opt) : {};
                         var keyColumnMap = elem.opt.keyColumnMap;
                         for (var key in keyColumnMap) {
                             compOpt[key] = opt.doc[keyColumnMap[key]];
@@ -1015,7 +1030,7 @@ define('form',['jquery', 'component', 'tpl!templates/form'
         },
         find: function (opt) {
             var subComp;
-            $.each(this.compCmds, function(i, compCmd){
+            $.each(this.compCmds, function (i, compCmd) {
                 if (compCmd('name') === opt.name) {
                     subComp = compCmd;
                     return false;
@@ -1177,14 +1192,18 @@ define('item',['jquery', 'component', 'tpl!templates/item'
         remove: function (opt) {
             var that = this;
             var opt_ = {
-                callback: function () {
-                    //remove from list
-                    that.list.removeItem({
-                        itemObj: that
-                    });
+                callback: function (opt_callback) {
+                    if (opt_callback && opt_callback.error) {
+                        if (opt && opt.callback) opt.callback(opt_callback);
+                    } else {
+                        //remove from list
+                        that.list.removeItem({
+                            itemObj: that
+                        });
 
-                    //remove UI
-                    that.comp.remove();
+                        //remove UI
+                        that.comp.remove();
+                    }
                 }
             };
             if (opt && opt.data) opt_.data = opt.data;
@@ -2373,25 +2392,23 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
     ListScrollEndFetchGrp.join(listItemGrp, collectionGrp, fetcher);
 
     ListScrollEndFetchGrp.extend({
-        initOpt: {},
         reset: function (opt) {
             this.call('fetcher', 'stop');
             this.call('listItemGrp', 'reset');
             this.call('collectionGrp', 'reset');
-            var opt_ = {};
-            $.extend(opt_, this.initOpt, opt || {});
-            this.set(opt_);
+            this.set(opt);
         },
+        getUrl: function(){}, //to be overriden
         set: function (opt) {
-            if (opt) $.extend(this.initOpt, opt);
+            this.setOpt(opt);
             var thatGrp = this;
             //declaration
-            var container = opt.container;
+            var container = this.opt.container;
             var page = 1;
             var pageLoading = false;
 
             function getUrl() {
-                return opt.getUrl(page, opt.input_vaule || null);
+                return thatGrp.getUrl(page);
             }
 
             //fetch data from server API for initial dataset
@@ -2997,5 +3014,45 @@ define('content',['jquery', 'component', 'tpl!templates/content'
     });
 
     return Content;
+});
+
+
+define('tpl!templates/footer', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<footer class="bd-footer text-muted" role="contentinfo">\n  <div class="container">\n    <ul class="bd-footer-links">\n    </ul>\n  </div>\n</footer>';
+}
+return __p;
+}; });
+
+define('footer',['jquery', 'component', 'tpl!templates/footer'
+	], function ($, Component, tpl) {
+    var Footer = Component.create('Footer');
+    Footer.extend({
+        tpl: tpl,
+        defaultOpt: {
+            footer_link: [],
+            footer_p: [],
+        },
+        setup: function (opt) {
+            //links
+            var opt_link = {
+                container: this.comp.find('ul.bd-footer-links'),
+                elements: opt.footer_link,
+            }
+            this.setElements(opt_link);
+            
+            //paragraphs
+            var opt_p = {
+                container: this.comp.find('div.container'),
+                elements: opt.footer_p,
+            }
+            this.setElements(opt_p);
+            
+            return this.comp;
+        },
+    });
+
+    return Footer;
 });
 
