@@ -1265,7 +1265,7 @@ define('list',['jquery', 'component', 'tpl!templates/list',
         },
         setup: function (opt) {
             var that = this;
-            if (opt.list_data && $.isArray(opt.list_data)) {
+            if (opt.list_data && $.isArray(opt.list_data) && opt.list_data.length > 0) {
                 $.each(opt.list_data, function (index, data) {
                     var itemCmd = that.group.call('itemGrp', 'create', 'itemGrpCmd').command(); //member create
                     that.items.push(itemCmd);
@@ -1285,13 +1285,17 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                     'min-height': minH > winH ? winH : minH,
                     'min-width': ''
                 });
+            } else {
+            	this.noListData();
             }
+            
         },
         removeItem: function (opt) {
             this.items = $.grep(this.items, function (itemObj, idx) {
                 if (opt.itemObj === itemObj) return true;
             });
-        }
+        },
+        noListData: function (opt) {},
     });
 
     return List;
@@ -1696,7 +1700,9 @@ __p+='<div class="form-group">\r\n    <label for="'+
 ((__t=( input_id ))==null?'':__t)+
 '" name="'+
 ((__t=( input_name ))==null?'':__t)+
-'" class="form-control" placeholder="'+
+'" class="form-control '+
+((__t=( input_class ))==null?'':__t)+
+'" placeholder="'+
 ((__t=( input_placeholder ))==null?'':__t)+
 '" \r\n        ';
  if (input_required) {
@@ -1732,6 +1738,7 @@ define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
             input_value: '',
             input_id: 'input_id',
             input_name: 'input_name',
+            input_class: '',
             input_type: 'text',
             input_placeholder: '',
             input_timeout: 700,
@@ -3054,5 +3061,46 @@ define('footer',['jquery', 'component', 'tpl!templates/footer'
     });
 
     return Footer;
+});
+
+define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
+	], function ($, Input, typeahead, Bloodhound) {
+    var Autocomplete = Input.create('Autocomplete');
+    Autocomplete.extend({
+        defaultOpt: $.extend({}, Autocomplete.defaultOpt, {
+            input_class: 'typeahead',
+        }),
+        bloodhound: Bloodhound,
+        setDataSource: function (opt) {
+            // constructs the suggestion engine
+            var opt_bloodhound = $.extend({}, {
+                datumTokenizer: this.bloodhound.tokenizers.whitespace,
+                queryTokenizer: this.bloodhound.tokenizers.whitespace,
+            }, opt.engine_opt || {});
+            var source = new this.bloodhound(opt_bloodhound);
+
+            return $.extend({}, {
+                source: source
+            }, opt.source_opt || {});
+        },
+        setup: function (opt) {
+            var that = this;
+            this.inputElem = this.comp.find('input');
+
+            var opt_typeahead = $.extend({}, {
+                hint: true,
+                highlight: true,
+                minLength: 1
+            }, opt.autocomplete_typeahead_opt || {});
+            this.inputElem.typeahead(opt_typeahead, this.setDataSource(opt.autocomplete_bloodhound_opt || {}));
+
+            this.comp.find('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
+            this.comp.find('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
+
+            return this.comp;
+        },
+    });
+
+    return Autocomplete;
 });
 

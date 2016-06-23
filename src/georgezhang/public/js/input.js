@@ -11,6 +11,7 @@ define(['jquery', 'component', 'validator', 'tpl!templates/input'
             input_value: '',
             input_id: 'input_id',
             input_name: 'input_name',
+            input_class: '',
             input_type: 'text',
             input_placeholder: '',
             input_timeout: 700,

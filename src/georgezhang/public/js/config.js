@@ -15,6 +15,8 @@ require.config({
         'notify': '//cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min',
         'ckeditor-core': '//cdn.ckeditor.com/4.5.9/full/ckeditor',
         'ckeditor-jquery': '//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/adapters/jquery',
+        'typeahead': '//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min',
+        'bloodhound': '//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min',
     },
     shim: {
         'bootstrap': {
@@ -35,6 +37,16 @@ require.config({
         'ckeditor-jquery': {
             deps: ['jquery', 'ckeditor-core']
         },
+        typeahead: {
+            deps: ['jquery'],
+            init: function ($) {
+                return require.s.contexts._.registry['typeahead.js'].factory($);
+            }
+        },
+        bloodhound: {
+            deps: ['jquery'],
+            exports: 'Bloodhound'
+        }
     },
     waitSeconds: 15,
 });

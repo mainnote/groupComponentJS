@@ -607,8 +607,37 @@ window.LOG1 = function (tag, msg, type, result) {
         editor.appendTo('#mnbody');
         editor.ckeditor();
         //console.log('instances', CKEDITOR.instances.myTextEditor.getData());
-        
+
     }); //require
 
+    require(['jquery', 'autocomplete'], function ($, Autocomplete) {
+        var states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California',
+    'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii',
+    'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana',
+    'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota',
+    'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+    'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota',
+    'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',
+    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
+    'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'];
+
+        var autocomplete_statesCmd = Autocomplete.create('autocomplete_statesCmd').command();
+        var opt = {
+            container: $('#mnbody'),
+            input_placeholder: 'Find state',
+            input_id: 'input_state',
+            input_name: 'input_state',
+            autocomplete_bloodhound_opt: {
+                engine_opt: {
+                    local: states,
+                },
+                source_opt: {
+                    name: 'states',
+                },
+            },
+        };
+        autocomplete_statesCmd('render', opt);
+
+    }); //require
 
 })();

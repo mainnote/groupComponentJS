@@ -44,4 +44,5 @@ module.exports = [
     'formOption_selection',
     'content',
     'footer',
+    'autocomplete',
 ]

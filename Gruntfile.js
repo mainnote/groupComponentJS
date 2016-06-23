@@ -28,6 +28,8 @@ module.exports = function (grunt) {
                         'text': '../../build/text',
                         'ckeditor-core': 'empty:',
                         'ckeditor-jquery': 'empty:',
+                        'typeahead': 'empty:',
+                        'bloodhound': 'empty:',
                     },
                     shim: {
                         underscore: {
@@ -105,6 +107,8 @@ module.exports = function (grunt) {
                                 'notify': 'http://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min',
                                 'ckeditor-core': 'http://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/ckeditor',
                                 'ckeditor-jquery': 'http://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/adapters/jquery',
+                                'typeahead': 'http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min',
+                                'bloodhound': 'http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min',
                             },
                             shim: {
                                 'jasmine-jquery': {

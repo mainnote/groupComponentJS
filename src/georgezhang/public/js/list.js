@@ -19,7 +19,7 @@ define(['jquery', 'component', 'tpl!templates/list',
         },
         setup: function (opt) {
             var that = this;
-            if (opt.list_data && $.isArray(opt.list_data)) {
+            if (opt.list_data && $.isArray(opt.list_data) && opt.list_data.length > 0) {
                 $.each(opt.list_data, function (index, data) {
                     var itemCmd = that.group.call('itemGrp', 'create', 'itemGrpCmd').command(); //member create
                     that.items.push(itemCmd);
@@ -39,13 +39,17 @@ define(['jquery', 'component', 'tpl!templates/list',
                     'min-height': minH > winH ? winH : minH,
                     'min-width': ''
                 });
+            } else {
+            	this.noListData();
             }
+            
         },
         removeItem: function (opt) {
             this.items = $.grep(this.items, function (itemObj, idx) {
                 if (opt.itemObj === itemObj) return true;
             });
-        }
+        },
+        noListData: function (opt) {},
     });
 
     return List;
