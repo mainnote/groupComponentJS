@@ -12,7 +12,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
             this.call('collectionGrp', 'reset');
             this.set(opt);
         },
-        getUrl: function(){}, //to be overriden
+        getUrl: function () {}, //to be overriden
         set: function (opt) {
             this.setOpt(opt);
             var thatGrp = this;
@@ -28,58 +28,57 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
             //fetch data from server API for initial dataset
             var opt_firstFetch = {
                 url: getUrl(),
-                done: afterFirstFetch
             }
-            thatGrp.call('fetcher', 'get', opt_firstFetch);
+            thatGrp.call('fetcher', 'getAsync', opt_firstFetch)
+                .then(function (firstResult) {
+                    /*
+                       main logic
+                    */
 
-            //after first load process
-            function afterFirstFetch(firstResult) {
-                /*
-                   main logic
-                */
-                //prepare for next load
-                var lastPage = false;
+                    //after first load process
+                    //prepare for next load
+                    var lastPage = false;
 
-                function setNext(result) {
-                    if (result.page == result.pages || lastPage) {
-                        lastPage = true;
-                    } else {
-                        page++;
+                    function setNext(result) {
+                        if (result.page == result.pages || lastPage) {
+                            lastPage = true;
+                        } else {
+                            page++;
+                        }
                     }
-                }
 
-                function afterNextFetch(nextResult) {
-                    setNext(nextResult);
-                    //rendering list next time
-                    var opt_next = {
-                        list_data: thatGrp.call('collectionGrp', 'addExtra', {
-                            values: nextResult.docs
+                    function afterNextFetch(nextResult) {
+                        setNext(nextResult);
+                        //rendering list next time
+                        var opt_next = {
+                            list_data: thatGrp.call('collectionGrp', 'addExtra', {
+                                values: nextResult.docs
+                            }),
+                        };
+                        thatGrp.call('listItemGrp', 'setup', opt_next);
+                        pageLoading = false;
+                    }
+
+                    setNext(firstResult);
+
+                    //rendering list fisrt time
+                    var opt_ = {
+                        container: container,
+                        list_data: thatGrp.call('collectionGrp', 'add', {
+                            values: firstResult.docs
                         }),
                     };
-                    thatGrp.call('listItemGrp', 'setup', opt_next);
-                    pageLoading = false;
-                }
+                    thatGrp.call('listItemGrp', 'render', opt_);
 
-                setNext(firstResult);
-
-                //rendering list fisrt time
-                var opt_ = {
-                    container: container,
-                    list_data: thatGrp.call('collectionGrp', 'add', {
-                        values: firstResult.docs
-                    }),
-                };
-                thatGrp.call('listItemGrp', 'render', opt_);
-
-                //scroll to end function
-                var opt_next = {
-                    pageLoading: pageLoading,
-                    lastPage: lastPage,
-                    getUrl: getUrl,
-                    afterNextFetch: afterNextFetch
-                };
-                thatGrp.call('fetcher', 'setScrollEndFetch', opt_next);
-            }
+                    //scroll to end function
+                    var opt_next = {
+                        pageLoading: pageLoading,
+                        lastPage: lastPage,
+                        getUrl: getUrl,
+                        afterNextFetch: afterNextFetch
+                    };
+                    thatGrp.call('fetcher', 'setScrollEndFetch', opt_next);
+                });
         }
     });
 

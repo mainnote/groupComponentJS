@@ -209,25 +209,21 @@ window.LOG1 = function (tag, msg, type, result) {
         });
     });
 
-    define('requestMock', ['jquery', 'group'
-		], function ($, Grp) {
+    define('requestMock', ['jquery', 'group', 'Promise'
+		], function ($, Grp, Promise) {
         var RequestMock = Grp.obj.create('RequestMock');
         RequestMock.extend({
-            connect: function (opt) {
-                if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com") {
-                    opt.request_done({
+            connectAsync: function (opt) {
+                if (opt.request_data.value === "test" || opt.request_data.value === "test@local.com" || true) {
+                    return Promise.resolve({
                         data: {}
-
                     });
                 } else {
-                    opt.request_done({
-                        error: {
-                            message: 'this is wrong',
-                            code: 101
-                        }
+                    return Promise.reject({
+                        message: 'this is wrong',
+                        code: 101
                     });
                 }
-                opt.request_always();
             },
         });
 
@@ -640,4 +636,18 @@ window.LOG1 = function (tag, msg, type, result) {
 
     }); //require
 
+    require(['Promise'], function (Promise) {
+        var a1 = (function () {
+            console.log('a1')
+            return Promise.resolve();
+        })();
+        var a2 = (function () {
+            console.log('a2')
+            return Promise.resolve();
+        })();
+
+        Promise.join(a1, a2, function () {
+            console.log('done');
+        });
+    });
 })();

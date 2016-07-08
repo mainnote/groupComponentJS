@@ -1,18 +1,28 @@
-define(['jquery', 'optObj'
-	], function ($, OptObj) {
+define(['jquery', 'optObj', 'Promise'
+	], function ($, OptObj, Promise) {
     var Request = OptObj.create('Request');
     Request.extend({
-        connect: function (opt) {
+        connectAsync: function (opt) {
+            var that = this;
             this.setOpt(opt);
-            $.ajax({
-                    url: this.opt.request_url,
-                    method: this.opt.request_method,
-                    data: this.opt.request_data,
-                    dataType: 'json'
-                })
-                .done(this.opt.request_done)
-                .fail(this.opt.request_fail)
-                .always(this.opt.request_always);
+
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                        url: that.opt.request_url,
+                        method: that.opt.request_method,
+                        data: that.opt.request_data,
+                        dataType: 'json'
+                    })
+                    .done(function (data, textStatus, jqXHR) {
+                        if (data && 'error' in data) {
+                            return reject(data.error);
+                        }
+                        return resolve(data);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        return reject(errorThrown);
+                    });
+            });
         },
     });
 

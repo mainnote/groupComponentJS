@@ -1,15 +1,9 @@
-define(['jquery', 'optObj', 'scroll'
-	], function ($, OptObj, Scroll) {
+define(['jquery', 'optObj', 'scroll', 'request'
+	], function ($, OptObj, Scroll, Request) {
     var Fetcher = OptObj.create('Fetcher');
     Fetcher.extend({
         defaultOpt: {
             data: {},
-            done: function () {},
-            fail: function (err) {
-                console.error(err);
-            },
-            always: function () {},
-            dataType: 'json'
         },
         init: function () {
             OptObj.init.call(this);
@@ -23,24 +17,16 @@ define(['jquery', 'optObj', 'scroll'
             });
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
-        get: function (opt) {
+        getAsync: function (opt) {
             this.setOpt(opt);
             if (this.opt.url) {
-                this.jqxhr = $.get({
-                        url: this.opt.url,
-                        data: this.opt.data,
-                        dataType: this.opt.dataType,
-                        context: this,
-                    })
-                    .done(function (result) {
-                        this.opt.done(result);
-                    })
-                    .fail(function (err) {
-                        this.opt.fail(err);
-                    })
-                    .always(function () {
-                        this.opt.always();
-                    });
+                var requestCmd = Request.create('requestCmd').command();
+                var opt_ = {
+                    request_url: this.opt.url,
+                    request_method: 'GET',
+                    request_data: this.opt.data,
+                };
+                return requestCmd('connectAsync', opt_);
             } //no error if no url
         },
         setScrollEndFetch: function (opt) {
@@ -67,9 +53,9 @@ define(['jquery', 'optObj', 'scroll'
                         opt.pageLoading = true;
                         var opt_ = {
                             url: opt.getUrl(),
-                            done: opt.afterNextFetch
                         }
-                        that.get(opt_);
+                        return that.getAsync(opt_)
+                            .then(opt.afterNextFetch);
                     }
                 }
 

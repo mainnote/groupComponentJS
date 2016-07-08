@@ -18,35 +18,25 @@ define(['jquery', 'component', 'tpl!templates/item'
             };
             return Component.render.call(this, opt_);
         },
-        remove: function (opt) {
+        removeAsync: function (opt) {
             var that = this;
-            var opt_ = {
-                callback: function (opt_callback) {
-                    if (opt_callback && opt_callback.error) {
-                        if (opt && opt.callback) opt.callback(opt_callback);
-                    } else {
-                        //remove from list
-                        that.list.removeItem({
-                            itemObj: that
-                        });
-
-                        //remove UI
-                        that.comp.remove();
-                    }
-                }
-            };
+            var opt_ = {};
             if (opt && opt.data) opt_.data = opt.data;
-            this.entityCmd('remove', opt_);
+            return this.entityCmd('removeAsync', opt_)
+                .then(function (data) {
+                    //remove from list
+                    that.list.removeItem({
+                        itemObj: that
+                    });
+
+                    //remove UI
+                    that.comp.remove();
+                });
         },
-        fetch: function (opt) {
+        fetchAsync: function (opt) {
             var that = this;
             this.setOpt(opt);
-            var opt_ = {
-                callback: function (opt_callback) {
-                    that.opt.callback(opt_callback);
-                }
-            };
-            this.entityCmd('fetch', opt_);
+            return this.entityCmd('fetchAsync');
         },
         update: function (opt) {
             //update UI

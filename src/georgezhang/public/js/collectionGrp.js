@@ -1,50 +1,36 @@
- define(['jquery', 'optGrp', 'collection', 'entity', 'request'
-	], function ($, OptGrp, Collection, Entity, Request) {
+ define(['jquery', 'optGrp', 'collection', 'entity', 'request', 'Promise'
+	], function ($, OptGrp, Collection, Entity, Request, Promise) {
      var CollectionGrp = OptGrp.create('CollectionGrp');
      var collection = Collection.create('collection');
      collection.extend({
          defaultOpt: {
              remote: true
          },
-         connectEntity: function (opt) {
+         connectEntityAsync: function (opt) {
              var that = this;
              this.setOpt(opt);
              if (this.defaultOpt.remote) {
                  var opt_ = {
                      request_url: (this.opt.request_baseUrl || '/') + (opt.entity.value._id || ''),
                      request_method: opt.connectMethod,
-                     request_done: function (data, textStatus, jqXHR) {
-                         if (data.hasOwnProperty('error')) {
-                             var opt_callback = {
-                                 error: data.error
-                             };
-                             opt.callback(opt_callback);
-                         } else {
-                             that.update(opt);
-                             opt.callback(data);
-                         }
-                     },
-                     request_fail: function (jqXHR, textStatus, errorThrown) {
-                         var opt_callback = {
-                             error: errorThrown
-                         };
-                         opt.callback(opt_callback);
-                     },
-                     request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
                  };
 
                  if (opt && opt.data) {
                      opt_.request_data = opt.data;
                      opt_.request_method = 'POST';
                  }
-                 this.group.call('request', 'connect', opt_);
+                 return this.group.call('request', 'connectAsync', opt_)
+                     .then(function (data) {
+                         that.update(opt);
+                         return data;
+                     });
 
              } else {
                  if (opt.connectMethod === 'GET') {
-                     opt.callback(opt.entity.get());
+                     return Promise.resolve(opt.entity.get());
                  } else {
                      this.update(opt);
-                     opt.callback();
+                     return Promise.resolve();
                  }
              }
          },
@@ -57,35 +43,32 @@
 
      var entity = Entity.create('entity');
      entity.extend({
-         remove: function (opt) {
+         removeAsync: function (opt) {
              //back to collection to remove this entity
              var opt_ = {
                  connectMethod: 'DELETE',
                  entity: this,
-                 callback: opt.callback
              };
-             
+
              if (opt && opt.data) opt_.data = opt.data;
-             
-             this.group.call('collection', 'connectEntity', opt_);
+
+             return this.group.call('collection', 'connectEntityAsync', opt_);
 
          },
-         fetch: function (opt) {
+         fetchAsync: function (opt) {
              var opt_ = {
                  connectMethod: 'GET',
                  entity: this,
-                 callback: opt.callback
              };
-             this.group.call('collection', 'connectEntity', opt_);
+             return this.group.call('collection', 'connectEntityAsync', opt_);
          },
-         error: function (opt) {
+         errorAsync: function (opt) {
              //back to collection to remove this entity
              var opt_ = {
                  connectMethod: 'PUT',
                  entity: this,
-                 callback: opt.callback
              };
-             this.group.call('collection', 'connectEntity', opt_);
+             return this.group.call('collection', 'connectEntityAsync', opt_);
          },
      });
 

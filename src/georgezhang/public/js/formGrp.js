@@ -21,35 +21,33 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
                     request_url: action,
                     request_method: method,
                     request_data: inputData,
-                    request_done: function (data, textStatus, jqXHR) {
-                        if (data && 'error' in data) {
-                            return that.error(data);
-                        }
+                };
+                return this.group.call('request', 'connectAsync', opt_)
+                    .then(function (data) {
                         var opt0 = {
                             data: data
                         };
 
-                        that.done(opt0);
-                    },
-                    request_fail: function (jqXHR, textStatus, errorThrown) {
-                        var opt0 = {
-                            error: errorThrown
-                        };
-                        that.error(opt0);
-                    },
-                    request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {
-                        that.always();
-                    },
-                };
-                this.group.call('request', 'connect', opt_);
+                        return that.done(opt0);
+                    })
+                    .catch(function (err) {
+                        return that.error({
+                            error: err,
+                        });
+                    })
+                    .finally(function () {
+                        return that.always();
+                    });
             }
         },
-        checkValid: function(opt){
+        checkValid: function (opt) {
             var validFlag = form_checkValid.call(this, opt);
             if (validFlag) {
                 return true;
             } else {
-                this.error({error: 'Please correct the all fields above.'});
+                this.error({
+                    error: 'Please correct the all fields above.'
+                });
             }
         },
         error: function (opt) {

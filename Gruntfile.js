@@ -30,6 +30,7 @@ module.exports = function (grunt) {
                         'ckeditor-jquery': 'empty:',
                         'typeahead': 'empty:',
                         'bloodhound': 'empty:',
+                        'Promise': 'empty:',
                     },
                     shim: {
                         underscore: {
@@ -109,6 +110,7 @@ module.exports = function (grunt) {
                                 'ckeditor-jquery': 'http://cdnjs.cloudflare.com/ajax/libs/ckeditor/4.5.9/adapters/jquery',
                                 'typeahead': 'http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min',
                                 'bloodhound': 'http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min',
+                                'Promise': 'http://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.1/bluebird.min',
                             },
                             shim: {
                                 'jasmine-jquery': {

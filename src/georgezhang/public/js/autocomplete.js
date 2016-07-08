@@ -11,6 +11,9 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
             var opt_bloodhound = $.extend({}, {
                 datumTokenizer: this.bloodhound.tokenizers.whitespace,
                 queryTokenizer: this.bloodhound.tokenizers.whitespace,
+                identify: function (obj) {
+                    return obj._id;
+                },
             }, opt.engine_opt || {});
             var source = new this.bloodhound(opt_bloodhound);
 
@@ -32,6 +35,19 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
             this.comp.find('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
             this.comp.find('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
+            //bind events
+            var input_hidden = $('<input type="hidden" name="' + this.inputElem.attr('name') + '_id">');
+            if (opt.autocomplete_id) this.input_hidden = opt.autocomplete_id;
+            this.comp.append(input_hidden);
+            this.inputElem.bind('typeahead:select', function (ev, suggestion) {
+                input_hidden.val(suggestion._id);
+            });
+            this.inputElem.bind('typeahead:change', function (ev) {
+                var val = that.inputElem.typeahead('val');
+                if (!val || val == '') 
+                    input_hidden.val('');
+            });
+            
             return this.comp;
         },
     });

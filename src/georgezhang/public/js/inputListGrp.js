@@ -97,17 +97,15 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
         setup: function (opt) {
             var that = this;
             this.comp.on('click', function (e) {
-                var opt_ = {
-                    callback: function (opt_callback) {
+                that.group.call('item', 'fetchAsync')
+                    .then(function (data) {
                         var opt_prompt = {
                             container: $('#mnbody'),
-                            doc: opt_callback
+                            doc: data
                         };
                         var promptCmd = that.group.getMember('promptFormGrp_Edit').create().command(); //itemGrp
                         promptCmd('render', opt_prompt);
-                    }
-                };
-                that.group.call('item', 'fetch', opt_);
+                    });
             });
         },
     });
@@ -122,8 +120,10 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
         setup: function (opt) {
             var that = this;
             this.comp.on('click', function (e) {
-                that.group.call('item', 'remove');
-                that.group.upCall('inputList', 'updateInputValue'); //itemGrp > listItemGrp > inputListGrp
+                that.group.call('item', 'removeAsync')
+                    .then(function () {
+                        that.group.upCall('inputList', 'updateInputValue'); //itemGrp > listItemGrp > inputListGrp
+                    });
             });
         },
     });

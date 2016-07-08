@@ -488,16 +488,35 @@ return Grp;
 
 }));
 
-define('opt',['jquery'
+define('opt',['jquery', 'Promise'
 	], function ($) {
     return {
         opt: {}, //should not be overriden
         defaultOpt: {},
-        reservedAttr: ['opt', 'defaultOpt', 'init', 'setOpt'],
+        reservedAttr: ['opt', 'defaultOpt', 'init', 'setOpt', 'set', 'setAsync', 'convertPromise', 'promisable'],
         init: function () {},
         setOpt: function (opt) {
-            if(opt) this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
-        }
+            if (opt) this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
+        },
+        setAsync: function () {
+            if (this.promisable.length > 0) {
+                var that = this;
+                _.each(this.promisable, function (methodName) {
+                    that[methodName + 'Async'] = that.convertPromise(methodName);
+                });
+            }
+            return this;
+        },
+        convertPromise: function (methodName) {
+            return function (opt) {
+                var that = this;
+                if (!opt) opt = {};
+                return Promise.fromCallback(function (callback) {
+                    opt.callback = callback;
+                    return that[methodName](opt);
+                });
+            };
+        },
     };
 });
 
@@ -805,74 +824,70 @@ define('collection',['jquery', 'optObj'
     return Collection;
 });
 
-define('request',['jquery', 'optObj'
-	], function ($, OptObj) {
+define('request',['jquery', 'optObj', 'Promise'
+	], function ($, OptObj, Promise) {
     var Request = OptObj.create('Request');
     Request.extend({
-        connect: function (opt) {
+        connectAsync: function (opt) {
+            var that = this;
             this.setOpt(opt);
-            $.ajax({
-                    url: this.opt.request_url,
-                    method: this.opt.request_method,
-                    data: this.opt.request_data,
-                    dataType: 'json'
-                })
-                .done(this.opt.request_done)
-                .fail(this.opt.request_fail)
-                .always(this.opt.request_always);
+
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                        url: that.opt.request_url,
+                        method: that.opt.request_method,
+                        data: that.opt.request_data,
+                        dataType: 'json'
+                    })
+                    .done(function (data, textStatus, jqXHR) {
+                        if (data && 'error' in data) {
+                            return reject(data.error);
+                        }
+                        return resolve(data);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        return reject(errorThrown);
+                    });
+            });
         },
     });
 
     return Request;
 });
 
- define('collectionGrp',['jquery', 'optGrp', 'collection', 'entity', 'request'
-	], function ($, OptGrp, Collection, Entity, Request) {
+ define('collectionGrp',['jquery', 'optGrp', 'collection', 'entity', 'request', 'Promise'
+	], function ($, OptGrp, Collection, Entity, Request, Promise) {
      var CollectionGrp = OptGrp.create('CollectionGrp');
      var collection = Collection.create('collection');
      collection.extend({
          defaultOpt: {
              remote: true
          },
-         connectEntity: function (opt) {
+         connectEntityAsync: function (opt) {
              var that = this;
              this.setOpt(opt);
              if (this.defaultOpt.remote) {
                  var opt_ = {
                      request_url: (this.opt.request_baseUrl || '/') + (opt.entity.value._id || ''),
                      request_method: opt.connectMethod,
-                     request_done: function (data, textStatus, jqXHR) {
-                         if (data.hasOwnProperty('error')) {
-                             var opt_callback = {
-                                 error: data.error
-                             };
-                             opt.callback(opt_callback);
-                         } else {
-                             that.update(opt);
-                             opt.callback(data);
-                         }
-                     },
-                     request_fail: function (jqXHR, textStatus, errorThrown) {
-                         var opt_callback = {
-                             error: errorThrown
-                         };
-                         opt.callback(opt_callback);
-                     },
-                     request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
                  };
 
                  if (opt && opt.data) {
                      opt_.request_data = opt.data;
                      opt_.request_method = 'POST';
                  }
-                 this.group.call('request', 'connect', opt_);
+                 return this.group.call('request', 'connectAsync', opt_)
+                     .then(function (data) {
+                         that.update(opt);
+                         return data;
+                     });
 
              } else {
                  if (opt.connectMethod === 'GET') {
-                     opt.callback(opt.entity.get());
+                     return Promise.resolve(opt.entity.get());
                  } else {
                      this.update(opt);
-                     opt.callback();
+                     return Promise.resolve();
                  }
              }
          },
@@ -885,35 +900,32 @@ define('request',['jquery', 'optObj'
 
      var entity = Entity.create('entity');
      entity.extend({
-         remove: function (opt) {
+         removeAsync: function (opt) {
              //back to collection to remove this entity
              var opt_ = {
                  connectMethod: 'DELETE',
                  entity: this,
-                 callback: opt.callback
              };
-             
+
              if (opt && opt.data) opt_.data = opt.data;
-             
-             this.group.call('collection', 'connectEntity', opt_);
+
+             return this.group.call('collection', 'connectEntityAsync', opt_);
 
          },
-         fetch: function (opt) {
+         fetchAsync: function (opt) {
              var opt_ = {
                  connectMethod: 'GET',
                  entity: this,
-                 callback: opt.callback
              };
-             this.group.call('collection', 'connectEntity', opt_);
+             return this.group.call('collection', 'connectEntityAsync', opt_);
          },
-         error: function (opt) {
+         errorAsync: function (opt) {
              //back to collection to remove this entity
              var opt_ = {
                  connectMethod: 'PUT',
                  entity: this,
-                 callback: opt.callback
              };
-             this.group.call('collection', 'connectEntity', opt_);
+             return this.group.call('collection', 'connectEntityAsync', opt_);
          },
      });
 
@@ -1105,35 +1117,33 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
                     request_url: action,
                     request_method: method,
                     request_data: inputData,
-                    request_done: function (data, textStatus, jqXHR) {
-                        if (data && 'error' in data) {
-                            return that.error(data);
-                        }
+                };
+                return this.group.call('request', 'connectAsync', opt_)
+                    .then(function (data) {
                         var opt0 = {
                             data: data
                         };
 
-                        that.done(opt0);
-                    },
-                    request_fail: function (jqXHR, textStatus, errorThrown) {
-                        var opt0 = {
-                            error: errorThrown
-                        };
-                        that.error(opt0);
-                    },
-                    request_always: function (data_jqXHR, textStatus, jqXHR_errorThrow) {
-                        that.always();
-                    },
-                };
-                this.group.call('request', 'connect', opt_);
+                        return that.done(opt0);
+                    })
+                    .catch(function (err) {
+                        return that.error({
+                            error: err,
+                        });
+                    })
+                    .finally(function () {
+                        return that.always();
+                    });
             }
         },
-        checkValid: function(opt){
+        checkValid: function (opt) {
             var validFlag = form_checkValid.call(this, opt);
             if (validFlag) {
                 return true;
             } else {
-                this.error({error: 'Please correct the all fields above.'});
+                this.error({
+                    error: 'Please correct the all fields above.'
+                });
             }
         },
         error: function (opt) {
@@ -1189,35 +1199,25 @@ define('item',['jquery', 'component', 'tpl!templates/item'
             };
             return Component.render.call(this, opt_);
         },
-        remove: function (opt) {
+        removeAsync: function (opt) {
             var that = this;
-            var opt_ = {
-                callback: function (opt_callback) {
-                    if (opt_callback && opt_callback.error) {
-                        if (opt && opt.callback) opt.callback(opt_callback);
-                    } else {
-                        //remove from list
-                        that.list.removeItem({
-                            itemObj: that
-                        });
-
-                        //remove UI
-                        that.comp.remove();
-                    }
-                }
-            };
+            var opt_ = {};
             if (opt && opt.data) opt_.data = opt.data;
-            this.entityCmd('remove', opt_);
+            return this.entityCmd('removeAsync', opt_)
+                .then(function (data) {
+                    //remove from list
+                    that.list.removeItem({
+                        itemObj: that
+                    });
+
+                    //remove UI
+                    that.comp.remove();
+                });
         },
-        fetch: function (opt) {
+        fetchAsync: function (opt) {
             var that = this;
             this.setOpt(opt);
-            var opt_ = {
-                callback: function (opt_callback) {
-                    that.opt.callback(opt_callback);
-                }
-            };
-            this.entityCmd('fetch', opt_);
+            return this.entityCmd('fetchAsync');
         },
         update: function (opt) {
             //update UI
@@ -1463,7 +1463,7 @@ define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
         },
 
         donePrompt: function (opt) {
-            var formValue = this.group.call('formGrp', 'submit', opt);
+            return this.group.call('formGrp', 'submit', opt);
         },
         afterRemoved: function(opt) {
             Scroll.enableScroll();
@@ -1806,45 +1806,43 @@ define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
 
 define('inputGrp',['jquery', 'optGrp', 'input', 'request'
 	], function ($, OptGrp, Input, Request) {
-	var InputGrp = OptGrp.create('InputGrp');
-	var input = Input.create('input');
-	input.extend({
-		checkValid : function (opt) {
-			var that = this;
+    var InputGrp = OptGrp.create('InputGrp');
+    var input = Input.create('input');
+    input.extend({
+        checkValid: function (opt) {
+            var that = this;
             var action = this.comp.find('input').attr('action');
-			//request
-			var opt_ = {
-				request_url : action,
-				request_method : 'GET',
-				request_data : {value: opt.input_value},
-				request_done : function (data, textStatus, jqXHR) {
-					if (data.hasOwnProperty('error')) {
-						that.getResult({
-							invalidHints : data.error.message || data.error.code,
-						});
-					} else {
-						that.getResult({
-							invalidHints : false
-						});
-					}
-				},
-				request_fail : function (jqXHR, textStatus, errorThrown) {
-					that.getResult({
-						invalidHints : errorThrown,
-					});
-				},
-				request_always : function (data_jqXHR, textStatus, jqXHR_errorThrow) {},
-			};
-			this.group.call('request', 'connect', opt_);
+            //request
+            var opt_ = {
+                request_url: action,
+                request_method: 'GET',
+                request_data: {
+                    value: opt.input_value
+                },
+            };
+            this.group.call('request', 'connectAsync', opt_)
+                .then(function (data) {
+                    that.getResult({
+                        invalidHints: false
+                    });
+                })
+                .catch(function (err) {
+                    if ($.isObject(err)) {
+                        err = err.message || err.code || JSON.stringify(err);
+                    }
+                    that.getResult({
+                        invalidHints: err,
+                    });
+                });
             return true; //skip waiting for remote validation if submit
-		},
-	});
+        },
+    });
 
-	var request = Request.create('request');
-	InputGrp.join(input, request);
-	InputGrp.setCallToMember('input');
+    var request = Request.create('request');
+    InputGrp.join(input, request);
+    InputGrp.setCallToMember('input');
 
-	return InputGrp;
+    return InputGrp;
 });
 
 
@@ -2308,18 +2306,12 @@ define('dropdownDivider',['jquery', 'component', 'tpl!templates/dropdownDivider'
     return DropdownDivider;
 });
 
-define('fetcher',['jquery', 'optObj', 'scroll'
-	], function ($, OptObj, Scroll) {
+define('fetcher',['jquery', 'optObj', 'scroll', 'request'
+	], function ($, OptObj, Scroll, Request) {
     var Fetcher = OptObj.create('Fetcher');
     Fetcher.extend({
         defaultOpt: {
             data: {},
-            done: function () {},
-            fail: function (err) {
-                console.error(err);
-            },
-            always: function () {},
-            dataType: 'json'
         },
         init: function () {
             OptObj.init.call(this);
@@ -2333,24 +2325,16 @@ define('fetcher',['jquery', 'optObj', 'scroll'
             });
             if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
-        get: function (opt) {
+        getAsync: function (opt) {
             this.setOpt(opt);
             if (this.opt.url) {
-                this.jqxhr = $.get({
-                        url: this.opt.url,
-                        data: this.opt.data,
-                        dataType: this.opt.dataType,
-                        context: this,
-                    })
-                    .done(function (result) {
-                        this.opt.done(result);
-                    })
-                    .fail(function (err) {
-                        this.opt.fail(err);
-                    })
-                    .always(function () {
-                        this.opt.always();
-                    });
+                var requestCmd = Request.create('requestCmd').command();
+                var opt_ = {
+                    request_url: this.opt.url,
+                    request_method: 'GET',
+                    request_data: this.opt.data,
+                };
+                return requestCmd('connectAsync', opt_);
             } //no error if no url
         },
         setScrollEndFetch: function (opt) {
@@ -2377,9 +2361,9 @@ define('fetcher',['jquery', 'optObj', 'scroll'
                         opt.pageLoading = true;
                         var opt_ = {
                             url: opt.getUrl(),
-                            done: opt.afterNextFetch
                         }
-                        that.get(opt_);
+                        return that.getAsync(opt_)
+                            .then(opt.afterNextFetch);
                     }
                 }
 
@@ -2405,7 +2389,7 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
             this.call('collectionGrp', 'reset');
             this.set(opt);
         },
-        getUrl: function(){}, //to be overriden
+        getUrl: function () {}, //to be overriden
         set: function (opt) {
             this.setOpt(opt);
             var thatGrp = this;
@@ -2421,58 +2405,57 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
             //fetch data from server API for initial dataset
             var opt_firstFetch = {
                 url: getUrl(),
-                done: afterFirstFetch
             }
-            thatGrp.call('fetcher', 'get', opt_firstFetch);
+            thatGrp.call('fetcher', 'getAsync', opt_firstFetch)
+                .then(function (firstResult) {
+                    /*
+                       main logic
+                    */
 
-            //after first load process
-            function afterFirstFetch(firstResult) {
-                /*
-                   main logic
-                */
-                //prepare for next load
-                var lastPage = false;
+                    //after first load process
+                    //prepare for next load
+                    var lastPage = false;
 
-                function setNext(result) {
-                    if (result.page == result.pages || lastPage) {
-                        lastPage = true;
-                    } else {
-                        page++;
+                    function setNext(result) {
+                        if (result.page == result.pages || lastPage) {
+                            lastPage = true;
+                        } else {
+                            page++;
+                        }
                     }
-                }
 
-                function afterNextFetch(nextResult) {
-                    setNext(nextResult);
-                    //rendering list next time
-                    var opt_next = {
-                        list_data: thatGrp.call('collectionGrp', 'addExtra', {
-                            values: nextResult.docs
+                    function afterNextFetch(nextResult) {
+                        setNext(nextResult);
+                        //rendering list next time
+                        var opt_next = {
+                            list_data: thatGrp.call('collectionGrp', 'addExtra', {
+                                values: nextResult.docs
+                            }),
+                        };
+                        thatGrp.call('listItemGrp', 'setup', opt_next);
+                        pageLoading = false;
+                    }
+
+                    setNext(firstResult);
+
+                    //rendering list fisrt time
+                    var opt_ = {
+                        container: container,
+                        list_data: thatGrp.call('collectionGrp', 'add', {
+                            values: firstResult.docs
                         }),
                     };
-                    thatGrp.call('listItemGrp', 'setup', opt_next);
-                    pageLoading = false;
-                }
+                    thatGrp.call('listItemGrp', 'render', opt_);
 
-                setNext(firstResult);
-
-                //rendering list fisrt time
-                var opt_ = {
-                    container: container,
-                    list_data: thatGrp.call('collectionGrp', 'add', {
-                        values: firstResult.docs
-                    }),
-                };
-                thatGrp.call('listItemGrp', 'render', opt_);
-
-                //scroll to end function
-                var opt_next = {
-                    pageLoading: pageLoading,
-                    lastPage: lastPage,
-                    getUrl: getUrl,
-                    afterNextFetch: afterNextFetch
-                };
-                thatGrp.call('fetcher', 'setScrollEndFetch', opt_next);
-            }
+                    //scroll to end function
+                    var opt_next = {
+                        pageLoading: pageLoading,
+                        lastPage: lastPage,
+                        getUrl: getUrl,
+                        afterNextFetch: afterNextFetch
+                    };
+                    thatGrp.call('fetcher', 'setScrollEndFetch', opt_next);
+                });
         }
     });
 
@@ -2674,17 +2657,15 @@ define('inputListGrp',['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listIt
         setup: function (opt) {
             var that = this;
             this.comp.on('click', function (e) {
-                var opt_ = {
-                    callback: function (opt_callback) {
+                that.group.call('item', 'fetchAsync')
+                    .then(function (data) {
                         var opt_prompt = {
                             container: $('#mnbody'),
-                            doc: opt_callback
+                            doc: data
                         };
                         var promptCmd = that.group.getMember('promptFormGrp_Edit').create().command(); //itemGrp
                         promptCmd('render', opt_prompt);
-                    }
-                };
-                that.group.call('item', 'fetch', opt_);
+                    });
             });
         },
     });
@@ -2699,8 +2680,10 @@ define('inputListGrp',['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listIt
         setup: function (opt) {
             var that = this;
             this.comp.on('click', function (e) {
-                that.group.call('item', 'remove');
-                that.group.upCall('inputList', 'updateInputValue'); //itemGrp > listItemGrp > inputListGrp
+                that.group.call('item', 'removeAsync')
+                    .then(function () {
+                        that.group.upCall('inputList', 'updateInputValue'); //itemGrp > listItemGrp > inputListGrp
+                    });
             });
         },
     });
@@ -3076,6 +3059,9 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
             var opt_bloodhound = $.extend({}, {
                 datumTokenizer: this.bloodhound.tokenizers.whitespace,
                 queryTokenizer: this.bloodhound.tokenizers.whitespace,
+                identify: function (obj) {
+                    return obj._id;
+                },
             }, opt.engine_opt || {});
             var source = new this.bloodhound(opt_bloodhound);
 
@@ -3097,6 +3083,19 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
             this.comp.find('.typeahead.input-sm').siblings('input.tt-hint').addClass('hint-small');
             this.comp.find('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
+            //bind events
+            var input_hidden = $('<input type="hidden" name="' + this.inputElem.attr('name') + '_id">');
+            if (opt.autocomplete_id) this.input_hidden = opt.autocomplete_id;
+            this.comp.append(input_hidden);
+            this.inputElem.bind('typeahead:select', function (ev, suggestion) {
+                input_hidden.val(suggestion._id);
+            });
+            this.inputElem.bind('typeahead:change', function (ev) {
+                var val = that.inputElem.typeahead('val');
+                if (!val || val == '') 
+                    input_hidden.val('');
+            });
+            
             return this.comp;
         },
     });

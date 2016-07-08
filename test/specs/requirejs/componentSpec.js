@@ -94,24 +94,21 @@ define(function (require) {
         });
         it('Component promptFormGrp test cases', function (done) {
 
-            define('requestMock', ['jquery', 'optObj'
-				], function ($, OptObj) {
+            define('requestMock', ['jquery', 'optObj', 'Promise'
+				], function ($, OptObj, Promise) {
                 var RequestMock = OptObj.create('RequestMock');
                 RequestMock.extend({
-                    connect: function (opt) {
+                    connectAsync: function (opt) {
                         if (true || opt.request_data.value === "test" || opt.request_data.value === "test@local.com") { //for always done
-                            opt.request_done({
+                            return Promise.resolve({
                                 data: {}
                             });
                         } else {
-                            opt.request_done({
-                                error: {
-                                    message: 'this is wrong',
-                                    code: 101
-                                }
+                            return Promise.reject({
+                                message: 'this is wrong',
+                                code: 101
                             });
                         }
-                        opt.request_always();
                     },
                 });
 
@@ -201,12 +198,12 @@ define(function (require) {
                     //click the submit button
                     expect($('.promptTop').length).toBe(1);
                     var btn_submit = testContainer.find('.btn-primary[type="submit"]');
-                    //console.log(btn_submit.attr('title'));
                     btn_submit.trigger('click');
-
-                    expect($('.promptTop').length).toBe(0);
-
-                    done();
+                    //testContainer.find('a.top-left').trigger('click');
+                    setTimeout(function () {
+                        expect($('.promptTop').length).toBe(0);
+                        done();
+                    }, 1000);
                 });
 
                 btn.trigger('click');
@@ -454,36 +451,13 @@ define(function (require) {
                 inputListGrpCmd('render', opt);
 
                 expect($(testContainer.find('h4')[0]).text()).toEqual('item 1');
-
-                /*                foo = {
-                                    setBar: function (value) {
-                                        bar = value;
-                                    }
-                                };
-
-                                spyOn(foo, 'setBar');
-
-                                foo.setBar(123);
-                                foo.setBar(456, 'another param');
-                                expect(foo.setBar).toHaveBeenCalled();*/
-
-                //edit
-                /*                var editBtn = $(testContainer.find('.btn.edit')[0]);
-                                console.log(editBtn.prop('outerHTML'));
-                                var spyEvent = spyOnEvent(editBtn, 'click');
-                                editBtn.trigger('click');*/
-                //expect('click').toHaveBeenTriggeredOn(editBtn);
-                //expect(spyEvent).toHaveBeenTriggered();
-                /*
-                                console.log($('.promptTop').prop('outerHTML'));
-                                var user_name = $('.promptTop').find('input[name="heading"]').val();
-                                expect(user_name).toEqual('item 1');*/
-
                 //delete
                 $(testContainer.find('.btn.delete')[0]).trigger('click');
-                //console.log(testContainer.prop('outerHTML'));
-                expect(testContainer.find('h4').length).toEqual(0);
-                done();
+                setTimeout(function () {
+                    //console.log(testContainer.prop('outerHTML'));
+                    expect(testContainer.find('h4').length).toEqual(0);
+                    done();
+                }, 1000);
             }); //require
         }); //test case
 

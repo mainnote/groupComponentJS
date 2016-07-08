@@ -13,7 +13,7 @@ define(['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
         },
 
         donePrompt: function (opt) {
-            var formValue = this.group.call('formGrp', 'submit', opt);
+            return this.group.call('formGrp', 'submit', opt);
         },
         afterRemoved: function(opt) {
             Scroll.enableScroll();
