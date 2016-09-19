@@ -638,16 +638,34 @@ window.LOG1 = function (tag, msg, type, result) {
 
     require(['Promise'], function (Promise) {
         var a1 = (function () {
-            console.log('a1')
+            //console.log('a1')
             return Promise.resolve();
         })();
         var a2 = (function () {
-            console.log('a2')
+            //console.log('a2')
             return Promise.resolve();
         })();
 
         Promise.join(a1, a2, function () {
-            console.log('done');
+            //console.log('done');
+        });
+    });
+    
+    require(['jquery', 'upload'], function($, Upload){
+        var uploadCmd = Upload.create('uploadCmd').command();
+        uploadCmd('render',{
+            container: $('#mnbody'),
+            upload_label_name: 'Add your favourite file',
+        });
+    });
+    
+    require(['jquery', 'iconToggle'], function($, IconToggle){
+        var iconToggleCmd = IconToggle.create('iconToggleCmd').command();
+        var container = $('<div style="position: relative;">icon toggle: </div>');
+        $('#mnbody').append(container);
+        
+        iconToggleCmd('render',{
+            container: container,
         });
     });
 })();

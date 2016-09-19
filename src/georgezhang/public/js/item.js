@@ -18,6 +18,9 @@ define(['jquery', 'component', 'tpl!templates/item'
             };
             return Component.render.call(this, opt_);
         },
+        getEntityValue: function (opt) {
+            return this.entityCmd('get');
+        },
         removeAsync: function (opt) {
             var that = this;
             var opt_ = {};
@@ -31,7 +34,12 @@ define(['jquery', 'component', 'tpl!templates/item'
 
                     //remove UI
                     that.comp.remove();
+
+                    return data;
                 });
+        },
+        postAsync: function (opt) {
+            return this.entityCmd('postAsync', opt);
         },
         fetchAsync: function (opt) {
             var that = this;

@@ -31,6 +31,7 @@ module.exports = function (grunt) {
                         'typeahead': 'empty:',
                         'bloodhound': 'empty:',
                         'Promise': 'empty:',
+                        'fineuploader': 'empty:',
                     },
                     shim: {
                         underscore: {
@@ -111,6 +112,7 @@ module.exports = function (grunt) {
                                 'typeahead': 'http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min',
                                 'bloodhound': 'http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min',
                                 'Promise': 'http://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.1/bluebird.min',
+                                'fineuploader': 'http://cdnjs.cloudflare.com/ajax/libs/file-uploader/5.11.7/jquery.fine-uploader/jquery.fine-uploader.min',
                             },
                             shim: {
                                 'jasmine-jquery': {

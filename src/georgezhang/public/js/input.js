@@ -24,7 +24,7 @@ define(['jquery', 'component', 'validator', 'tpl!templates/input'
         setup: function (opt) {
             var that = this;
             this.inputElem = this.comp.find('input');
-            if (this.inputElem) {
+            if (this.inputElem && opt.input_type.toLowerCase() !== 'hidden') {
                 var wait;
                 this.inputElem.on('input', function (e) {
                     if (wait) {

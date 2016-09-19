@@ -40,10 +40,15 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
                     var lastPage = false;
 
                     function setNext(result) {
-                        if (result.page == result.pages || lastPage) {
+                        var currentPage = parseInt(result.page);
+                        var nextPage = currentPage + 1;
+                        if (nextPage > result.pages || lastPage) {
                             lastPage = true;
+                            thatGrp.call('fetcher', 'stop');
+                            //todo: hide a "show more" button to load more
                         } else {
-                            page++;
+                            page = nextPage;
+                            //todo: show a "show more" button to load more
                         }
                     }
 
@@ -67,6 +72,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
                         list_data: thatGrp.call('collectionGrp', 'add', {
                             values: firstResult.docs
                         }),
+                        noListDataInfo: thatGrp.opt.noListDataInfo,
                     };
                     thatGrp.call('listItemGrp', 'render', opt_);
 

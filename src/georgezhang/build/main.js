@@ -45,4 +45,6 @@ module.exports = [
     'content',
     'footer',
     'autocomplete',
+    'upload',
+    'iconToggle',
 ]

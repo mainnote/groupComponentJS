@@ -55,9 +55,10 @@ define(['jquery', 'optObj'], function ($, OptObj) {
 
         remove: function (opt) {
             if (this.events && $.isArray(this.events) && this.events.length > 0 && opt && opt.obj) {
-                for (var i = 0, len = this.events.length; i < len; i++) {
+                var len = this.events.length;
+                for (var i = 0; i < len; i++) {
                     var eventObj = this.events[i];
-                    if (eventObj.obj === opt.obj) {
+                    if (eventObj && eventObj.obj && opt.obj && eventObj.obj === opt.obj) {
                         this.events.splice(i, 1);
                     }
                 }
@@ -69,7 +70,6 @@ define(['jquery', 'optObj'], function ($, OptObj) {
                 for (var i = 0, len = this.events.length; i < len; i++) {
                     var eventObj = this.events[i];
                     eventObj.fn(event);
-
                 }
             }
         }

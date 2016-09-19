@@ -110,7 +110,7 @@ label {
 .inputList {
     padding: 5px;
 }
-.btn.edit {
+.btn.edit, i.iconToggle.fa {
     position: absolute;
     bottom: 2px;
     right: 2px;
@@ -224,4 +224,36 @@ p.hints {
 }
 .tt-suggestion p {
     margin: 0;
+}
+
+.trigger-upload {
+    color: white;
+    background-color: #00c74d;
+    padding: 7px 20px;
+    margin-left: 5px;
+    border-radius: 2px;
+    border: 1px solid #088438;
+    box-shadow: 0 1px 1px rgba(255,255,255,.37) inset,1px 0 1px rgba(255,255,255,.07) inset,0 1px 0 rgba(0,0,0,.36),0 -2px 12px rgba(0,0,0,.08) inset;
+}
+
+.fine-uploader-manual-trigger .qq-upload-button {
+    margin-right: 15px;
+}
+
+.fine-uploader-manual-trigger .buttons {
+    width: 36%;
+}
+
+.fine-uploader-manual-trigger .qq-uploader .qq-total-progress-bar-container {
+    width: 60%;
+}
+.iconToggle.fa{
+    font-size: 35px;
+    cursor: pointer;
+}
+.iconToggle.fa.fa-check-circle{
+    color: crimson;
+}
+.iconToggle.fa.fa-check-circle-o{
+    color: rgba(64, 38, 38, 0.2);
 }

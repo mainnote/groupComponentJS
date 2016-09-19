@@ -12,6 +12,7 @@ define(['jquery', 'component', 'tpl!templates/tagsinput', 'bootstrap-tagsinput'
             tagsinput_options: null,
         },
         init: function(){
+            Component.init.call(this);
             this.tagsinputComp = null;
         },
         setup: function (opt) {

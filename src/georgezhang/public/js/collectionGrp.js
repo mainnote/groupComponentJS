@@ -11,7 +11,7 @@
              this.setOpt(opt);
              if (this.defaultOpt.remote) {
                  var opt_ = {
-                     request_url: (this.opt.request_baseUrl || '/') + (opt.entity.value._id || ''),
+                     request_url: opt.resourceUrl || ((this.opt.request_baseUrl || '/') + (opt.entity.value._id || '')),
                      request_method: opt.connectMethod,
                  };
 
@@ -51,6 +51,7 @@
              };
 
              if (opt && opt.data) opt_.data = opt.data;
+             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
 
              return this.group.call('collection', 'connectEntityAsync', opt_);
 
@@ -68,6 +69,17 @@
                  connectMethod: 'PUT',
                  entity: this,
              };
+             return this.group.call('collection', 'connectEntityAsync', opt_);
+         },
+         postAsync: function (opt) {
+             var opt_ = {
+                 connectMethod: 'POST',
+                 entity: this,
+             };
+
+             if (opt && opt.data) opt_.data = opt.data;
+             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
+
              return this.group.call('collection', 'connectEntityAsync', opt_);
          },
      });

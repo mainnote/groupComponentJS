@@ -18,6 +18,7 @@ require.config({
         'typeahead': '//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.jquery.min',
         'bloodhound': '//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min',
         'Promise': '//cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.1/bluebird.min',
+        'fineuploader': '//cdnjs.cloudflare.com/ajax/libs/file-uploader/5.11.7/jquery.fine-uploader/jquery.fine-uploader.min',
     },
     shim: {
         'bootstrap': {
@@ -47,7 +48,10 @@ require.config({
         bloodhound: {
             deps: ['jquery'],
             exports: 'Bloodhound'
-        }
+        },
+        fineuploader: {
+            deps: ['jquery'],
+        },
     },
     waitSeconds: 15,
 });

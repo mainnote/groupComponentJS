@@ -828,12 +828,18 @@ define('request',['jquery', 'optObj', 'Promise'
 	], function ($, OptObj, Promise) {
     var Request = OptObj.create('Request');
     Request.extend({
+        init: function (opt) {
+            this.xhr = null;
+        },
+        abort: function (opt) {
+            if (this.xhr) this.xhr.abort();
+        },
         connectAsync: function (opt) {
             var that = this;
             this.setOpt(opt);
 
             return new Promise(function (resolve, reject) {
-                $.ajax({
+                that.xhr = $.ajax({
                         url: that.opt.request_url,
                         method: that.opt.request_method,
                         data: that.opt.request_data,
@@ -846,7 +852,7 @@ define('request',['jquery', 'optObj', 'Promise'
                         return resolve(data);
                     })
                     .fail(function (jqXHR, textStatus, errorThrown) {
-                        return reject(errorThrown);
+                        return reject(jqXHR.responseText || errorThrown);
                     });
             });
         },
@@ -868,7 +874,7 @@ define('request',['jquery', 'optObj', 'Promise'
              this.setOpt(opt);
              if (this.defaultOpt.remote) {
                  var opt_ = {
-                     request_url: (this.opt.request_baseUrl || '/') + (opt.entity.value._id || ''),
+                     request_url: opt.resourceUrl || ((this.opt.request_baseUrl || '/') + (opt.entity.value._id || '')),
                      request_method: opt.connectMethod,
                  };
 
@@ -908,6 +914,7 @@ define('request',['jquery', 'optObj', 'Promise'
              };
 
              if (opt && opt.data) opt_.data = opt.data;
+             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
 
              return this.group.call('collection', 'connectEntityAsync', opt_);
 
@@ -925,6 +932,17 @@ define('request',['jquery', 'optObj', 'Promise'
                  connectMethod: 'PUT',
                  entity: this,
              };
+             return this.group.call('collection', 'connectEntityAsync', opt_);
+         },
+         postAsync: function (opt) {
+             var opt_ = {
+                 connectMethod: 'POST',
+                 entity: this,
+             };
+
+             if (opt && opt.data) opt_.data = opt.data;
+             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
+
              return this.group.call('collection', 'connectEntityAsync', opt_);
          },
      });
@@ -1199,6 +1217,9 @@ define('item',['jquery', 'component', 'tpl!templates/item'
             };
             return Component.render.call(this, opt_);
         },
+        getEntityValue: function (opt) {
+            return this.entityCmd('get');
+        },
         removeAsync: function (opt) {
             var that = this;
             var opt_ = {};
@@ -1212,7 +1233,12 @@ define('item',['jquery', 'component', 'tpl!templates/item'
 
                     //remove UI
                     that.comp.remove();
+
+                    return data;
                 });
+        },
+        postAsync: function (opt) {
+            return this.entityCmd('postAsync', opt);
         },
         fetchAsync: function (opt) {
             var that = this;
@@ -1286,7 +1312,7 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                     'min-width': ''
                 });
             } else {
-            	this.noListData();
+            	this.noListData(opt);
             }
             
         },
@@ -1425,9 +1451,10 @@ define('scroll',['jquery', 'optObj'], function ($, OptObj) {
 
         remove: function (opt) {
             if (this.events && $.isArray(this.events) && this.events.length > 0 && opt && opt.obj) {
-                for (var i = 0, len = this.events.length; i < len; i++) {
+                var len = this.events.length;
+                for (var i = 0; i < len; i++) {
                     var eventObj = this.events[i];
-                    if (eventObj.obj === opt.obj) {
+                    if (eventObj && eventObj.obj && opt.obj && eventObj.obj === opt.obj) {
                         this.events.splice(i, 1);
                     }
                 }
@@ -1439,7 +1466,6 @@ define('scroll',['jquery', 'optObj'], function ($, OptObj) {
                 for (var i = 0, len = this.events.length; i < len; i++) {
                     var eventObj = this.events[i];
                     eventObj.fn(event);
-
                 }
             }
         }
@@ -1666,6 +1692,7 @@ define('tagsinput',['jquery', 'component', 'tpl!templates/tagsinput', 'bootstrap
             tagsinput_options: null,
         },
         init: function(){
+            Component.init.call(this);
             this.tagsinputComp = null;
         },
         setup: function (opt) {
@@ -1751,7 +1778,7 @@ define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
         setup: function (opt) {
             var that = this;
             this.inputElem = this.comp.find('input');
-            if (this.inputElem) {
+            if (this.inputElem && opt.input_type.toLowerCase() !== 'hidden') {
                 var wait;
                 this.inputElem.on('input', function (e) {
                     if (wait) {
@@ -2315,26 +2342,24 @@ define('fetcher',['jquery', 'optObj', 'scroll', 'request'
         },
         init: function () {
             OptObj.init.call(this);
-            this.jqxhr = null;
-            this.timeoutHandler = null;
+            this.requestCmd = Request.create('requestCmd').command();
         },
+        /* not sure how this function work */
         stop: function (opt) {
-            if (this.jqxhr) this.jqxhr.abort();
+            this.requestCmd('abort');
             Scroll.remove({
                 obj: this
             });
-            if (this.timeoutHandler) clearTimeout(this.timeoutHandler);
         },
         getAsync: function (opt) {
             this.setOpt(opt);
             if (this.opt.url) {
-                var requestCmd = Request.create('requestCmd').command();
                 var opt_ = {
                     request_url: this.opt.url,
                     request_method: 'GET',
                     request_data: this.opt.data,
                 };
-                return requestCmd('connectAsync', opt_);
+                return this.requestCmd('connectAsync', opt_);
             } //no error if no url
         },
         setScrollEndFetch: function (opt) {
@@ -2350,13 +2375,11 @@ define('fetcher',['jquery', 'optObj', 'scroll', 'request'
 
             var that = this;
             var nearToBottom = 100; //near 100 px from bottom, better to start loading
+
             if ($(document).height() - nearToBottom <= $(window).scrollTop() + $(window).height()) {
+
                 //fetch more content
                 function fetchNext() {
-                    if (opt.pageLoading) { //we want it to match
-                        this.timeoutHandler = setTimeout(fetchNext, 50); //wait 50 millisecnds then recheck
-                        return;
-                    }
                     if (!opt.lastPage) {
                         opt.pageLoading = true;
                         var opt_ = {
@@ -2417,10 +2440,15 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
                     var lastPage = false;
 
                     function setNext(result) {
-                        if (result.page == result.pages || lastPage) {
+                        var currentPage = parseInt(result.page);
+                        var nextPage = currentPage + 1;
+                        if (nextPage > result.pages || lastPage) {
                             lastPage = true;
+                            thatGrp.call('fetcher', 'stop');
+                            //todo: hide a "show more" button to load more
                         } else {
-                            page++;
+                            page = nextPage;
+                            //todo: show a "show more" button to load more
                         }
                     }
 
@@ -2444,6 +2472,7 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
                         list_data: thatGrp.call('collectionGrp', 'add', {
                             values: firstResult.docs
                         }),
+                        noListDataInfo: thatGrp.opt.noListDataInfo,
                     };
                     thatGrp.call('listItemGrp', 'render', opt_);
 
@@ -2810,6 +2839,7 @@ define('formOption_selection',['jquery', 'optObj', 'button', 'input'], function 
     var FormOption = OptObj.create('FormOption');
     FormOption.extend({
         init: function () {
+            OptObj.init.call(this);
             this.optionKey = 1;
         },
         setKey: function(opt) {
@@ -3101,5 +3131,132 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
     });
 
     return Autocomplete;
+});
+
+
+define('tpl!templates/upload', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<div>\n    <label class="'+
+((__t=( upload_label_class ))==null?'':__t)+
+'">'+
+((__t=( upload_label_name ))==null?'':__t)+
+'</label>\n    <div class="fineuploader">\n        <script type="text/template" class="qq-template-manual-trigger">\n            <div class="qq-uploader-selector qq-uploader" qq-drop-area-text="Drop files here">\n                <div class="qq-total-progress-bar-container-selector qq-total-progress-bar-container">\n                    <div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" class="qq-total-progress-bar-selector qq-progress-bar qq-total-progress-bar"></div>\n                </div>\n                <div class="qq-upload-drop-area-selector qq-upload-drop-area" qq-hide-dropzone>\n                    <span class="qq-upload-drop-area-text-selector"></span>\n                </div>\n                <div class="buttons">\n                    <div class="qq-upload-button-selector qq-upload-button">\n                        <div>Select files</div>\n                    </div>\n                    <button type="button" class="trigger-upload" class="btn btn-primary">\n                        <i class="icon-upload icon-white"></i> Upload\n                    </button>\n                </div>\n                <span class="qq-drop-processing-selector qq-drop-processing">\n                    <span>Processing dropped files...</span>\n                    <span class="qq-drop-processing-spinner-selector qq-drop-processing-spinner"></span>\n                </span>\n                <ul class="qq-upload-list-selector qq-upload-list" aria-live="polite" aria-relevant="additions removals">\n                    <li>\n                        <div class="qq-progress-bar-container-selector">\n                            <div role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" class="qq-progress-bar-selector qq-progress-bar"></div>\n                        </div>\n                        <span class="qq-upload-spinner-selector qq-upload-spinner"></span>\n                        <img class="qq-thumbnail-selector" qq-max-size="100" qq-server-scale>\n                        <span class="qq-upload-file-selector qq-upload-file"></span>\n                        <span class="qq-edit-filename-icon-selector qq-edit-filename-icon" aria-label="Edit filename"></span>\n                        <input class="qq-edit-filename-selector qq-edit-filename" tabindex="0" type="text">\n                        <span class="qq-upload-size-selector qq-upload-size"></span>\n                        <button type="button" class="qq-btn qq-upload-cancel-selector qq-upload-cancel">Cancel</button>\n                        <button type="button" class="qq-btn qq-upload-retry-selector qq-upload-retry">Retry</button>\n                        <button type="button" class="qq-btn qq-upload-delete-selector qq-upload-delete">Delete</button>\n                        <span role="status" class="qq-upload-status-text-selector qq-upload-status-text"></span>\n                    </li>\n                </ul>\n\n                <dialog class="qq-alert-dialog-selector">\n                    <div class="qq-dialog-message-selector"></div>\n                    <div class="qq-dialog-buttons">\n                        <button type="button" class="qq-cancel-button-selector">Close</button>\n                    </div>\n                </dialog>\n\n                <dialog class="qq-confirm-dialog-selector">\n                    <div class="qq-dialog-message-selector"></div>\n                    <div class="qq-dialog-buttons">\n                        <button type="button" class="qq-cancel-button-selector">No</button>\n                        <button type="button" class="qq-ok-button-selector">Yes</button>\n                    </div>\n                </dialog>\n\n                <dialog class="qq-prompt-dialog-selector">\n                    <div class="qq-dialog-message-selector"></div>\n                    <input type="text">\n                    <div class="qq-dialog-buttons">\n                        <button type="button" class="qq-cancel-button-selector">Cancel</button>\n                        <button type="button" class="qq-ok-button-selector">Ok</button>\n                    </div>\n                </dialog>\n            </div>\n        </script>\n    </div>\n</div>';
+}
+return __p;
+}; });
+
+define('upload',['jquery', 'component', 'fineuploader', 'tpl!templates/upload'
+	], function ($, Component, qq, tpl) {
+    var Upload = Component.create('Upload');
+    Upload.extend({
+        tpl: tpl,
+        defaultOpt: {
+            upload_label_class: 'upload_label_class',
+            upload_label_name: '',
+            upload_endpoint: '/api/upload',
+            upload_waitingPath: '/img/waiting-generic.png',
+            upload_notAvailablePath: '/img/not_available-generic.png',
+        },
+        setup: function (opt) {
+            var fineuploader = this.comp.find('.fineuploader');
+            var handler = fineuploader.fineUploader($.extend({
+                template: fineuploader.find('.qq-template-manual-trigger'),
+                request: {
+                    endpoint: opt.upload_endpoint,
+                    customHeaders: opt.upload_customHeaders || {},
+                },
+                thumbnails: {
+                    placeholders: {
+                        waitingPath: opt.upload_waitingPath,
+                        notAvailablePath: opt.upload_notAvailablePath,
+                    }
+                },
+                autoUpload: false,
+            }, opt.upload_options || {}));
+
+            if (opt.upload_options && opt.upload_options.autoUpload) {
+                fineuploader.find('.trigger-upload').remove();
+            } else {
+                fineuploader.find('.trigger-upload').on('click', function (evt) {
+                    handler.fineUploader('uploadStoredFiles');
+                });
+            }
+        }
+    });
+
+    return Upload;
+});
+
+
+define('tpl!templates/iconToggle', ['underscore'], function (_) { return function(obj){
+var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
+with(obj||{}){
+__p+='<i class="iconToggle fa ';
+ if (iconToggle_checked) { 
+__p+=''+
+((__t=( iconToggle_class_checked ))==null?'':__t)+
+'';
+ } else { 
+__p+=''+
+((__t=( iconToggle_class_unchecked ))==null?'':__t)+
+'';
+ } 
+__p+='" aria-hidden="true"></i>';
+}
+return __p;
+}; });
+
+define('iconToggle',['jquery', 'component', 'tpl!templates/iconToggle'
+	], function ($, Component, tpl) {
+    var IconToggle = Component.create('IconToggle');
+    IconToggle.extend({
+        tpl: tpl,
+        defaultOpt: {
+            iconToggle_class_unchecked: 'fa-check-circle-o',
+            iconToggle_class_checked: 'fa-check-circle',
+            iconToggle_checked: false,
+        },
+        init: function (opt) {
+            this.isProcessing = false;
+        },
+        setup: function (opt) {
+            var that = this;
+            this.comp.on('click', function (e) {
+                e.preventDefault();
+                that.toggle();
+            });
+        },
+        toggle: function (opt) {
+            if (!this.isProcessing) {
+                this.isProcessing = true;
+                if (this.opt.iconToggle_checked) {
+                    this.unchecked();
+                } else {
+                    this.checked();
+                }
+            }
+        },
+        checked: function (opt) {
+            this.afterChecked();
+        },
+        afterChecked: function (opt) {
+            this.opt.iconToggle_checked = true;
+            this.isProcessing = false;
+            this.comp.removeClass(this.opt.iconToggle_class_unchecked)
+                .addClass(this.opt.iconToggle_class_checked);
+        },
+        unchecked: function (opt) {
+            this.afterUnchecked();
+        },
+        afterUnchecked: function (opt) {
+            this.opt.iconToggle_checked = false;
+            this.isProcessing = false;
+            this.comp.removeClass(this.opt.iconToggle_class_checked)
+                .addClass(this.opt.iconToggle_class_unchecked);
+        },
+    });
+
+    return IconToggle;
 });
 

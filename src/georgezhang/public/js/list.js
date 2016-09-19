@@ -40,7 +40,7 @@ define(['jquery', 'component', 'tpl!templates/list',
                     'min-width': ''
                 });
             } else {
-            	this.noListData();
+            	this.noListData(opt);
             }
             
         },

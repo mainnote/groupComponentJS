@@ -2,6 +2,7 @@ define(['jquery', 'optObj', 'button', 'input'], function ($, OptObj, Button, Inp
     var FormOption = OptObj.create('FormOption');
     FormOption.extend({
         init: function () {
+            OptObj.init.call(this);
             this.optionKey = 1;
         },
         setKey: function(opt) {
