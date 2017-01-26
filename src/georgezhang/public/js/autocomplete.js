@@ -4,6 +4,7 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
     Autocomplete.extend({
         defaultOpt: $.extend({}, Autocomplete.defaultOpt, {
             input_class: 'typeahead',
+            forceSelect: true,
         }),
         bloodhound: Bloodhound,
         setDataSource: function (opt) {
@@ -15,10 +16,10 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
                     return obj._id;
                 },
             }, opt.engine_opt || {});
-            var source = new this.bloodhound(opt_bloodhound);
+            this.source = new this.bloodhound(opt_bloodhound);
 
             return $.extend({}, {
-                source: source
+                source: this.source
             }, opt.source_opt || {});
         },
         setup: function (opt) {
@@ -28,7 +29,8 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
             var opt_typeahead = $.extend({}, {
                 hint: true,
                 highlight: true,
-                minLength: 1
+                minLength: 1,
+                autoselect: true,
             }, opt.autocomplete_typeahead_opt || {});
             this.inputElem.typeahead(opt_typeahead, this.setDataSource(opt.autocomplete_bloodhound_opt || {}));
 
@@ -36,19 +38,55 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
             this.comp.find('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
             //bind events
-            var input_hidden = $('<input type="hidden" name="' + this.inputElem.attr('name') + '_id">');
-            if (opt.autocomplete_id) this.input_hidden = opt.autocomplete_id;
-            this.comp.append(input_hidden);
+            this.input_hidden = $('<input type="hidden" name="' + this.inputElem.attr('name') + '_id">');
+            if (opt.autocomplete_id) this.input_hidden.val(opt.autocomplete_id);
+            this.comp.append(this.input_hidden);
+
             this.inputElem.bind('typeahead:select', function (ev, suggestion) {
-                input_hidden.val(suggestion._id);
+                that.input_hidden.val(suggestion._id);
             });
             this.inputElem.bind('typeahead:change', function (ev) {
                 var val = that.inputElem.typeahead('val');
-                if (!val || val == '') 
-                    input_hidden.val('');
+                that.input_hidden.val('');
+                if (val && val.length > 0 && that.opt.forceSelect) {
+                    that.input_hidden.val('');
+                    var skip = false;
+                    that.source.search(val, function (datums) {
+                        if (datums && datums.length > 0) {
+                            skip = true;
+                            that.input_hidden.val(datums[0]._id);
+                            that.inputElem.typeahead('val', datums[0].name);
+                        }
+                    }, function (datums) {
+                        if (!skip) {
+                            if (datums && datums.length > 0) {
+                                that.input_hidden.val(datums[0]._id);
+                                that.inputElem.typeahead('val', datums[0].name);
+                            }
+                        }
+                    });
+                }
             });
-            
+
             return this.comp;
+        },
+        checkValid: function (opt) {
+            if (this.opt.forceSelect) {
+                var input_hidden_id = this.input_hidden.val();
+                if (input_hidden_id && input_hidden_id.length > 0) {
+                    this.getResult({
+                        invalidHints: false
+                    });
+                    return true;
+                } else {
+                    this.getResult({
+                        invalidHints: 'invalid selection'
+                    });
+                    return false;
+
+                }
+            }
+            return true;
         },
     });
 

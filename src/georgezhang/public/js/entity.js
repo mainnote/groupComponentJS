@@ -14,7 +14,7 @@ define(['jquery', 'optObj'
                     this.value = opt.value;
                 }
             }
-            return this.command();
+            return this;
         },
         get: function (opt) {
             return this.value;

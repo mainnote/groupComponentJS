@@ -16,6 +16,7 @@ define(['jquery', 'component', 'tpl!templates/button'
                     opt.form.submit();
                 });
             }
+						return this.comp;
         }
     });
 

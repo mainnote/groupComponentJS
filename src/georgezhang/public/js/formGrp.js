@@ -46,14 +46,14 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
                 return true;
             } else {
                 this.error({
-                    error: 'Please correct the all fields above.'
+                    error: 'Please correct error above.'
                 });
             }
         },
         error: function (opt) {
             if ($.isPlainObject(opt.error)) {
-                var errorCmd = Error.create('errorCmd').command();
-                errorCmd('render', $.extend(opt.error, {
+                var error = Error.create('error');
+                error.render($.extend(opt.error, {
                     container: $('<div class="error"></div>').appendTo(this.comp)
                 }));
             } else {
@@ -64,10 +64,12 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
     });
 
     var request = Request.create('request');
-
+	FormGrp.extend({
+		render: function(opt) {
+			this.call('form', 'render', opt);
+		}
+	});
     FormGrp.join(form, request);
-
-    FormGrp.setCallToMember('form');
 
     return FormGrp;
 });

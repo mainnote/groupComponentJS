@@ -42,7 +42,7 @@ define(['jquery', 'component', 'tpl!templates/navbar'
         clearActive: function (opt) {
             if (this.elements && $.isArray(this.elements))
                 $.each(this.elements, function (index, elemObj) {
-                    elemObj.command()('clearActive');
+                    elemObj.clearActive();
                 });
         }
 

@@ -9,26 +9,28 @@ define(['jquery', 'component', 'tpl!templates/list',
         },
         reset: function (opt) {
             //make the original frame firm by setting min-height and width
-            this.comp.css({
-                'min-height': this.comp.css('height'),
-                'min-width': this.comp.css('width')
-            });
+            if (this.comp && this.comp.css) {
+                this.comp.css({
+                    'min-height': this.comp.css('height'),
+                    'min-width': this.comp.css('width')
+                });
+                this.comp.empty();
+            }
 
             this.items = [];
-            this.comp.empty();
         },
         setup: function (opt) {
             var that = this;
             if (opt.list_data && $.isArray(opt.list_data) && opt.list_data.length > 0) {
                 $.each(opt.list_data, function (index, data) {
-                    var itemCmd = that.group.call('itemGrp', 'create', 'itemGrpCmd').command(); //member create
-                    that.items.push(itemCmd);
+                    var itemGrp = that.group.call('itemGrp', 'create', 'itemGrp'); //member create
+                    that.items.push(itemGrp);
                     var opt_ = {
                         list: that,
                         container: that.comp,
                         item_data: data,
                     };
-                    var itemComp = itemCmd('render', opt_);
+                    var itemComp = itemGrp.render(opt_);
                     return itemComp;
                 });
 
@@ -40,16 +42,17 @@ define(['jquery', 'component', 'tpl!templates/list',
                     'min-width': ''
                 });
             } else {
-            	this.noListData(opt);
+                this.showEmptyList(opt);
             }
-            
+
+			return this.comp;
         },
         removeItem: function (opt) {
             this.items = $.grep(this.items, function (itemObj, idx) {
                 if (opt.itemObj === itemObj) return true;
             });
         },
-        noListData: function (opt) {},
+        showEmptyList: function (opt) {},
     });
 
     return List;

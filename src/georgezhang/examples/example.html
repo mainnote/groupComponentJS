@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" href="public/css/global.css">
+    <link rel="stylesheet" type="text/css" href="public/css/ios-button.css">
+    <link rel="stylesheet" type="text/css" href="public/css/prompt.css">
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/file-uploader/5.11.7/jquery.fine-uploader/fine-uploader-new.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.22.2/codemirror.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.1.0/js/tether.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/codemirror.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/mode/xml/xml.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.23.0/mode/javascript/javascript.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js"></script>
+    <script src="public/js/config.js"></script>
+
+    <link rel="stylesheet" href="./debug/debug.css">
+    <style>
+        .demo_section,
+        .code_section,
+        .map_section {
+            border: 2px solid blue;
+            padding: 16px;
+            margin: 2px;
+        }
+
+        .CodeMirror {
+            border: 1px solid #eee;
+            height: auto;
+        }
+
+        #file_list li {
+            float: left;
+            margin-left: 25px;
+        }
+
+        pre {
+            margin-top: 60px;
+            clear: both;
+        }
+    </style>
+    <script src="debug/debug.js"></script>
+    <script src="debug/loadScript.js"></script>
+</head>
+
+<body>
+    <div id="mnbody" data-id="todolistGrp">
+        <h1 id="title"></h1>
+        <section class="demo_section">
+            <div id="demo_sample">
+            </div>
+        </section>
+        <section class="map_section">
+            <h2>Group Map</h2>
+            <div id="input_module"></div>
+            <div id="member_map"></div>
+            <!--div id="toolbar"></div//-->
+        </section>
+        <section class="code_section">
+            <h2>Sample Code</h2>
+            <div id="file_list">
+            </div>
+            <pre><code id="sample_code"></code></pre>
+        </section>
+    </div>
+    <script>
+        (function() {
+            require(['fastclick', 'myApp/menu', 'myApp/example'], function(fastclick, example) {
+                fastclick.attach(document.body);
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -11,14 +11,18 @@ define(['jquery', 'optObj', 'Promise'
         connectAsync: function (opt) {
             var that = this;
             this.setOpt(opt);
+            var params = {
+                url: this.opt.request_url,
+                method: this.opt.request_method,
+                data: this.opt.request_data,
+                dataType: 'json',
+            };
+            if (opt.request_params && $.isPlainObject(opt.request_params)) {
+                $.extend(params, opt.request_params);
+            }
 
             return new Promise(function (resolve, reject) {
-                that.xhr = $.ajax({
-                        url: that.opt.request_url,
-                        method: that.opt.request_method,
-                        data: that.opt.request_data,
-                        dataType: 'json'
-                    })
+                that.xhr = $.ajax(params)
                     .done(function (data, textStatus, jqXHR) {
                         if (data && 'error' in data) {
                             return reject(data.error);

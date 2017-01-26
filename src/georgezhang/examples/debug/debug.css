@@ -1,0 +1,71 @@
+#member_map {
+    margin-bottom: 20px;
+    border: 1px solid #dbd6d6;
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
+
+/* member map */
+
+.debugGroup {
+    border: 2px solid #5f5f5f;
+    padding: 12px;
+    margin: 15px;
+    border-radius: 8px;
+}
+
+.debugGroupName {
+    color: #5f5f5f;
+    margin-bottom: 8px;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.debugMember {
+    background-color: white;
+    padding: 6px;
+    margin: 4px;
+    display: inline;
+    color: black;
+    border: 2px solid #43a8ac;
+    border-radius: 15px;
+}
+
+.debugGroup:hover {
+    background-color: #f1f1f1;
+}
+
+.debugMember:hover {
+    cursor: pointer;
+    background-color: #67d4d8;
+}
+
+
+/* JSON Format */
+
+pre {
+    outline: 1px solid #ccc;
+    padding: 5px;
+    margin: 5px;
+}
+
+.string {
+    color: green;
+}
+
+.number {
+    color: darkorange;
+}
+
+.boolean {
+    color: blue;
+}
+
+.null {
+    color: magenta;
+}
+
+.key {
+    color: red;
+}

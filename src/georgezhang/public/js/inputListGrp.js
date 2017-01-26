@@ -6,8 +6,14 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
     var InputListGrp = OptGrp.create('InputListGrp');
     var collectionGrp = CollectionGrp.create('collectionGrp');
     var formOption = FormOption.create('formOption');
+
+	InputListGrp.extend({
+		render: function(opt) {
+			this.call('inputList', 'render', opt);
+		},
+	});
+
     InputListGrp.join(inputList, promptFormGrp_Add, listItemGrp, collectionGrp, formOption);
-    InputListGrp.setCallToMember('inputList');
 
     //form customization for add
     var form_Add = promptFormGrp_Add.getMember('form');
@@ -103,8 +109,8 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
                             container: $('#mnbody'),
                             doc: data
                         };
-                        var promptCmd = that.group.getMember('promptFormGrp_Edit').create().command(); //itemGrp
-                        promptCmd('render', opt_prompt);
+                        var prompt = that.group.getMember('promptFormGrp_Edit').create(); //itemGrp
+                        prompt.render(opt_prompt);
                     });
             });
         },
@@ -177,11 +183,11 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
                 var opt_ = $.extend({}, opt, {
                     container: $('#mnbody'),
                 });
-                var prompt_formCmd = (that.group.call('promptFormGrp_Add', 'create')).command();
-                prompt_formCmd('render', opt_)
+                var prompt_form = (that.group.call('promptFormGrp_Add', 'create'));
+                prompt_form.render(opt_)
             });
 
-            //setup list items            
+            //setup list items
             var list_data = this.group.call('collectionGrp', 'add', {
                 values: opt.list_data || this.getInputValue(),
             });

@@ -19,7 +19,9 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
             //declaration
             var container = this.opt.container;
             var page = 1;
-            var pageLoading = false;
+            var pageLoading = {
+                status: false
+            };
 
             function getUrl() {
                 return thatGrp.getUrl(page);
@@ -61,7 +63,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
                             }),
                         };
                         thatGrp.call('listItemGrp', 'setup', opt_next);
-                        pageLoading = false;
+                        pageLoading.status = false;
                     }
 
                     setNext(firstResult);
@@ -81,9 +83,14 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
                         pageLoading: pageLoading,
                         lastPage: lastPage,
                         getUrl: getUrl,
-                        afterNextFetch: afterNextFetch
+                        afterNextFetch: afterNextFetch,
+                        error: thatGrp.opt.error || function (err) {
+                            throw err;
+                        },
                     };
                     thatGrp.call('fetcher', 'setScrollEndFetch', opt_next);
+                }).catch(this.opt.error || function (err) {
+                    throw err;
                 });
         }
     });

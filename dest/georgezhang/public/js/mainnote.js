@@ -837,14 +837,18 @@ define('request',['jquery', 'optObj', 'Promise'
         connectAsync: function (opt) {
             var that = this;
             this.setOpt(opt);
+            var params = {
+                url: this.opt.request_url,
+                method: this.opt.request_method,
+                data: this.opt.request_data,
+                dataType: 'json',
+            };
+            if (opt.request_params && $.isPlainObject(opt.request_params)) {
+                $.extend(params, opt.request_params);
+            }
 
             return new Promise(function (resolve, reject) {
-                that.xhr = $.ajax({
-                        url: that.opt.request_url,
-                        method: that.opt.request_method,
-                        data: that.opt.request_data,
-                        dataType: 'json'
-                    })
+                that.xhr = $.ajax(params)
                     .done(function (data, textStatus, jqXHR) {
                         if (data && 'error' in data) {
                             return reject(data.error);
@@ -1160,7 +1164,7 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
                 return true;
             } else {
                 this.error({
-                    error: 'Please correct the all fields above.'
+                    error: 'Please correct error above.'
                 });
             }
         },
@@ -1281,13 +1285,15 @@ define('list',['jquery', 'component', 'tpl!templates/list',
         },
         reset: function (opt) {
             //make the original frame firm by setting min-height and width
-            this.comp.css({
-                'min-height': this.comp.css('height'),
-                'min-width': this.comp.css('width')
-            });
+            if (this.comp && this.comp.css) {
+                this.comp.css({
+                    'min-height': this.comp.css('height'),
+                    'min-width': this.comp.css('width')
+                });
+                this.comp.empty();
+            }
 
             this.items = [];
-            this.comp.empty();
         },
         setup: function (opt) {
             var that = this;
@@ -1312,9 +1318,9 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                     'min-width': ''
                 });
             } else {
-            	this.noListData(opt);
+                this.noListData(opt);
             }
-            
+
         },
         removeItem: function (opt) {
             this.items = $.grep(this.items, function (itemObj, idx) {
@@ -1519,7 +1525,9 @@ var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments
 with(obj||{}){
 __p+='<textarea name="'+
 ((__t=( textarea_name ))==null?'':__t)+
-'" class="form-control" placeholder="'+
+'" class="form-control '+
+((__t=( textarea_class ))==null?'':__t)+
+'" placeholder="'+
 ((__t=( textarea_placeholder ))==null?'':__t)+
 '">'+
 ((__t=( textarea_value ))==null?'':__t)+
@@ -1537,6 +1545,7 @@ define('textarea',['jquery', 'component', 'tpl!templates/textarea', 'autosize'
             textarea_name: 'defaultTextareaName',
             textarea_value: '',
             textarea_placeholder: '',
+            textarea_class: '',
         },
         setup: function (opt) {
             autosize(this.comp);
@@ -1715,13 +1724,17 @@ define('tagsinput',['jquery', 'component', 'tpl!templates/tagsinput', 'bootstrap
 define('tpl!templates/input', ['underscore'], function (_) { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
-__p+='<div class="form-group">\r\n    <label for="'+
+__p+='<div class="form-group">\r\n    ';
+ if (input_label && input_label.length > 0) { 
+__p+='<label for="'+
 ((__t=( input_id ))==null?'':__t)+
 '" class="'+
 ((__t=( input_label_class ))==null?'':__t)+
 '">'+
-((__t=( input_placeholder ))==null?'':__t)+
-'</label>\r\n    <input type="'+
+((__t=( input_label ))==null?'':__t)+
+'</label>';
+ } 
+__p+='\r\n    <input type="'+
 ((__t=( input_type ))==null?'':__t)+
 '" id="'+
 ((__t=( input_id ))==null?'':__t)+
@@ -1767,6 +1780,7 @@ define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
             input_name: 'input_name',
             input_class: '',
             input_type: 'text',
+            input_label: '',
             input_placeholder: '',
             input_timeout: 700,
             input_label_class: 'input_label', //sr-only to hide it
@@ -1854,7 +1868,7 @@ define('inputGrp',['jquery', 'optGrp', 'input', 'request'
                     });
                 })
                 .catch(function (err) {
-                    if ($.isObject(err)) {
+                    if ($.isPlainObject(err)) {
                         err = err.message || err.code || JSON.stringify(err);
                     }
                     that.getResult({
@@ -2380,13 +2394,14 @@ define('fetcher',['jquery', 'optObj', 'scroll', 'request'
 
                 //fetch more content
                 function fetchNext() {
-                    if (!opt.lastPage) {
-                        opt.pageLoading = true;
+                    if (!opt.lastPage && !opt.pageLoading.status) {
+                        opt.pageLoading.status = true;
                         var opt_ = {
                             url: opt.getUrl(),
                         }
                         return that.getAsync(opt_)
-                            .then(opt.afterNextFetch);
+                            .then(opt.afterNextFetch)
+                            .catch(opt.error);
                     }
                 }
 
@@ -2419,7 +2434,9 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
             //declaration
             var container = this.opt.container;
             var page = 1;
-            var pageLoading = false;
+            var pageLoading = {
+                status: false
+            };
 
             function getUrl() {
                 return thatGrp.getUrl(page);
@@ -2461,7 +2478,7 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
                             }),
                         };
                         thatGrp.call('listItemGrp', 'setup', opt_next);
-                        pageLoading = false;
+                        pageLoading.status = false;
                     }
 
                     setNext(firstResult);
@@ -2481,9 +2498,14 @@ define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionGr
                         pageLoading: pageLoading,
                         lastPage: lastPage,
                         getUrl: getUrl,
-                        afterNextFetch: afterNextFetch
+                        afterNextFetch: afterNextFetch,
+                        error: thatGrp.opt.error || function (err) {
+                            throw err;
+                        },
                     };
                     thatGrp.call('fetcher', 'setScrollEndFetch', opt_next);
+                }).catch(this.opt.error || function (err) {
+                    throw err;
                 });
         }
     });
@@ -3082,6 +3104,7 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
     Autocomplete.extend({
         defaultOpt: $.extend({}, Autocomplete.defaultOpt, {
             input_class: 'typeahead',
+            forceSelect: true,
         }),
         bloodhound: Bloodhound,
         setDataSource: function (opt) {
@@ -3093,10 +3116,10 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
                     return obj._id;
                 },
             }, opt.engine_opt || {});
-            var source = new this.bloodhound(opt_bloodhound);
+            this.source = new this.bloodhound(opt_bloodhound);
 
             return $.extend({}, {
-                source: source
+                source: this.source
             }, opt.source_opt || {});
         },
         setup: function (opt) {
@@ -3106,7 +3129,8 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
             var opt_typeahead = $.extend({}, {
                 hint: true,
                 highlight: true,
-                minLength: 1
+                minLength: 1,
+                autoselect: true,
             }, opt.autocomplete_typeahead_opt || {});
             this.inputElem.typeahead(opt_typeahead, this.setDataSource(opt.autocomplete_bloodhound_opt || {}));
 
@@ -3114,19 +3138,55 @@ define('autocomplete',['jquery', 'input', 'typeahead', 'bloodhound'
             this.comp.find('.typeahead.input-lg').siblings('input.tt-hint').addClass('hint-large');
 
             //bind events
-            var input_hidden = $('<input type="hidden" name="' + this.inputElem.attr('name') + '_id">');
-            if (opt.autocomplete_id) this.input_hidden = opt.autocomplete_id;
-            this.comp.append(input_hidden);
+            this.input_hidden = $('<input type="hidden" name="' + this.inputElem.attr('name') + '_id">');
+            if (opt.autocomplete_id) this.input_hidden.val(opt.autocomplete_id);
+            this.comp.append(this.input_hidden);
+
             this.inputElem.bind('typeahead:select', function (ev, suggestion) {
-                input_hidden.val(suggestion._id);
+                that.input_hidden.val(suggestion._id);
             });
             this.inputElem.bind('typeahead:change', function (ev) {
                 var val = that.inputElem.typeahead('val');
-                if (!val || val == '') 
-                    input_hidden.val('');
+                that.input_hidden.val('');
+                if (val && val.length > 0 && that.opt.forceSelect) {
+                    that.input_hidden.val('');
+                    var skip = false;
+                    that.source.search(val, function (datums) {
+                        if (datums && datums.length > 0) {
+                            skip = true;
+                            that.input_hidden.val(datums[0]._id);
+                            that.inputElem.typeahead('val', datums[0].name);
+                        }
+                    }, function (datums) {
+                        if (!skip) {
+                            if (datums && datums.length > 0) {
+                                that.input_hidden.val(datums[0]._id);
+                                that.inputElem.typeahead('val', datums[0].name);
+                            }
+                        }
+                    });
+                }
             });
-            
+
             return this.comp;
+        },
+        checkValid: function (opt) {
+            if (this.opt.forceSelect) {
+                var input_hidden_id = this.input_hidden.val();
+                if (input_hidden_id && input_hidden_id.length > 0) {
+                    this.getResult({
+                        invalidHints: false
+                    });
+                    return true;
+                } else {
+                    this.getResult({
+                        invalidHints: 'invalid selection'
+                    });
+                    return false;
+
+                }
+            }
+            return true;
         },
     });
 

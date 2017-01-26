@@ -7,6 +7,7 @@ define(['jquery', 'component', 'tpl!templates/textarea', 'autosize'
             textarea_name: 'defaultTextareaName',
             textarea_value: '',
             textarea_placeholder: '',
+            textarea_class: '',
         },
         setup: function (opt) {
             autosize(this.comp);

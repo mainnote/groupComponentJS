@@ -12,6 +12,7 @@ logs
 results
 
 npm-debug.log
+secret.json
 node_modules
 bower_components
 media

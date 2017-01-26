@@ -43,9 +43,9 @@ define(['jquery', 'optObj'
                         opt.container.append(elem);
                     } else {
                         var elemObj = elem.elem.create();
-                        if (elemObj.hasOwnProperty('parentNames')) {
+                        if (elemObj.hasOwnProperty('_parentIDs')) {
                             this.addElement({
-                                elemCmd: elemObj.command(),
+                                elem: elemObj,
                                 elemOpt: elem.opt,
                                 container: opt.container || this.comp
                             });
@@ -62,7 +62,7 @@ define(['jquery', 'optObj'
             if (!opt.elemOpt) opt.elemOpt = {};
             opt.elemOpt.container = opt.container;
             opt.elemOpt.parent = this;
-            opt.elemCmd('render', opt.elemOpt);
+            opt.elem.render(opt.elemOpt);
         }
     });
 

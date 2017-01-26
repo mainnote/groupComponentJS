@@ -7,11 +7,11 @@ define(['jquery', 'optObj', 'scroll', 'request'
         },
         init: function () {
             OptObj.init.call(this);
-            this.requestCmd = Request.create('requestCmd').command();
+            this.request = Request.create('request');
         },
         /* not sure how this function work */
         stop: function (opt) {
-            this.requestCmd('abort');
+            this.request.abort();
             Scroll.remove({
                 obj: this
             });
@@ -24,7 +24,7 @@ define(['jquery', 'optObj', 'scroll', 'request'
                     request_method: 'GET',
                     request_data: this.opt.data,
                 };
-                return this.requestCmd('connectAsync', opt_);
+                return this.request.connectAsync(opt_);
             } //no error if no url
         },
         setScrollEndFetch: function (opt) {
@@ -45,13 +45,14 @@ define(['jquery', 'optObj', 'scroll', 'request'
 
                 //fetch more content
                 function fetchNext() {
-                    if (!opt.lastPage) {
-                        opt.pageLoading = true;
+                    if (!opt.lastPage && !opt.pageLoading.status) {
+                        opt.pageLoading.status = true;
                         var opt_ = {
                             url: opt.getUrl(),
                         }
                         return that.getAsync(opt_)
-                            .then(opt.afterNextFetch);
+                            .then(opt.afterNextFetch)
+                            .catch(opt.error);
                     }
                 }
 

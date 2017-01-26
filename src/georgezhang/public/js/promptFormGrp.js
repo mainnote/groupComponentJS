@@ -31,8 +31,12 @@ define(['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
         },
     });
 
+	PromptFormGrp.extend({
+		render: function(opt){
+			this.call('prompt', 'render', opt);
+		},
+	});
     PromptFormGrp.join(prompt, formGrp);
-    PromptFormGrp.setCallToMember('prompt');
 
     return PromptFormGrp;
 });

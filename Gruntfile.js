@@ -2,7 +2,7 @@
  * cd node_modules/ && git clone https://github.com/georgezhang/requirejs-tpl.git
  */
 
-module.exports = function (grunt) {
+module.exports = function(grunt) {
     var module_list = require('./src/georgezhang/build/main');
     // Project configuration.
     grunt.initConfig({
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
                     inlineText: true,
                     preserveLicenseComments: false,
                     optimize: 'none',
-                    onModuleBundleComplete: function (data) {
+                    onModuleBundleComplete: function(data) {
                         var replace = require('replace');
                         replace({
                             regex: /define\('(text|underscore)',{.*?}\);/g,
@@ -77,10 +77,9 @@ module.exports = function (grunt) {
             },
             target: {
                 files: [{
-                        src: ['dest/georgezhang/public/css/*.css'],
-                        dest: 'build/mainnote.min.css',
-					}
-				],
+                    src: ['dest/georgezhang/public/css/*.css'],
+                    dest: 'build/mainnote.min.css',
+                }],
 
             },
         },
@@ -134,6 +133,54 @@ module.exports = function (grunt) {
                 },
             },
         },
+        //s3 operation start
+        aws: grunt.file.readJSON('secret.json'), // Read the file
+
+        aws_s3: {
+            options: {
+                accessKeyId: '<%= aws.AWSAccessKeyId %>', // Use the variables
+                secretAccessKey: '<%= aws.AWSSecretKey %>', // You can also use env variables
+                //region: 'eu-west-1',
+                uploadConcurrency: 5, // 5 simultaneous uploads
+                downloadConcurrency: 5 // 5 simultaneous downloads
+            },
+            production: {
+                options: {
+                    bucket: 'groupcomponentjs',
+                    differential: true, // Only uploads the files that have changed
+                    //params: {
+                    //    ContentEncoding: 'gzip' // applies to all the files!
+                    //},
+                    mime: {
+                        'LICENCE': 'text/plain'
+                    }
+                },
+                files: [{
+                        expand: true,
+                        cwd: 'src/',
+                        src: ['**'],
+                        dest: 'src/'
+                    }, {
+                            expand: true,
+                            cwd: 'static/',
+                            src: ['index.html'],
+                            dest: '/'
+                        }
+                ]
+            },
+            clean_production: {
+                options: {
+                    bucket: 'groupcomponentjs',
+                    debug: false // Doesn't actually delete but shows log
+                },
+                files: [
+                    {
+                        dest: '/',
+                        action: 'delete'
+                    }, ]
+            },
+        },
+        //s3 operation end
     });
 
     // Load the plugin that provides the "uglify" task.
@@ -142,8 +189,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jasmine');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-aws-s3');
 
     // Default task(s).
     grunt.registerTask('default', ['requirejs', 'uglify', 'cssmin']);
     grunt.registerTask('test', ['jasmine:requirejs']);
+    grunt.registerTask('deploy', ['aws_s3:production']);
+    grunt.registerTask('clean', ['aws_s3:clean_production']);
 };

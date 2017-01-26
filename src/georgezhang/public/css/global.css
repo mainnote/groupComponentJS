@@ -207,7 +207,9 @@ p.hints {
 .tt-suggestion {
     display: block;
     padding: 3px 20px;
+    cursor: pointer;
 }
+
 .tt-suggestion.tt-cursor {
     color: #fff;
     background-color: #0081c2;
@@ -219,6 +221,13 @@ p.hints {
     background-repeat: repeat-x;
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0)
 }
+
+.tt-suggestion.tt-cursor,.tt-suggestion:hover {
+  color: #fff;
+  background-color: #0097cf;
+
+}
+
 .tt-suggestion.tt-is-under-cursor a {
     color: #fff;
 }

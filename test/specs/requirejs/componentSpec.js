@@ -78,14 +78,14 @@ define(function (require) {
             require(['jquery', 'bootstrap', 'textarea'], function ($, bootstrap, Textarea) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var textareaCmd = Textarea.create('textareaCmd').command();
+                var textareaCmd = Textarea.create('textareaCmd');
                 var opt = {
                     container: testContainer,
                     textarea_name: 'thisTextarea',
                     textarea_value: 'hello world',
                     textarea_placeholder: 'Type Here',
                 };
-                textareaCmd('render', opt);
+                textareaCmd.render(opt);
                 var value = testContainer.find('textarea[name="thisTextarea"]').val();
                 expect(value === 'hello world').toBe(true);
                 done();
@@ -123,7 +123,7 @@ define(function (require) {
                 var requestMock = RequestMock.create('request');
 
                 btn.on('click', function (e) {
-                    var promptFormGrpCmd = PromptFormGrp.create('promptFormGrpCmd').command();
+                    var promptFormGrpCmd = PromptFormGrp.create('promptFormGrpCmd');
 
                     var thisTextarea = TextareaCountGrp.create();
                     var thisTextarea2 = TextareaCountGrp.create();
@@ -190,7 +190,7 @@ define(function (require) {
 
 
                     promptFormGrpCmd('override', requestMock);
-                    promptFormGrpCmd('render', opt);
+                    promptFormGrpCmd.render(opt);
 
                     var value = $(testContainer.find('textarea')[1]).val();
                     expect(value).toBe('In prompt Value2');
@@ -214,15 +214,15 @@ define(function (require) {
             require(['jquery', 'listItemGrp', 'collectionGrp'], function ($, ListItemGrp, CollectionGrp) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd').command();
-                var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd').command();
+                var listItemGrpCmd = ListItemGrp.create('listItemGrpCmd');
+                var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd');
                 var opt = {
                     container: testContainer,
-                    list_data: collectionGrpCmd('add', {
+                    list_data: collectionGrpCmd.add({
                         values: ['yes', 'haha']
                     }),
                 };
-                listItemGrpCmd('render', opt);
+                listItemGrpCmd.render(opt);
                 var value = $(testContainer.find('li')[0]).text();
                 expect(value).toBe('yes');
                 done();
@@ -316,7 +316,7 @@ define(function (require) {
 			]
                 });
 
-                var navbarCmd = Navbar.create('navCmd').command();
+                var navbarCmd = Navbar.create('navCmd');
                 var opt = {
                     container: testContainer,
                     navbar_brand: {
@@ -333,7 +333,7 @@ define(function (require) {
 				},
 			],
                 };
-                navbarCmd('render', opt);
+                navbarCmd.render(opt);
                 var value = $(testContainer.find('#navbar_id ul li a')[0]).text();
                 expect(value).toContain('Notes');
                 done();
@@ -345,12 +345,12 @@ define(function (require) {
             require(['jquery', 'checkbox'], function ($, Checkbox) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var checkboxCmd = Checkbox.create('checkboxCmd').command();
+                var checkboxCmd = Checkbox.create('checkboxCmd');
                 var opt = {
                     container: testContainer,
                     checkbox_checked: true
                 };
-                checkboxCmd('render', opt);
+                checkboxCmd.render(opt);
                 expect(testContainer.find('input').attr('checked')).toBe('checked');
                 done();
             }); //require
@@ -361,15 +361,15 @@ define(function (require) {
             require(['jquery', 'tagsinput', 'bootstrap-tagsinput'], function ($, Tagsinput) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var tagsinputCmd = Tagsinput.create('tagsinputCmd').command();
+                var tagsinputCmd = Tagsinput.create('tagsinputCmd');
                 var opt = {
                     container: testContainer,
                     tagsinput_values: ['ok']
                 };
-                tagsinputCmd('render', opt);
+                tagsinputCmd.render(opt);
                 //console.log(testContainer.prop('outerHTML'));
                 expect(testContainer.find('select').val()[0]).toBe('ok');
-                expect(tagsinputCmd('val')[0]).toBe('ok');
+                expect(tagsinputCmd.val()[0]).toBe('ok');
                 done();
             }); //require
         }); //test case
@@ -379,7 +379,7 @@ define(function (require) {
             require(['jquery', 'input'], function ($, Input) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var inputUrlGrpCmd = Input.create('inputUrlGrpCmd').command();
+                var inputUrlGrpCmd = Input.create('inputUrlGrpCmd');
                 var opt = {
                     container: testContainer,
                     input_id: 'inputUrlGrpCmd',
@@ -388,7 +388,7 @@ define(function (require) {
                     input_placeholder: 'inputUrlGrpCmd',
                     input_value: 'http://yes.com'
                 };
-                inputUrlGrpCmd('render', opt);
+                inputUrlGrpCmd.render(opt);
                 expect(testContainer.find('input').val()).toBe('http://yes.com');
                 done();
             }); //require
@@ -415,7 +415,7 @@ define(function (require) {
                     activeOn: 'link',
                 });
 
-                var navtagsCmd = Navtags.create('navtagsCmd').command();
+                var navtagsCmd = Navtags.create('navtagsCmd');
                 var opt = {
                     container: testContainer,
                     navtags_elements: [{
@@ -427,7 +427,7 @@ define(function (require) {
 
 			],
                 };
-                navtagsCmd('render', opt);
+                navtagsCmd.render(opt);
                 //console.log(testContainer.prop('outerHTML'));
                 expect($(testContainer.find('a.nav-link')[0]).hasClass('active')).toBe(true);
                 done();
@@ -439,7 +439,7 @@ define(function (require) {
             require(['jquery', 'inputListGrp', 'jasmine-jquery'], function ($, InputListGrp) {
                 var testContainer = $('<div></div>');
                 testContainer.appendTo('body');
-                var inputListGrpCmd = InputListGrp.create('inputListGrpCmd').command();
+                var inputListGrpCmd = InputListGrp.create('inputListGrpCmd');
                 var opt = {
                     container: testContainer,
                     prompt_title: 'Test PromptFormGrp',
@@ -448,7 +448,7 @@ define(function (require) {
                         text: 'this is a long text'
                         }],
                 };
-                inputListGrpCmd('render', opt);
+                inputListGrpCmd.render(opt);
 
                 expect($(testContainer.find('h4')[0]).text()).toEqual('item 1');
                 //delete
@@ -478,13 +478,13 @@ define(function (require) {
                         });
                     }
                 });
-                var contentCmd = content.command();
+
                 var opt = {
                     container: testContainer,
                     content_class: 'text-primary',
                     content_content: 'This is my content'
                 };
-                contentCmd('render', opt);
+                content.render(opt);
                 expect(testContainer.find('p').html()).toBe('This is my content');
                 done();
             }); //require

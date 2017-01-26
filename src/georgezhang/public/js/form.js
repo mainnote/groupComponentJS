@@ -10,7 +10,7 @@ define(['jquery', 'component', 'tpl!templates/form'
         init: function () {
             Component.init.call(this);
             this.submitting = false;
-            this.compCmds = [];
+            this.components = [];
         },
         setup: function (opt) {
             var that = this;
@@ -31,9 +31,9 @@ define(['jquery', 'component', 'tpl!templates/form'
                     } else {
                         compOpt = elem.opt;
                     }
-                    if (comp.hasOwnProperty('parentNames')) {
+                    if (comp.hasOwnProperty('_parentIDs')) {
                         this.add({
-                            compCmd: comp.command(),
+                            comp: comp,
                             compOpt: compOpt,
                         });
                     }
@@ -68,7 +68,7 @@ define(['jquery', 'component', 'tpl!templates/form'
         },
         checkValid: function (opt) {
             var validFlag = true;
-            $.each(this.compCmds, function (index, cmd) {
+            $.each(this.components, function (index, cmd) {
                 if ('checkValid' in cmd('thisObj')) {
                     var result = cmd('checkValid'); //valid?
                     if (!result) validFlag = false;
@@ -81,18 +81,18 @@ define(['jquery', 'component', 'tpl!templates/form'
             this.submitting = false;
         },
         add: function (opt) {
-            this.compCmds.push(opt.compCmd);
+            this.components.push(opt.comp);
             var opt_ = $.extend({
                 container: this.comp.find('fieldset'),
                 form: this
             }, opt.compOpt);
-            opt.compCmd('render', opt_);
+            opt.comp.render(opt_);
         },
         find: function (opt) {
             var subComp;
-            $.each(this.compCmds, function (i, compCmd) {
-                if (compCmd('name') === opt.name) {
-                    subComp = compCmd;
+            $.each(this.components, function (i, comp) {
+                if (comp.name === opt.name) {
+                    subComp = comp;
                     return false;
                 }
             });

@@ -1,12 +1,12 @@
 {
-  "name": "mainnotejs",
+  "name": "groupComponentJS",
   "version": "0.0.1",
-  "homepage": "https://github.com/mainnote/mainnoteJS",
+  "homepage": "https://github.com/mainnote/groupComponentJS",
   "authors": [
     "George Zhang <service@mainnote.com>"
   ],
   "description": "A set of browser components based on groupJS",
-  "main": "build/mainnote.min.js",
+  "main": "build/groupComponent.min.js",
   "moduleType": [
     "amd",
     "es6",
@@ -15,7 +15,9 @@
     "yui"
   ],
   "keywords": [
-    "mainnote"
+    "mainnote",
+    "groupJS",
+    "groupComponentJS"
   ],
   "license": "MIT",
   "ignore": [

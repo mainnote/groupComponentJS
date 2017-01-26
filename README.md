@@ -1,25 +1,52 @@
-# mainnoteJS
-A set of browser components based on groupJS
+# groupComponentJS
 
-How to define your own template?
-1. Instance the component
-2. component.tpl = new.tpl
-3. override the component back to its group
-4. $(window).scroll doesn't bubble so we need to build for one event
-5. Check members in debug console: 
-require(['memberName'], function(Member){console.log(Member.members());});
+*(The main purpose of this library is to demostrate a way to build your own web framework. You should be able to get the idea in 10 minutes. Happy coding :)*
 
-6. setOpt() if necessary
-7. each iterable object should be created, each click of fetch should be created
-8. adding a jquery plugin, edit config.js, Gruntfile.js (requirejs and jasmine) and play.html
-9. Never call yourself prompt.call(this, opt). if will dead loop. e.g. getMember() to Prompt and use Prompt.call(this, opt)
-10. When inherit keep name with suffix _specific customized
-11. In the customized level, give arguments with setOpt();
-12. In object, extend function and constant; if you need a object variable, you should define in init method;
-13. 'click' repeated instance requires to create a new instance. So that the previous operation will not interrupt. example: prompt form
-14. in collectionGrp, collection and entity:
-        if remote, entity will be inserted remotely first then back to client and create a entity then push into collection;
-        if not remote, entity will just create an entity then push into collection;
-        Entity updated by itself; may be trigger collection to do something if required;
-        if remote, entity will be removed remotely first then back to client and remove entity from collection;
-        if not remote, entity will ask collection to be removed.
+## Why do we need this library?
+1. A library implements groupJS style programming pattern (*With groupJS, you will be free from javascript prototype inheritance complex*);
+2. An easy way to use jQuery/javascript library and incorporate into a framework;
+3. Use requirejs as module loader
+4. Build your own framework instead of learning AngularJS, ReactJS or BackboneJS etc.;
+5. Use bluebird promisable programming style.
+
+## Overview
+groupComponentJS bases on [groupJS](https://github.com/mainnote/groupJS) to perform inheritance and bind objects to be a group. Activities in browser are composited by individual "component". Components can be grouped together as a group component which can join another group. A group binds components and initialize their setup. However, as a convention, a group should not involve any actual response and activity.
+
+Each UI component is structured to be Module-View-Controller (MVC) pattern. UI components extended from component.js module acts as Controller role to manage its views and model. It also interacts with other component inside a group.
+
+UI component includes base function such as changing default options `setOpt()`, initializing local variable `init()`, rendering views `render()`, setup DOM events `setup()`, removing component `remove()` and setting accessory elements `setElements()` or `addElement()`. They usually take only one argument like opt or opt_xxxx at the convention. Also, it uses method `setAsync()` to convert asynchronous call to Promise style.
+
+A model is simply a JSON object to provide data feed. It can be wrapped in entity.js as single entity interface and collection.js as entity list interface. request.js provides jQuery request to communicate with remote data source. The model usually attaches to UI Component member `.opt` as key `doc`.
+
+View is defined in `/templates` folder which uses underscore.js template syntax. It attaches to as `.tpl` .
+
+## Examples
+<http://groupcomponentjs.s3-website-us-east-1.amazonaws.com>
+
+## build
+Use Grunt to
+
+## Installation
+
+## Steps to use this library
+1. Find a close component from the library or create your own component;
+2. Create an instance of the component;
+3. Customize your instance;
+4. Render your component to to DOM.
+
+## Convention
+1. Always `setOpt(opt)`
+2. `this.elem` will be presented the jQuery object template elements.
+3. Only constant attributes/variable can be defined on object structure. attributes/variable must define in `init()` method like `this.myVar = null;`
+
+## Components
+
+### list.js
+1. list_data will hold each item data;
+
+
+
+
+
+## Q & A
+1. Questions about requirejs path

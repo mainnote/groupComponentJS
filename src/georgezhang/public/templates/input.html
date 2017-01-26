@@ -1,5 +1,5 @@
 <div class="form-group">
-    <label for="<%= input_id %>" class="<%= input_label_class %>"><%= input_placeholder %></label>
+    <% if (input_label && input_label.length > 0) { %><label for="<%= input_id %>" class="<%= input_label_class %>"><%= input_label %></label><% } %>
     <input type="<%= input_type %>" id="<%= input_id %>" name="<%= input_name %>" class="form-control <%= input_class %>" placeholder="<%= input_placeholder %>" 
         <% if (input_required) {%>
          required 

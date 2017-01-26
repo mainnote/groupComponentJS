@@ -21,7 +21,7 @@ define(['jquery', 'optGrp', 'input', 'request'
                     });
                 })
                 .catch(function (err) {
-                    if ($.isObject(err)) {
+                    if ($.isPlainObject(err)) {
                         err = err.message || err.code || JSON.stringify(err);
                     }
                     that.getResult({
@@ -33,8 +33,12 @@ define(['jquery', 'optGrp', 'input', 'request'
     });
 
     var request = Request.create('request');
+	InputGrp.extend({
+		render: function(opt){
+			this.call('input', 'render', opt);
+		},
+	});
     InputGrp.join(input, request);
-    InputGrp.setCallToMember('input');
 
     return InputGrp;
 });

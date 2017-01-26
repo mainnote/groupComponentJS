@@ -13,11 +13,11 @@ define(['jquery', 'optObj'
             var that = this;
 
             function addValue(value) {
-                var entityCmd = that.group.call('entity', 'create', 'entityCmd').command();
+                var entity = that.group.call('entity', 'create', 'entity');
                 var opt_ = {
                     value: value,
                 };
-                var v = entityCmd('update', opt_);
+                var v = entity.update(opt_);
                 that.values.push(v);
             }
 
@@ -38,14 +38,14 @@ define(['jquery', 'optObj'
             return this.values.slice(startIndex);
         },
         getValues: function (opt) {
-            return $.map(this.values, function (entityCmd, i) {
-                return entityCmd('get');
+            return $.map(this.values, function (entity, i) {
+                return entity.get();
             });
         },
         remove: function (opt) {
             var values = this.values;
-            $.each(values, function (i, entityCmd) {
-                if (entityCmd('thisObj') === opt.entity) {
+            $.each(values, function (i, entity) {
+                if (entity === opt.entity) {
                     values.splice(i, 1);
                     return false;
                 }

@@ -85,9 +85,13 @@
      });
 
      var request = Request.create('request');
+     CollectionGrp.extend({
+         render: function(opt){
+             this.call('collection', 'render', opt);
+         },
+     });
 
      CollectionGrp.join(collection, entity, request);
 
-     CollectionGrp.setCallToMember('collection');
      return CollectionGrp;
  });
