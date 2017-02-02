@@ -1,26 +1,16 @@
 //start entry of this eample
-define(['jquery', 'myApp/myModules/todolistGrp'], function($, TodolistGrp) {
-    //title
-    $('#title').text('groupComponent.js Example 01');
-    $('#title').attr('data-id', 'todolistGrp');
-    //Introduction
-    $('.demo_section').prepend('<h2>A simple Todo list!</h2><i>Try non-alphanumeric charactors</i>');
+define(['jquery', 'myApp/myModules/myInputItemGrp'], function($, MyInputItemGrp) {
+    //title -- update your title
+    $('#title').text('groupComponent.js Example 03');
+    $('#title').attr('data-id', 'myInputItemGrp');
+    //Introduction -- update your Introduction
+    $('.demo_section').prepend('<h2>Synchronize Collection and List</h2><i></i>');
 
-    //file list
+    //file list -- update you list
     var list = [{
-            name: 'todolistGrp.js',
-            src: 'myModules/todolistGrp.js',
+            name: 'myInputItemGrp.js',
+            src: 'myModules/myInputItemGrp.js',
             type: 'javascript'
-        },
-        {
-            name: 'myList.js',
-            src: 'myModules/myList.js',
-            type: 'javascript'
-        },
-        {
-            name: 'myList.html',
-            src: 'myTemplates/myList.html',
-            type: 'htmlmixed'
         },
         {
             name: 'example.js',
@@ -39,7 +29,7 @@ define(['jquery', 'myApp/myModules/todolistGrp'], function($, TodolistGrp) {
         },
     ];
 
-    //append
+    //append -- you don't have to change this block
     var html = [];
     html.push('<ul>');
     $.each(list, function(index, value) {
@@ -48,11 +38,11 @@ define(['jquery', 'myApp/myModules/todolistGrp'], function($, TodolistGrp) {
     html.push('</ul>');
     $('#file_list').append(html.join(''));
 
-    //example code
+    //example code -- apply your own example code
     console.log('Start example now');
-    var todolistGrp = TodolistGrp.create('todolistGrp');
-    todolistGrp.setup({
+    var myInputItemGrp = MyInputItemGrp.create('myInputItemGrp');
+    myInputItemGrp.setup({
         container: $('#demo_sample'),
-        button_name: 'Add',
+        input_placeholder: 'Type something here!'
     });
 });

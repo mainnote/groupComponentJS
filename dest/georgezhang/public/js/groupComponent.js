@@ -4,7 +4,7 @@
     define('group',[], function () {
       return (root['Grp'] = factory());
     });
-  } else if (typeof exports === 'object') {
+  } else if (typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.
@@ -15,10 +15,9 @@
 }(this, function () {
 
 //for stupid old IE
-var TAG = 'groupjs';
-if (typeof window !== 'undefined' && window) global = window; //for browser 
+if (typeof window !== 'undefined' && window) global = window; //for browser
 if (!Object.create) {
-    Object.create = function (o) {
+    Object.create = function(o) {
         if (arguments.length > 1) {
             throw new Error('Object.create implementation only accepts the first parameter.');
         }
@@ -29,7 +28,7 @@ if (!Object.create) {
     };
 }
 if (!Function.prototype.bind) {
-    Function.prototype.bind = function (oThis) {
+    Function.prototype.bind = function(oThis) {
         if (typeof this !== 'function') {
             // closest thing possible to the ECMAScript 5
             // internal IsCallable function
@@ -38,8 +37,8 @@ if (!Function.prototype.bind) {
 
         var aArgs = Array.prototype.slice.call(arguments, 1),
             fToBind = this,
-            fNOP = function () {},
-            fBound = function () {
+            fNOP = function() {},
+            fBound = function() {
                 return fToBind.apply(this instanceof fNOP && oThis ? this : oThis,
                     aArgs.concat(Array.prototype.slice.call(arguments)));
             };
@@ -51,7 +50,7 @@ if (!Function.prototype.bind) {
     };
 }
 if (typeof Array.isArray === 'undefined') {
-    Array.isArray = function (obj) {
+    Array.isArray = function(obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
     }
 };
@@ -65,109 +64,60 @@ function contains(a, obj) {
     }
     return false;
 }
-/*Object.prototype.renameProperty = function (oldName, newName) {
-    // Do nothing if the names are the same
-    if (oldName == newName) {
-        return this;
-    }
-    // Check for the old property name to avoid a ReferenceError in strict mode.
-    if (this.hasOwnProperty(oldName)) {
-        this[newName] = this[oldName];
-        delete this[oldName];
-    }
-    return this;
-};*/
 
-//----------------------------
-function _resetCallToMember(thisGrp) {
-    if ('_callToMembers' in thisGrp) { //reset setCallToMembers and level up
-        //clone first since it will reset later
-        var tmp_callToMembers = [];
-        for (var i = 0, l = thisGrp._callToMembers.length; i < l; i++) {
-            tmp_callToMembers[i] = thisGrp._callToMembers[i];
-        }
-        //apply
-        for (var i = 0, l = tmp_callToMembers.length; i < l; i++) {
-            var toMem = tmp_callToMembers[i];
-            thisGrp.setCallToMember(toMem.memberName, toMem.methodName);
-        }
-        return true;
-    }
-    return false;
-}
-
+//---------------------------
+// Define base obj
+//---------------------------
 var obj = {
-    create: function (name) {
+    create: function(_id) {
         var newObj = Object.create(this);
 
         //copy all inherited parents list to new object
-        if (this.hasOwnProperty('parentNames')) {
-            newObj.parentNames = []; //init
-            var len = this.parentNames.length;
+        if (this.hasOwnProperty('_parentIDs')) {
+            newObj._parentIDs = []; //init
+            var len = this._parentIDs.length;
             for (var i = 0; i < len; i++) {
-                newObj.parentNames.push(this.parentNames[i]);
+                newObj._parentIDs.push(this._parentIDs[i]);
             }
         }
 
         //add current parent to the parents list
-        if (this.hasOwnProperty('name')) {
-            if (!newObj.hasOwnProperty('parentNames'))
-                newObj.parentNames = []; //init
-            newObj.parentNames.push(this.name);
+        if (this.hasOwnProperty('_id')) {
+            if (!newObj.hasOwnProperty('_parentIDs'))
+                newObj._parentIDs = []; //init array for parent list
+            newObj._parentIDs.push(this._id);
 
-            if (!name) {
-                name = this.name; //name from originate during instance
+            if (!_id) {
+                _id = this._id; //name from original _id during instance
             }
         }
 
-        newObj.name = name; //init
+        newObj._id = _id; //init
+
+        //calling init() method
         if ('init' in newObj && typeof newObj.init === 'function') newObj.init();
 
         return newObj;
     },
-    extend: function () {
+
+    //extend this object methods and attributes
+    //e.g. OBJ.extend({}, {}, {}......)
+    //
+    extend: function() {
         for (var i = 0; i < arguments.length; i++) {
             var extObj = arguments[i];
             for (var key in extObj) {
                 this[key] = extObj[key];
+
+                //perform init() for new object
                 if (key === 'init' && typeof this.init === 'function') this.init();
             }
         }
         return this;
     },
-    command: function () {
-        var self = this;
-        return function (cmd, opt) {
-            if (!(cmd in self)) throw 'This object ' + self.name + ' does not have key ' + cmd;
 
-            if (typeof self[cmd] === 'function') {
-                if (global.LOG) {
-                    var result = self[cmd](opt);
-                    if (!(self.isReservedAttr(cmd))) {
-                        LOG(TAG, ' Method ' + self.name + '.' + cmd + ' ', opt, result);
-                    }
-                    return result;
-                } else {
-                    return self[cmd](opt);
-                }
-            } else {
-                if (global.LOG) {
-                    var result = self[cmd];
-                    if (!(self.isReservedAttr(cmd))) {
-                        LOG(TAG, ' Attribute ' + self.name + '.' + cmd + ' ', '', result);
-                    }
-                    return result;
-                } else {
-                    return self[cmd]; //value
-                }
-            }
-        };
-    },
-    thisObj: function () {
-        return this;
-    },
-    isReservedAttr: function (attribute) {
-        if ((attribute in obj) || (attribute in group) || contains(['parentNames', 'group', '_memberList', 'name', '_callToMembers'], attribute) || (this.reservedAttr && Array.isArray(this.reservedAttr) && contains(this.reservedAttr, attribute))) {
+    _isReservedAttr: function(attribute) {
+        if ((attribute in obj) || (attribute in group) || contains(['_parentIDs', 'obj', 'group', '_memberList', '_id'], attribute) || (this.reservedAttr && Array.isArray(this.reservedAttr) && contains(this.reservedAttr, attribute))) {
             return true;
         } else {
             return false;
@@ -175,218 +125,154 @@ var obj = {
     },
 };
 
+var __NOTFOUND__ = '__NOTFOUND__';
+
+//---------------------------
+// Define base group
+//---------------------------
 var group = obj.create('group');
 group.extend({
-    create: function (name) {
-        var newObj = obj.create.apply(this, arguments);
-        //all members should recreated within new group
-        newObj._buildMemberList();
+    //create a new group
+    create: function(_groupId) {
+        var newGroup = obj.create.apply(this, arguments);
+        //all group members should recreated within new group
+        if ('_buildMemberList' in newGroup && typeof newGroup._buildMemberList === 'function')
+            newGroup._buildMemberList();
 
-        //reset callToMember after group instantial
-        _resetCallToMember(newObj);
-
-        return newObj;
+        return newGroup;
     },
-    _buildMemberList: function () {
+    _buildMemberList: function() {
         if (!this._memberList) { //base group
-            this._memberList = {}; //init
+            this._memberList = {}; //init member list for this group
         } else if (!this.hasOwnProperty('_memberList')) { //inherited group
-            var prototypeMemberList = this._memberList;
+            var parentMemberList = this._memberList;
             this._memberList = {}; //init in object level memberList
-            for (var key in prototypeMemberList) {
-                var memberCmd = prototypeMemberList[key];
-                var newMember = memberCmd('create');
-                newMember.group = this; //member
+            for (var key in parentMemberList) {
+                var member = parentMemberList[key];
+                var newMember = member.create();
+                newMember.group = this; //refer to group
 
-                this._memberList[key] = newMember.command();
+                this._memberList[key] = newMember;
             }
         }
     },
-    /* I don't see there is any neccesary to rename a member as member name will keep forever.
-        If rename function happen, it will break the nature of group call function for others.
-    renameMember: function (oldMemberName, newMember) {
-        if (this._memberList[oldMemberName]) {
-            if (newMember) {
-                //put newMember into new function
-            } else {
-                //rename it
-                //this._memberList.renameProperty();
-            }
-        }
-    }, */
-    join: function () {
+
+    join: function() {
         for (var i = 0; i < arguments.length; i++) {
             var member = arguments[i];
             //add new member in command interface
-            var newMember = member.create(member.name);
+            var newMember = member.create();
             newMember.group = this;
-            this._memberList[member.name] = newMember.command();
+            this._memberList[member._id] = newMember;
         }
 
         return this;
     },
-    call: function (memberName, methodName, opt) {
-        var found = false;
-        //call member in this group
-        if (memberName in this._memberList) {
-            found = true;
-            var memberCmd = this._memberList[memberName];
-            if (global.LOG) {
-                var result = memberCmd(methodName, opt);
-                LOG(TAG, ' Group ' + this.name + ' [ ' + memberName + '.' + methodName + ' ] ', opt, result);
-                return result;
-            } else {
-                return memberCmd(methodName, opt);
-            }
-            //check all members if anyone parent matched the memberName (inherited member)
-        } else {
-            var result;
-            var prototypeMemberList = this._memberList;
-            for (var key in prototypeMemberList) {
-                var memberCmd = prototypeMemberList[key];
-                if (typeof memberCmd === 'function') {
-                    var member = prototypeMemberList[key]('thisObj');
-                    if (member.hasOwnProperty('parentNames') && methodName in member && typeof member[methodName] === 'function') {
-                        var parentNames = member.parentNames;
-                        var p_len = parentNames.length;
-                        for (var j = 0; j < p_len; j++) {
-                            if (memberName === parentNames[j]) {
-                                found = true;
-                                var result = memberCmd(methodName, opt);
-                                if (global.LOG) {
-                                    LOG(TAG, ' SubGroup ' + this.name + ' [ ' + memberName + '.' + methodName + ' ] ', opt, result);
-                                }
-                            }
-                        }
+    // a convinience way to execute a method for specific member in current group
+    call: function(memberID, methodName) {
+        if (typeof memberID !== 'string')
+            throw 'Group ' + this._id + ' calling ' + memberID + ' Error: member id is not string.';
+        if (typeof methodName === 'undefined')
+            throw 'Group ' + this._id + ' calling ' + memberID + ' Error: Method name is not provided';
 
+        //call member in this group
+        if (memberID in this._memberList) {
+            found = true;
+            var member = this._memberList[memberID];
+
+            if (methodName in member && typeof member[methodName] === 'function') {
+                return member[methodName].apply(member, Array.prototype.slice.call(arguments, 2));
+            } else {
+                throw 'Group ' + this._id + ' calling ' + memberID + ' Error: Method name ' + methodName + ' is not found';
+            }
+            //check all members if anyone parent object id matched the memberID (inherited member)
+        } else {
+            var memberList = this._memberList;
+            for (var key in memberList) {
+                var member = memberList[key];
+                if (member.hasOwnProperty('_parentIDs') && methodName in member && typeof member[methodName] === 'function') {
+                    var _parentIDs = member._parentIDs;
+                    var p_len = _parentIDs.length;
+                    for (var j = 0; j < p_len; j++) {
+                        if (memberID === _parentIDs[j]) {
+                            return member[methodName].apply(member, Array.prototype.slice.call(arguments, 2));
+                        }
                     }
                 }
             }
-            if (found) return result; //last result
         }
         //if not found, should we leave error?
-        if (!found) throw 'This group ' + this.name + ' does not have member ' + memberName;
+        throw 'Group ' + this._id + ' does not contain object member ' + memberID;
     },
 
     //go up level group to find member and execute its method
-    upCall: function (memberName, methodName, opt) {
-        var result = this._upCall(memberName, methodName, opt);
-        if (typeof result === 'string' && result === '__NOTFOUND__') {
-            throw 'The upper groups from ' + this.name + ' does not have member ' + memberName;
+    upCall: function(memberID, methodName) {
+        var result = this._upCall.apply(this, arguments);
+        if (typeof result === 'string' && result === __NOTFOUND__) {
+            throw 'The upper groups from group ' + this._id + ' does not have member ' + memberID + ' with method ' + methodName;
         } else {
             return result;
         }
     },
-    _upCall: function (memberName, methodName, opt) {
-        if (memberName in this._memberList) { //check current group members
-            return this.call(memberName, methodName, opt);
+    _upCall: function(memberID, methodName) {
+        if (memberID in this._memberList) { //check current group members
+            return this.call.apply(this, arguments);
         } else {
-            if (this.group) {
-                return this.group.upCall(memberName, methodName, opt);
+            if (this.group) { //go up one level
+                return this.group._upCall.apply(this.group, arguments);
             } else {
-                return '__NOTFOUND__';
+                return __NOTFOUND__;
             }
         }
 
     },
 
 
-    //go up level group to find member and execute its method
-    downCall: function (memberName, methodName, opt) {
-        var result = this._downCall(memberName, methodName, opt);
-        if (typeof result === 'string' && result === '__NOTFOUND__') {
-            throw 'The downward groups from ' + this.name + ' does not have member ' + memberName;
+    //go down level group to find member and execute its method
+    downCall: function(memberID, methodName) {
+        var result = this._downCall.apply(this, arguments);
+        if (typeof result === 'string' && result === __NOTFOUND__) {
+            throw 'The downward groups from group ' + this._id + ' does not have member ' + memberID + ' with method ' + methodName;
         } else {
             return result;
         }
     },
-    _downCall: function (memberName, methodName, opt) {
-        if (memberName in this._memberList) { //check current group members
-            return this.call(memberName, methodName, opt);
+    _downCall: function(memberID, methodName) {
+        if (memberID in this._memberList) { //check current group members
+            return this.call.apply(this, arguments);
         } else {
-            var prototypeMemberList = this._memberList;
+            var memberList = this._memberList;
             //loop members to find group
-            for (var key in prototypeMemberList) {
-                var memberCmd = prototypeMemberList[key];
-                if (typeof memberCmd === 'function') {
-                    var member = prototypeMemberList[key]('thisObj');
-                    if (member.hasOwnProperty('_memberList')) { //group
-                        return member._downCall(memberName, methodName, opt); //first hit
-                    }
+            for (var key in memberList) {
+                var member = memberList[key];
+                if (member.hasOwnProperty('_memberList')) { //group
+                    return member._downCall.apply(member, arguments); //first hit
                 }
             }
-            return '__NOTFOUND__';
+            return __NOTFOUND__;
         }
 
     },
-
-    /* call through to specific member whom play as a major role*/
-    setCallToMember: function (memberName, methodName) {
-        var that = this;
-        var member = this.call(memberName, 'thisObj');
-        if (member) {
-            //newly create group object
-            if (!this.hasOwnProperty('_callToMembers'))
-                this._callToMembers = [];
-
-            function arraySearch(arr, memberName, methodName) {
-                for (var i = 0; i < arr.length; i++)
-                    if (arr[i].memberName == memberName && arr[i].methodName == methodName)
-                        return true;
-                return false;
-            }
-
-            //ensure no duplicate
-            if (!arraySearch(this._callToMembers, memberName, methodName)) {
-                this._callToMembers.push({
-                    memberName: memberName,
-                    methodName: methodName
-                });
-            }
-
-            if (methodName) {
-                _setMethod(methodName, member); //override specific attribute. Even the one might exist.
-            } else {
-                for (var key in member) {
-                    _setMethod(key, member);
-                }
-            }
-
-            function _setMethod(attribute, memberObj) {
-                if (!that.isReservedAttr(attribute)) { //skip those attributes exist in group!!!
-                    if (typeof memberObj[attribute] === 'function' && !memberObj[attribute].binded) {
-                        that[attribute] = memberObj[attribute].bind(memberObj);
-                        that[attribute].binded = true;
-                    } else {
-                        that[attribute] = memberObj[attribute];
-                    }
-                }
-            }
-        }
-
-        return this;
-    },
-
-    members: function () {
+    members: function() {
         function _getMember(thisGroup) {
             var memberList = thisGroup._memberList;
             var ms = [];
             for (var key in memberList) {
-                var member = {
-                    name: key,
+                var memberKey = {
+                    _id: key,
                 };
-                var memberObj = memberList[key]('thisObj');
+                var memberObj = memberList[key];
                 if (memberObj.hasOwnProperty('_memberList')) {
-                    member['members'] = _getMember(memberObj);
+                    memberKey['members'] = _getMember(memberObj);
                 }
-                ms.push(member);
+                ms.push(memberKey);
             }
             return ms;
         }
         return _getMember(this);
     },
 
-    getMember: function (memberName, memberMap) {
+    getMember: function(memberID, memberMap) {
         if (memberMap && Array.isArray(memberMap)) {
             //find the first one in map
             return _findMemberInMap(memberMap, this);
@@ -397,7 +283,7 @@ group.extend({
                     for (var i = 0; i < len; i++) {
                         //if level down
                         if (map[i].hasOwnProperty('members')) {
-                            var member = _findMemberInMap(map[i].members, thisGroup.call(map[i].name, 'thisObj'));
+                            var member = _findMemberInMap(map[i].members, thisGroup.getMember(map[i]._id));
                             if (member)
                                 return member;
                         } else {
@@ -414,11 +300,11 @@ group.extend({
 
         function _getMember(thisGroup) {
             var memberList = thisGroup._memberList;
-            if (memberName in memberList) {
-                return memberList[memberName]('thisObj');
+            if (memberID in memberList) {
+                return memberList[memberID];
             } else {
                 for (var key in memberList) {
-                    var memberObj = memberList[key]('thisObj');
+                    var memberObj = memberList[key];
                     if (memberObj.hasOwnProperty('_memberList')) {
                         var member = _getMember(memberObj);
                         if (member) return member;
@@ -429,7 +315,7 @@ group.extend({
         }
     },
 
-    override: function (newMember, memberMap, newMemberName) {
+    override: function(newMember, memberMap) {
         if (newMember) {
             if (memberMap && Array.isArray(memberMap)) {
                 //only override the ones in map
@@ -441,7 +327,7 @@ group.extend({
                         for (var i = 0; i < len; i++) {
                             //if level down
                             if (map[i].hasOwnProperty('members')) {
-                                _overrideMemberInMap(map[i].members, thisGroup.call(map[i].name, 'thisObj'));
+                                _overrideMemberInMap(map[i].members, map[i]);
                             } else {
                                 _overrideMember(thisGroup);
                             }
@@ -455,23 +341,17 @@ group.extend({
             }
 
             function _overrideMember(thisGroup) {
-                var reset = false;
                 if (thisGroup.hasOwnProperty('_memberList')) {
                     for (var key in thisGroup._memberList) {
-                        var memberObj = thisGroup._memberList[key]('thisObj');
-                        if (memberObj.name === newMember.name) {
+                        var memberObj = thisGroup._memberList[key];
+                        if (memberObj._id === newMember._id) {
                             thisGroup.join(newMember);
-                            reset = _resetCallToMember(thisGroup);
                         } else if (memberObj.hasOwnProperty('_memberList')) {
-                            if (_overrideMember(memberObj)) {
-                                reset = _resetCallToMember(thisGroup);
-                            }
+                            _overrideMember(memberObj);
                         }
                     }
 
                 }
-
-                return reset;
             }
         }
 
@@ -578,9 +458,9 @@ define('component',['jquery', 'optObj'
                         opt.container.append(elem);
                     } else {
                         var elemObj = elem.elem.create();
-                        if (elemObj.hasOwnProperty('parentNames')) {
+                        if (elemObj.hasOwnProperty('_parentIDs')) {
                             this.addElement({
-                                elemCmd: elemObj.command(),
+                                elem: elemObj,
                                 elemOpt: elem.opt,
                                 container: opt.container || this.comp
                             });
@@ -597,7 +477,7 @@ define('component',['jquery', 'optObj'
             if (!opt.elemOpt) opt.elemOpt = {};
             opt.elemOpt.container = opt.container;
             opt.elemOpt.parent = this;
-            opt.elemCmd('render', opt.elemOpt);
+            opt.elem.render(opt.elemOpt);
         }
     });
 
@@ -756,7 +636,7 @@ define('entity',['jquery', 'optObj'
                     this.value = opt.value;
                 }
             }
-            return this.command();
+            return this;
         },
         get: function (opt) {
             return this.value;
@@ -781,11 +661,11 @@ define('collection',['jquery', 'optObj'
             var that = this;
 
             function addValue(value) {
-                var entityCmd = that.group.call('entity', 'create', 'entityCmd').command();
+                var entity = that.group.call('entity', 'create', 'entity');
                 var opt_ = {
                     value: value,
                 };
-                var v = entityCmd('update', opt_);
+                var v = entity.update(opt_);
                 that.values.push(v);
             }
 
@@ -806,14 +686,14 @@ define('collection',['jquery', 'optObj'
             return this.values.slice(startIndex);
         },
         getValues: function (opt) {
-            return $.map(this.values, function (entityCmd, i) {
-                return entityCmd('get');
+            return $.map(this.values, function (entity, i) {
+                return entity.get();
             });
         },
         remove: function (opt) {
             var values = this.values;
-            $.each(values, function (i, entityCmd) {
-                if (entityCmd('thisObj') === opt.entity) {
+            $.each(values, function (i, entity) {
+                if (entity === opt.entity) {
                     values.splice(i, 1);
                     return false;
                 }
@@ -952,10 +832,14 @@ define('request',['jquery', 'optObj', 'Promise'
      });
 
      var request = Request.create('request');
+     CollectionGrp.extend({
+         render: function(opt){
+             this.call('collection', 'render', opt);
+         },
+     });
 
      CollectionGrp.join(collection, entity, request);
 
-     CollectionGrp.setCallToMember('collection');
      return CollectionGrp;
  });
 
@@ -984,7 +868,7 @@ define('form',['jquery', 'component', 'tpl!templates/form'
         init: function () {
             Component.init.call(this);
             this.submitting = false;
-            this.compCmds = [];
+            this.components = [];
         },
         setup: function (opt) {
             var that = this;
@@ -1005,9 +889,9 @@ define('form',['jquery', 'component', 'tpl!templates/form'
                     } else {
                         compOpt = elem.opt;
                     }
-                    if (comp.hasOwnProperty('parentNames')) {
+                    if (comp.hasOwnProperty('_parentIDs')) {
                         this.add({
-                            compCmd: comp.command(),
+                            comp: comp,
                             compOpt: compOpt,
                         });
                     }
@@ -1042,7 +926,7 @@ define('form',['jquery', 'component', 'tpl!templates/form'
         },
         checkValid: function (opt) {
             var validFlag = true;
-            $.each(this.compCmds, function (index, cmd) {
+            $.each(this.components, function (index, cmd) {
                 if ('checkValid' in cmd('thisObj')) {
                     var result = cmd('checkValid'); //valid?
                     if (!result) validFlag = false;
@@ -1055,18 +939,18 @@ define('form',['jquery', 'component', 'tpl!templates/form'
             this.submitting = false;
         },
         add: function (opt) {
-            this.compCmds.push(opt.compCmd);
+            this.components.push(opt.comp);
             var opt_ = $.extend({
                 container: this.comp.find('fieldset'),
                 form: this
             }, opt.compOpt);
-            opt.compCmd('render', opt_);
+            opt.comp.render(opt_);
         },
         find: function (opt) {
             var subComp;
-            $.each(this.compCmds, function (i, compCmd) {
-                if (compCmd('name') === opt.name) {
-                    subComp = compCmd;
+            $.each(this.components, function (i, comp) {
+                if (comp.name === opt.name) {
+                    subComp = comp;
                     return false;
                 }
             });
@@ -1170,8 +1054,8 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
         },
         error: function (opt) {
             if ($.isPlainObject(opt.error)) {
-                var errorCmd = Error.create('errorCmd').command();
-                errorCmd('render', $.extend(opt.error, {
+                var error = Error.create('error');
+                error.render($.extend(opt.error, {
                     container: $('<div class="error"></div>').appendTo(this.comp)
                 }));
             } else {
@@ -1182,10 +1066,12 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
     });
 
     var request = Request.create('request');
-
+	FormGrp.extend({
+		render: function(opt) {
+			this.call('form', 'render', opt);
+		}
+	});
     FormGrp.join(form, request);
-
-    FormGrp.setCallToMember('form');
 
     return FormGrp;
 });
@@ -1299,14 +1185,14 @@ define('list',['jquery', 'component', 'tpl!templates/list',
             var that = this;
             if (opt.list_data && $.isArray(opt.list_data) && opt.list_data.length > 0) {
                 $.each(opt.list_data, function (index, data) {
-                    var itemCmd = that.group.call('itemGrp', 'create', 'itemGrpCmd').command(); //member create
-                    that.items.push(itemCmd);
+                    var itemGrp = that.group.call('itemGrp', 'create', 'itemGrp'); //member create
+                    that.items.push(itemGrp);
                     var opt_ = {
                         list: that,
                         container: that.comp,
                         item_data: data,
                     };
-                    var itemComp = itemCmd('render', opt_);
+                    var itemComp = itemGrp.render(opt_);
                     return itemComp;
                 });
 
@@ -1318,16 +1204,17 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                     'min-width': ''
                 });
             } else {
-                this.noListData(opt);
+                this.showEmptyList(opt);
             }
 
+			return this.comp;
         },
         removeItem: function (opt) {
             this.items = $.grep(this.items, function (itemObj, idx) {
                 if (opt.itemObj === itemObj) return true;
             });
         },
-        noListData: function (opt) {},
+        showEmptyList: function (opt) {},
     });
 
     return List;
@@ -1337,9 +1224,14 @@ define('itemGrp',['jquery', 'optGrp', 'item'
 	], function ($, OptGrp, Item) {
 	var ItemGrp = OptGrp.create('ItemGrp');
     var item = Item.create('item');
+
+	ItemGrp.extend({
+		render: function(opt){
+			this.call('item', 'render', opt);
+		},
+	});
     ItemGrp.join(item);
-    
-    ItemGrp.setCallToMember('item');
+	
 	return ItemGrp;
 });
 
@@ -1348,9 +1240,13 @@ define('listItemGrp',['jquery', 'optGrp', 'list', 'itemGrp'
 	var ListItemGrp = OptGrp.create('ListItemGrp');
     var list = List.create('list');
     var itemGrp = ItemGrp.create('itemGrp');
+	ListItemGrp.extend({
+		render: function(opt) {
+			this.call('list', 'render', opt);
+		},
+	});
+
     ListItemGrp.join(list, itemGrp);
-    
-    ListItemGrp.setCallToMember('list');
 	return ListItemGrp;
 });
 
@@ -1513,8 +1409,12 @@ define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
         },
     });
 
+	PromptFormGrp.extend({
+		render: function(opt){
+			this.call('prompt', 'render', opt);
+		},
+	});
     PromptFormGrp.join(prompt, formGrp);
-    PromptFormGrp.setCallToMember('prompt');
 
     return PromptFormGrp;
 });
@@ -1612,6 +1512,7 @@ define('button',['jquery', 'component', 'tpl!templates/button'
                     opt.form.submit();
                 });
             }
+						return this.comp;
         }
     });
 
@@ -1765,8 +1666,7 @@ __p+='\r\n        \r\n        value="'+
 return __p;
 }; });
 
-define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
-	], function ($, Component, validator, tpl) {
+define('input',['jquery', 'component', 'validator', 'tpl!templates/input'], function($, Component, validator, tpl) {
     var Input = Component.create('Input');
     Input.extend({
         tpl: tpl,
@@ -1785,21 +1685,23 @@ define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
             input_timeout: 700,
             input_label_class: 'input_label', //sr-only to hide it
         },
-        init: function () {
+        init: function() {
             Component.init.call(this);
             this.inputElem = null;
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
             this.inputElem = this.comp.find('input');
+
+            //automatically check if input is valid or not
             if (this.inputElem && opt.input_type.toLowerCase() !== 'hidden') {
                 var wait;
-                this.inputElem.on('input', function (e) {
+                this.inputElem.on('input', function(e) {
                     if (wait) {
                         clearTimeout(wait);
                         wait = null;
                     }
-                    wait = setTimeout(function () {
+                    wait = setTimeout(function() {
                         that.checkValid();
                     }, opt.input_timeout);
                 });
@@ -1808,23 +1710,23 @@ define('input',['jquery', 'component', 'validator', 'tpl!templates/input'
             if (opt.input_type.toLowerCase() === 'hidden') this.comp.hide();
             return this.comp;
         },
-        checkValid: function (opt) { //to be overriden
-/*            var input_value = this.inputElem.val();
-            if (this.validator.isEmail(input_value)) {
-                this.getResult({
-                    invalidHints: false
-                });
-                return true;
-            } else {
-                this.getResult({
-                    invalidHints: 'invalid email'
-                });
-                return false;
+        checkValid: function(opt) { //to be overriden
+            /*            var input_value = this.inputElem.val();
+                        if (this.validator.isEmail(input_value)) {
+                            this.getResult({
+                                invalidHints: false
+                            });
+                            return true;
+                        } else {
+                            this.getResult({
+                                invalidHints: 'invalid email'
+                            });
+                            return false;
 
-            }*/
+                        }*/
             return true; //to be removed
         },
-        getResult: function (opt) {
+        getResult: function(opt) {
             var hints = this.comp.find('.hints');
             if (opt && opt.invalidHints) {
                 this.comp.removeClass('has-success').addClass('has-warning');
@@ -1880,8 +1782,12 @@ define('inputGrp',['jquery', 'optGrp', 'input', 'request'
     });
 
     var request = Request.create('request');
+	InputGrp.extend({
+		render: function(opt){
+			this.call('input', 'render', opt);
+		},
+	});
     InputGrp.join(input, request);
-    InputGrp.setCallToMember('input');
 
     return InputGrp;
 });
@@ -1945,7 +1851,7 @@ define('navbar',['jquery', 'component', 'tpl!templates/navbar'
         clearActive: function (opt) {
             if (this.elements && $.isArray(this.elements))
                 $.each(this.elements, function (index, elemObj) {
-                    elemObj.command()('clearActive');
+                    elemObj.clearActive();
                 });
         }
 
@@ -1978,7 +1884,7 @@ define('navtags',['jquery', 'component', 'tpl!templates/navtags'
         clearActive: function (opt) {
             if (this.elements && $.isArray(this.elements))
                 $.each(this.elements, function (index, elemObj) {
-                    elemObj.command()('clearActive');
+                    elemObj.clearActive();
                 });
         }
 
@@ -2039,9 +1945,12 @@ define('navbarGrp',['jquery', 'optGrp', 'navbar', 'toggleHeaderScroll'
 	var NavbarGrp = OptGrp.create('NavbarGrp');
     var Navbar = Navbar.create('Navbar');
     var ToggleHeaderScroll = ToggleHeaderScroll.create('ToggleHeaderScroll');
+	NavbarGrp.extend({
+		render: function(opt) {
+			this.call('Navbar', 'render', opt);
+		},
+	});
     NavbarGrp.join(Navbar, ToggleHeaderScroll);
-    
-    NavbarGrp.setCallToMember('Navbar');
 	return NavbarGrp;
 });
 
@@ -2356,11 +2265,11 @@ define('fetcher',['jquery', 'optObj', 'scroll', 'request'
         },
         init: function () {
             OptObj.init.call(this);
-            this.requestCmd = Request.create('requestCmd').command();
+            this.request = Request.create('request');
         },
         /* not sure how this function work */
         stop: function (opt) {
-            this.requestCmd('abort');
+            this.request.abort();
             Scroll.remove({
                 obj: this
             });
@@ -2373,7 +2282,7 @@ define('fetcher',['jquery', 'optObj', 'scroll', 'request'
                     request_method: 'GET',
                     request_data: this.opt.data,
                 };
-                return this.requestCmd('connectAsync', opt_);
+                return this.request.connectAsync(opt_);
             } //no error if no url
         },
         setScrollEndFetch: function (opt) {
@@ -2617,8 +2526,14 @@ define('inputListGrp',['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listIt
     var InputListGrp = OptGrp.create('InputListGrp');
     var collectionGrp = CollectionGrp.create('collectionGrp');
     var formOption = FormOption.create('formOption');
+
+	InputListGrp.extend({
+		render: function(opt) {
+			this.call('inputList', 'render', opt);
+		},
+	});
+
     InputListGrp.join(inputList, promptFormGrp_Add, listItemGrp, collectionGrp, formOption);
-    InputListGrp.setCallToMember('inputList');
 
     //form customization for add
     var form_Add = promptFormGrp_Add.getMember('form');
@@ -2714,8 +2629,8 @@ define('inputListGrp',['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listIt
                             container: $('#mnbody'),
                             doc: data
                         };
-                        var promptCmd = that.group.getMember('promptFormGrp_Edit').create().command(); //itemGrp
-                        promptCmd('render', opt_prompt);
+                        var prompt = that.group.getMember('promptFormGrp_Edit').create(); //itemGrp
+                        prompt.render(opt_prompt);
                     });
             });
         },
@@ -2788,11 +2703,11 @@ define('inputListGrp',['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listIt
                 var opt_ = $.extend({}, opt, {
                     container: $('#mnbody'),
                 });
-                var prompt_formCmd = (that.group.call('promptFormGrp_Add', 'create')).command();
-                prompt_formCmd('render', opt_)
+                var prompt_form = (that.group.call('promptFormGrp_Add', 'create'));
+                prompt_form.render(opt_)
             });
 
-            //setup list items            
+            //setup list items
             var list_data = this.group.call('collectionGrp', 'add', {
                 values: opt.list_data || this.getInputValue(),
             });

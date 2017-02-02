@@ -5,7 +5,7 @@ requirejs.config({
     }
 });
 
-require(['jquery', 'input', 'button', 'request', 'debug/debugGroupGrp', 'debug/debugMember', 'notify'], function($, Input, Button, Request, DebugGroupGrp, DebugMember, notify) {
+require(['jquery', 'input', 'button', 'request', 'debug/debugGroupGrp', 'debug/debugMember', 'notify', 'myApp/example'], function($, Input, Button, Request, DebugGroupGrp, DebugMember, notify, example) {
     function objectDump(o) {
         console.log('== ' + o._id + ' ==');
         console.dir(o);
@@ -69,6 +69,6 @@ require(['jquery', 'input', 'button', 'request', 'debug/debugGroupGrp', 'debug/d
     input.render(opt);
 
     //automatically put the current modlue to show the group map
-    input.inputElem.val('myApp/myModules/' + $('#mnbody').attr('data-id'));
+    input.inputElem.val('myApp/myModules/' + $('#title').attr('data-id'));
     input.checkValid();
 });

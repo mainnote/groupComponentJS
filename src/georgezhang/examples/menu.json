@@ -3,5 +3,15 @@
         "id": "example01",
         "url": "/src/georgezhang/examples/example01/example.html",
         "html": "example 01 - A simple Todo list!"
+    },
+    {
+        "id": "example02",
+        "url": "/src/georgezhang/examples/example02/example.html",
+        "html": "example 02 - Synchronize Entity and Item"
+    },
+    {
+        "id": "example03",
+        "url": "/src/georgezhang/examples/example03/example.html",
+        "html": "example 03 - Synchronize Collection and List"
     }
 ]

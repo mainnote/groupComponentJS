@@ -5,6 +5,7 @@ define(['jquery', 'optObj'
         init: function () {
             OptObj.init.call(this);
             this.value = null;
+			this.items = []; //items
         },
         update: function (opt) {
             if (opt.hasOwnProperty('value')) {
@@ -13,9 +14,18 @@ define(['jquery', 'optObj'
                 } else {
                     this.value = opt.value;
                 }
+				this.notify({action: 'update'});
             }
             return this;
         },
+		notify: function (opt) {
+			$.each(this.items, function(index, item){
+				item[opt.action]();
+			});
+		},
+		setItem: function(opt){
+			this.items.push(opt.item);
+		},
         get: function (opt) {
             return this.value;
         }

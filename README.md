@@ -23,8 +23,11 @@ View is defined in `/templates` folder which uses underscore.js template syntax.
 ## Examples
 <http://groupcomponentjs.s3-website-us-east-1.amazonaws.com>
 
+* create new example `cp -RP <original example path> <new example path>`
+
 ## build
-Use Grunt to
+*Always check Gruntfile if there is any change*
+
 
 ## Installation
 
@@ -43,7 +46,11 @@ Use Grunt to
 
 ### list.js
 1. list_data will hold each item data;
+2. Entity holds information of a single "row"; Item will connect to Entity and show the UI and events; Collection is a manager for entities; List is a manager of Item to lay down the items.
 
+Entity <--------> Item
+  |                |
+Collection <----> List
 
 
 

@@ -12,7 +12,7 @@ module.exports = function(grunt) {
                 options: {
                     baseUrl: 'src/georgezhang/public/js',
                     include: module_list,
-                    out: 'dest/georgezhang/public/js/mainnote.js',
+                    out: 'dest/georgezhang/public/js/groupComponent.js',
                     paths: {
                         'jquery': 'empty:',
                         'autosize': 'empty:',
@@ -65,7 +65,7 @@ module.exports = function(grunt) {
                     sourceMap: true,
                 },
                 files: {
-                    'build/mainnote.min.js': ['build/mainnote.js'],
+                    'build/groupComponent.min.js': ['build/groupComponent.js'],
                 }
             },
 
@@ -78,7 +78,7 @@ module.exports = function(grunt) {
             target: {
                 files: [{
                     src: ['dest/georgezhang/public/css/*.css'],
-                    dest: 'build/mainnote.min.css',
+                    dest: 'build/groupComponent.min.css',
                 }],
 
             },
