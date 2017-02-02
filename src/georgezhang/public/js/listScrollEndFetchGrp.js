@@ -1,15 +1,15 @@
-define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function ($, OptGrp, ListItemGrp, CollectionGrp, Fetcher) {
+define(['jquery', 'optGrp', 'listItemGrp', 'collectionRequestGrp', 'fetcher'], function ($, OptGrp, ListItemGrp, CollectionRequestGrp, Fetcher) {
     var ListScrollEndFetchGrp = OptGrp.create('ListScrollEndFetchGrp');
     var listItemGrp = ListItemGrp.create('listItemGrp');
-    var collectionGrp = CollectionGrp.create('collectionGrp');
+    var collectionRequestGrp = CollectionRequestGrp.create('collectionRequestGrp');
     var fetcher = Fetcher.create('fetcher');
-    ListScrollEndFetchGrp.join(listItemGrp, collectionGrp, fetcher);
+    ListScrollEndFetchGrp.join(listItemGrp, collectionRequestGrp, fetcher);
 
     ListScrollEndFetchGrp.extend({
         reset: function (opt) {
             this.call('fetcher', 'stop');
             this.call('listItemGrp', 'reset');
-            this.call('collectionGrp', 'reset');
+            this.call('collectionRequestGrp', 'reset');
             this.set(opt);
         },
         getUrl: function () {}, //to be overriden
@@ -58,7 +58,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
                         setNext(nextResult);
                         //rendering list next time
                         var opt_next = {
-                            list_data: thatGrp.call('collectionGrp', 'addExtra', {
+                            list_entities: thatGrp.call('collectionRequestGrp', 'addExtra', {
                                 values: nextResult.docs
                             }),
                         };
@@ -71,7 +71,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionGrp', 'fetcher'], function
                     //rendering list fisrt time
                     var opt_ = {
                         container: container,
-                        list_data: thatGrp.call('collectionGrp', 'add', {
+                        list_entities: thatGrp.call('collectionRequestGrp', 'add', {
                             values: firstResult.docs
                         }),
                         noListDataInfo: thatGrp.opt.noListDataInfo,

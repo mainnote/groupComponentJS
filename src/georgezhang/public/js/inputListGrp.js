@@ -1,10 +1,10 @@
-define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collectionGrp', 'tpl!templates/item_inputList', 'button', 'formOption'
-	], function ($, OptGrp, InputList, PromptFormGrp, ListItemGrp, CollectionGrp, tpl, Button, FormOption) {
+define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collectionRequestGrp', 'tpl!templates/item_inputList', 'button', 'formOption'
+	], function ($, OptGrp, InputList, PromptFormGrp, ListItemGrp, CollectionRequestGrp, tpl, Button, FormOption) {
     var inputList = InputList.create('inputList');
     var promptFormGrp_Add = PromptFormGrp.create('promptFormGrp_Add');
     var listItemGrp = ListItemGrp.create('listItemGrp');
     var InputListGrp = OptGrp.create('InputListGrp');
-    var collectionGrp = CollectionGrp.create('collectionGrp');
+    var collectionRequestGrp = CollectionRequestGrp.create('collectionRequestGrp');
     var formOption = FormOption.create('formOption');
 
 	InputListGrp.extend({
@@ -13,7 +13,7 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
 		},
 	});
 
-    InputListGrp.join(inputList, promptFormGrp_Add, listItemGrp, collectionGrp, formOption);
+    InputListGrp.join(inputList, promptFormGrp_Add, listItemGrp, collectionRequestGrp, formOption);
 
     //form customization for add
     var form_Add = promptFormGrp_Add.getMember('form');
@@ -81,7 +81,7 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
         }
     });
 
-    //collectionGrp customization
+    //collectionRequestGrp customization
     var collection = InputListGrp.getMember('collection');
     collection.extend({
         defaultOpt: $.extend({}, collection.defaultOpt, {
@@ -188,12 +188,12 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
             });
 
             //setup list items
-            var list_data = this.group.call('collectionGrp', 'add', {
-                values: opt.list_data || this.getInputValue(),
+            var list_entities = this.group.call('collectionRequestGrp', 'add', {
+                values: opt.list_entities || this.getInputValue(),
             });
             var opt_ = {
                 container: this.comp.find('.list_items'),
-                list_data: list_data,
+                list_entities: list_entities,
             };
             this.group.call('listItemGrp', 'render', opt_);
             this.updateInputValue();
@@ -211,7 +211,7 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
         addItem: function (opt) {
             //rendering list next time
             var opt_next = {
-                list_data: this.group.call('collectionGrp', 'addExtra', {
+                list_entities: this.group.call('collectionRequestGrp', 'addExtra', {
                     values: this.group.call('formOption', 'extractForm', opt)
                 }),
             };
@@ -219,7 +219,7 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
             this.updateInputValue();
         },
         updateInputValue: function (opt) {
-            var values = this.group.call('collectionGrp', 'getValues');
+            var values = this.group.call('collectionRequestGrp', 'getValues');
             this.comp.find('input[type="hidden"]').val(encodeURIComponent(JSON.stringify(values)));
         }
     });

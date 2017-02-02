@@ -5,6 +5,7 @@ define(['jquery', 'component', 'tpl!templates/list',
         tpl: tpl,
         init: function () {
             Component.init.call(this);
+			this.collection = null;
             this.items = [];
         },
         reset: function (opt) {
@@ -21,14 +22,24 @@ define(['jquery', 'component', 'tpl!templates/list',
         },
         setup: function (opt) {
             var that = this;
-            if (opt.list_data && $.isArray(opt.list_data) && opt.list_data.length > 0) {
-                $.each(opt.list_data, function (index, data) {
+			this.collection = opt.collection;
+
+			var list_entities;
+			//direct from opt
+			if (opt.list_entities) {
+				list_entities = opt.list_entities;
+			} else {
+				list_entities = opt.collection.getEntities();
+			}
+
+            if (list_entities && $.isArray(list_entities) && list_entities.length > 0) {
+                $.each(list_entities, function (index, data) {
                     var itemGrp = that.group.call('itemGrp', 'create', 'itemGrp'); //member create
                     that.items.push(itemGrp);
                     var opt_ = {
                         list: that,
                         container: that.comp,
-                        item_data: data,
+                        item_entity: data,
                     };
                     var itemComp = itemGrp.render(opt_);
                     return itemComp;

@@ -1,6 +1,10 @@
 # groupComponentJS
 
-*(The main purpose of this library is to demostrate a way to build your own web framework. You should be able to get the idea in 10 minutes. Happy coding :)*
+*(The main purpose of this library is a demostration to build a web framework with [groupJS](https://github.com/mainnote/groupJS). You should be able to get the idea in 10 minutes. Happy coding :)*
+
+## Examples
+<http://groupcomponentjs.s3-website-us-east-1.amazonaws.com>
+
 
 ## Why do we need this library?
 1. A library implements groupJS style programming pattern (*With groupJS, you will be free from javascript prototype inheritance complex*);
@@ -20,10 +24,11 @@ A model is simply a JSON object to provide data feed. It can be wrapped in entit
 
 View is defined in `/templates` folder which uses underscore.js template syntax. It attaches to as `.tpl` .
 
-## Examples
-<http://groupcomponentjs.s3-website-us-east-1.amazonaws.com>
+## Add new example
 
 * create new example `cp -RP <original example path> <new example path>`
+* update static/index.html
+* update example/menu.json
 
 ## build
 *Always check Gruntfile if there is any change*
@@ -45,11 +50,11 @@ View is defined in `/templates` folder which uses underscore.js template syntax.
 ## Components
 
 ### list.js
-1. list_data will hold each item data;
+1. list_entities will hold each item data;
 2. Entity holds information of a single "row"; Item will connect to Entity and show the UI and events; Collection is a manager for entities; List is a manager of Item to lay down the items.
 
 Entity <--------> Item
-  |                |
+  ||               ||
 Collection <----> List
 
 

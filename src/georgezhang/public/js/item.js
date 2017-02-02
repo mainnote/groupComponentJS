@@ -8,7 +8,7 @@ define(['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl
             this.list = null;
         },
         render: function(opt) {
-            this.entity = opt.item_data;
+            this.entity = opt.item_entity;
             this.entity.setItem({
                 item: this
             });

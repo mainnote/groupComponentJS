@@ -218,7 +218,7 @@ define(function (require) {
                 var collectionGrpCmd = CollectionGrp.create('collectionGrpCmd');
                 var opt = {
                     container: testContainer,
-                    list_data: collectionGrpCmd.add({
+                    list_entities: collectionGrpCmd.add({
                         values: ['yes', 'haha']
                     }),
                 };
@@ -443,7 +443,7 @@ define(function (require) {
                 var opt = {
                     container: testContainer,
                     prompt_title: 'Test PromptFormGrp',
-                    list_data: [{
+                    list_entities: [{
                         heading: 'item 1',
                         text: 'this is a long text'
                         }],

@@ -21,6 +21,7 @@ define(['jquery', 'optObj'
                 that.values.push(v);
             }
 
+			//if values is array, add individually; otherwise, add as single entity
             if (opt.values) {
                 if ($.isArray(opt.values)) {
                     $.each(opt.values, function (index, value) {
@@ -32,6 +33,8 @@ define(['jquery', 'optObj'
             }
             return this.values;
         },
+
+		//return the entity back
         addExtra: function (opt) {
             var startIndex = this.values.length;
             this.add(opt);
@@ -42,6 +45,9 @@ define(['jquery', 'optObj'
                 return entity.get();
             });
         },
+		getEntities: function(opt) {
+			return this.values;
+		},
         remove: function (opt) {
             var values = this.values;
             $.each(values, function (i, entity) {

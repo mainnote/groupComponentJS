@@ -1,5 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/button'
-	], function ($, Component, tpl) {
+define(['jquery', 'component', 'tpl!templates/button'], function($, Component, tpl) {
     var Button = Component.create('Button');
     Button.extend({
         tpl: tpl,
@@ -9,14 +8,14 @@ define(['jquery', 'component', 'tpl!templates/button'
             button_type: 'button',
             button_class: 'btn-sm btn-primary'
         },
-        setup: function (opt) {
+        setup: function(opt) {
             if (opt && opt.form && opt.button_type === 'submit') {
-                this.comp.on('click', function (e) {
+                this.comp.on('click', function(e) {
                     e.preventDefault();
                     opt.form.submit();
                 });
             }
-						return this.comp;
+            return this.comp;
         }
     });
 

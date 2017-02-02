@@ -159,12 +159,18 @@ module.exports = function(grunt) {
                         expand: true,
                         cwd: 'src/',
                         src: ['**'],
-                        dest: 'src/'
+                        dest: 'src/',
+                        params: {
+                            CacheControl: 'max-age=21600'
+                        },
                     }, {
                             expand: true,
                             cwd: 'static/',
                             src: ['index.html'],
-                            dest: '/'
+                            dest: '/',
+                            params: {
+                                CacheControl: 'max-age=21600'
+                            },
                         }
                 ]
             },

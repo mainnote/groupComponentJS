@@ -26,7 +26,7 @@ define(['jquery', 'optGrp', 'input', 'entity', 'item'], function($, OptGrp, Inpu
 
             var thisEntity = this.getMember('entity');
             this.call('item', 'render', $.extend({}, {
-                item_data: thisEntity
+                item_entity: thisEntity
             }, opt));
         },
     });

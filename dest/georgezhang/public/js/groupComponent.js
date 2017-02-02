@@ -627,6 +627,7 @@ define('entity',['jquery', 'optObj'
         init: function () {
             OptObj.init.call(this);
             this.value = null;
+			this.items = []; //items
         },
         update: function (opt) {
             if (opt.hasOwnProperty('value')) {
@@ -635,9 +636,18 @@ define('entity',['jquery', 'optObj'
                 } else {
                     this.value = opt.value;
                 }
+				this.notify({action: 'update'});
             }
             return this;
         },
+		notify: function (opt) {
+			$.each(this.items, function(index, item){
+				item[opt.action]();
+			});
+		},
+		setItem: function(opt){
+			this.items.push(opt.item);
+		},
         get: function (opt) {
             return this.value;
         }
@@ -1087,35 +1097,37 @@ __p+='<li class="list-group-item">'+
 return __p;
 }; });
 
-define('item',['jquery', 'component', 'tpl!templates/item'
-	], function ($, Component, tpl) {
+define('item',['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl) {
     var Item = Component.create('Item');
     Item.extend({
         tpl: tpl,
-        init: function () {
+        init: function() {
             Component.init.call(this);
-            this.entityCmd = null;
+            this.entity = null;
             this.list = null;
         },
-        render: function (opt) {
-            this.entityCmd = opt.item_data;
+        render: function(opt) {
+            this.entity = opt.item_data;
+            this.entity.setItem({
+                item: this
+            });
             this.list = opt.list;
             var opt_ = {
                 container: opt.container,
                 noSetup: opt.noSetup,
-                item_value: this.entityCmd('get'),
+                item_value: this.entity.get(),
             };
             return Component.render.call(this, opt_);
         },
-        getEntityValue: function (opt) {
-            return this.entityCmd('get');
+        getEntityValue: function(opt) {
+            return this.entity.get();
         },
-        removeAsync: function (opt) {
+        removeAsync: function(opt) {
             var that = this;
             var opt_ = {};
             if (opt && opt.data) opt_.data = opt.data;
-            return this.entityCmd('removeAsync', opt_)
-                .then(function (data) {
+            return this.entity.removeAsync(opt_)
+                .then(function(data) {
                     //remove from list
                     that.list.removeItem({
                         itemObj: that
@@ -1127,24 +1139,29 @@ define('item',['jquery', 'component', 'tpl!templates/item'
                     return data;
                 });
         },
-        postAsync: function (opt) {
-            return this.entityCmd('postAsync', opt);
+        postAsync: function(opt) {
+            return this.entity.postAsync(opt);
         },
-        fetchAsync: function (opt) {
+        fetchAsync: function(opt) {
             var that = this;
             this.setOpt(opt);
-            return this.entityCmd('fetchAsync');
+            return this.entity.fetchAsync();
         },
-        update: function (opt) {
+        update: function(opt) {
             //update UI
-            this.updateUI(opt);
-            //update entity
-            this.entityCmd('update', {
-                value: opt.doc || {}
+            this.updateUI({
+                doc: {
+                    item_value: this.entity.get(),
+                },
             });
+
+            //update entity
+            //this.entity.update({
+            //    value: opt.doc || {}
+            //});
         },
-        updateUI: function (opt) {
-            this.comp.html(opt.doc);
+        updateUI: function(opt) {
+            this.comp.html(opt.doc.item_value);
         }
     });
 
