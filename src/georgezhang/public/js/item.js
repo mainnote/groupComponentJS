@@ -23,6 +23,17 @@ define(['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl
         getEntityValue: function(opt) {
             return this.entity.get();
         },
+        deleteEntityValue: function(opt) {
+            this.entity.delete();
+        },
+        delete: function(opt) {
+            //remove from list
+            this.list.removeItem({
+                itemObj: this.group
+            });
+            //destroy itself
+            this.remove();
+        },
         removeAsync: function(opt) {
             var that = this;
             var opt_ = {};
@@ -62,7 +73,10 @@ define(['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl
             //});
         },
         updateUI: function(opt) {
-            this.comp.html(opt.doc.item_value);
+            this.comp.find('.item_value').html(opt.doc.item_value);
+        },
+        updateEntity: function(opt) {
+            this.entity.update(opt);
         }
     });
 

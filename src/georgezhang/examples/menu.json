@@ -13,5 +13,10 @@
         "id": "example03",
         "url": "/src/georgezhang/examples/example03/example.html",
         "html": "example 03 - Synchronize Collection and List"
+    },
+    {
+        "id": "example04",
+        "url": "/src/georgezhang/examples/example04/example.html",
+        "html": "example 04 - Remote Asyncrhonize Loading to List with Custom Item"
     }
 ]

@@ -59,9 +59,13 @@ define(['jquery', 'component', 'tpl!templates/list',
 			return this.comp;
         },
         removeItem: function (opt) {
-            this.items = $.grep(this.items, function (itemObj, idx) {
-                if (opt.itemObj === itemObj) return true;
-            });
+			var items = this.items;
+			$.each(items, function (i, itemObj) {
+				if (itemObj === opt.itemObj) {
+					items.splice(i, 1);
+					return false;
+				}
+			});
         },
         showEmptyList: function (opt) {},
     });

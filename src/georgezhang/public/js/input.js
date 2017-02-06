@@ -59,19 +59,21 @@ define(['jquery', 'component', 'validator', 'tpl!templates/input'], function($, 
             return true; //to be removed
         },
         getResult: function(opt) {
-            var hints = this.comp.find('.hints');
-            if (opt && opt.invalidHints) {
-                this.comp.removeClass('has-success').addClass('has-warning');
-                if (this.inputElem) this.inputElem
-                    .removeClass('form-control-success')
-                    .addClass('form-control-warning');
-                hints.html(opt.invalidHints);
-            } else {
-                this.comp.removeClass('has-warning').addClass('has-success');
-                if (this.inputElem) this.inputElem
-                    .removeClass('form-control-warning')
-                    .addClass('form-control-success');
-                hints.html('');
+            if (this && this.comp) {
+                var hints = this.comp.find('.hints');
+                if (opt && opt.invalidHints) {
+                    this.comp.removeClass('has-success').addClass('has-warning');
+                    if (this.inputElem) this.inputElem
+                        .removeClass('form-control-success')
+                        .addClass('form-control-warning');
+                    hints.html(opt.invalidHints);
+                } else {
+                    this.comp.removeClass('has-warning').addClass('has-success');
+                    if (this.inputElem) this.inputElem
+                        .removeClass('form-control-warning')
+                        .addClass('form-control-success');
+                    hints.html('');
+                }
             }
         },
     });
