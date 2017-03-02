@@ -1,0 +1,10 @@
+<li class="list-group-item">
+    <div class="card" style="width: 20rem;">
+        <img class="card-img-top" src="<%= item_value.snippet.thumbnails.medium.url %>" alt="<%= item_value.snippet.title %>">
+        <div class="card-block">
+            <h4 class="card-title"><%= item_value.snippet.title %></h4>
+            <p class="card-text"><%= item_value.snippet.description %></p>
+            <a href="http://www.youtube.com/watch?v=<%= item_value.id.videoId %>" class="btn btn-primary">Go Youtube</a>
+        </div>
+    </div>
+</li>

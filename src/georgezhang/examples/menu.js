@@ -1,4 +1,4 @@
-define(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navUserItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider', 'text!myApp/menu.json'], function ($, bootstrap, Navbar, NavBrand, NavItem, NavUserItem, NavDropdownItem, DropdownItem, DropdownDivider, menuText) {
+define(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navUserItem', 'navDropdownItem', 'dropdownItem', 'dropdownDivider', 'text!myApp/menu.json'], function($, bootstrap, Navbar, NavBrand, NavItem, NavUserItem, NavDropdownItem, DropdownItem, DropdownDivider, menuText) {
     var navBrand = NavBrand.create('navBrand');
     navBrand.setOpt({
         navBrand_url: '/',
@@ -14,10 +14,12 @@ define(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navUserItem', '
             dropdownItem_url: item.url,
             dropdownItem_html: item.html
         });
-        dropdown_items.push({ elem: example01 });
+        dropdown_items.push({
+            elem: example01
+        });
     }
 
-    $.each(menus, function(i, value){
+    $.each(menus, function(i, value) {
         createMenuItem(value);
     });
 
@@ -34,9 +36,8 @@ define(['jquery', 'bootstrap', 'navbar', 'navBrand', 'navItem', 'navUserItem', '
             elem: navBrand,
         },
         navbar_items: [{
-                elem: pages,
-            }
-        ],
+            elem: pages,
+        }],
     };
     navbarMenu.render(opt);
 });

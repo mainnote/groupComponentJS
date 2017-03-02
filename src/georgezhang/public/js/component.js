@@ -1,12 +1,11 @@
-define(['jquery', 'optObj'
-	], function ($, OptObj) {
+define(['jquery', 'optObj'], function($, OptObj) {
     var Component = OptObj.create('Component');
     Component.extend({
-        template: function (opt) {
+        template: function(opt) {
             return this.tpl ? this.tpl(opt) : '';
         },
-        beforeRender: function (opt) {},
-        render: function (opt) {
+        beforeRender: function(opt) {},
+        render: function(opt) {
             this.setOpt(opt || {});
             this.beforeRender(this.opt);
 
@@ -24,16 +23,16 @@ define(['jquery', 'optObj'
             return this.opt.noSetup ? this.comp : this.setup(opt_);
         },
 
-        setup: function (opt) {
+        setup: function(opt) {
             return this.comp;
         },
-        remove: function (opt) {
+        remove: function(opt) {
             this.comp.remove();
             this.comp = null;
             this.afterRemoved(opt);
         },
-        afterRemoved: function (opt) {},
-        setElements: function (opt) {
+        afterRemoved: function(opt) {},
+        setElements: function(opt) {
             var that = this;
             if (opt.elements && $.isArray(opt.elements)) {
                 for (var i = 0, len = opt.elements.length; i < len; i++) {
@@ -58,7 +57,7 @@ define(['jquery', 'optObj'
                 }
             }
         },
-        addElement: function (opt) {
+        addElement: function(opt) {
             if (!opt.elemOpt) opt.elemOpt = {};
             opt.elemOpt.container = opt.container;
             opt.elemOpt.parent = this;

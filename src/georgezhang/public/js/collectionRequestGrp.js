@@ -1,97 +1,70 @@
- define(['jquery', 'optGrp', 'collection', 'entity', 'request', 'Promise'
-	], function ($, OptGrp, Collection, Entity, Request, Promise) {
-     var CollectionGrp = OptGrp.create('CollectionGrp');
-     var collection = Collection.create('collection');
-     collection.extend({
-         defaultOpt: {
-             remote: true
-         },
-         connectEntityAsync: function (opt) {
-             var that = this;
-             this.setOpt(opt);
-             if (this.defaultOpt.remote) {
-                 var opt_ = {
-                     request_url: opt.resourceUrl || ((this.opt.request_baseUrl || '/') + (opt.entity.value._id || '')),
-                     request_method: opt.connectMethod,
-                 };
+define(['jquery', 'collectionGrp', 'request', 'Promise'], function($, CollectionGrp, Request, Promise) {
+    var CollectionRequestGrp = CollectionGrp.create('CollectionRequestGrp');
+    var request = Request.create('request');
+    CollectionRequestGrp.join(request);
 
-                 if (opt && opt.data) {
-                     opt_.request_data = opt.data;
-                     opt_.request_method = 'POST';
-                 }
-                 return this.group.call('request', 'connectAsync', opt_)
-                     .then(function (data) {
-                         that.update(opt);
-                         return data;
-                     });
+    var collection = CollectionRequestGrp.getMember('collection');
+    var collection_add = collection.add;
+    var collection_remove = collection.remove;
+    var collection_update = collection.update;
+    collection.extend({
+        add: function(opt) {
+            var that = this;
+            that.setOpt(opt);
+            if (opt && opt.url) {
+                return this.remoteGet(opt)
+                    .then(function(values) {
+                        var _opt = {
+                            values: values
+                        };
 
-             } else {
-                 if (opt.connectMethod === 'GET') {
-                     return Promise.resolve(opt.entity.get());
-                 } else {
-                     this.update(opt);
-                     return Promise.resolve();
-                 }
-             }
-         },
-         update: function (opt) {
-             if (opt.connectMethod === 'DELETE' || opt.connectMethod === 'PUT') {
-                 this.remove(opt);
-             }
-         }
-     });
+                        collection_add.call(that, _opt);
+                    });
+                //must return promise
+            } else {
+                throw new TypeError('invalid URL');
+            }
+        },
+        remove: function(opt){
+            var that = this;
+            if (opt && opt.entity) {
+                return this.remoteRemove(opt)
+                    .then(function(values) {
+                        collection_remove.call(that, opt);
+                    });
+                //must return promise
+            } else {
+                throw new TypeError('invalid entity');
+            }
+        },
+        update: function(opt) {
+            var that = this;
+            if (opt && opt.entity) {
+                return this.remoteUpdate(opt)
+                    .then(function(values) {
+                        collection_update.call(that, opt);
+                    });
+                //must return promise
+            } else {
+                throw new TypeError('invalid entity');
+            }
+        },
+        //to be overriden
+        remoteGet: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteGet(opt) must be overriden!');
+            //must return Promise
+        },
+        //to be overriden
+        remoteRemove: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteRemove(opt) must be overriden!');
+            //must return Promise
+        },
+        //to be overriden
+        remoteUpdate: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteUpdate(opt) must be overriden!');
+            //must return Promise
+        }
+    });
 
-     var entity = Entity.create('entity');
-     entity.extend({
-         removeAsync: function (opt) {
-             //back to collection to remove this entity
-             var opt_ = {
-                 connectMethod: 'DELETE',
-                 entity: this,
-             };
-
-             if (opt && opt.data) opt_.data = opt.data;
-             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
-
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-
-         },
-         fetchAsync: function (opt) {
-             var opt_ = {
-                 connectMethod: 'GET',
-                 entity: this,
-             };
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-         },
-         errorAsync: function (opt) {
-             //back to collection to remove this entity
-             var opt_ = {
-                 connectMethod: 'PUT',
-                 entity: this,
-             };
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-         },
-         postAsync: function (opt) {
-             var opt_ = {
-                 connectMethod: 'POST',
-                 entity: this,
-             };
-
-             if (opt && opt.data) opt_.data = opt.data;
-             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
-
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-         },
-     });
-
-     var request = Request.create('request');
-     CollectionGrp.extend({
-         render: function(opt){
-             this.call('collection', 'render', opt);
-         },
-     });
-
-     CollectionGrp.join(collection, entity, request);
-
-     return CollectionGrp;
- });
+    return CollectionRequestGrp;
+});

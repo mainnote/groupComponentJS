@@ -1,14 +1,13 @@
-define(['jquery', 'component', 'tpl!templates/list',
-	], function ($, Component, tpl) {
+define(['jquery', 'component', 'tpl!templates/list', ], function($, Component, tpl) {
     var List = Component.create('List');
     List.extend({
         tpl: tpl,
-        init: function () {
+        init: function() {
             Component.init.call(this);
-			this.collection = null;
+            this.collection = null;
             this.items = [];
         },
-        reset: function (opt) {
+        reset: function(opt) {
             //make the original frame firm by setting min-height and width
             if (this.comp && this.comp.css) {
                 this.comp.css({
@@ -20,20 +19,20 @@ define(['jquery', 'component', 'tpl!templates/list',
 
             this.items = [];
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
-			this.collection = opt.collection;
+            this.collection = opt.collection;
 
-			var list_entities;
-			//direct from opt
-			if (opt.list_entities) {
-				list_entities = opt.list_entities;
-			} else {
-				list_entities = opt.collection.getEntities();
-			}
+            var list_entities;
+            //direct from opt
+            if (opt.list_entities) {
+                list_entities = opt.list_entities;
+            } else {
+                list_entities = opt.collection.getEntities();
+            }
 
             if (list_entities && $.isArray(list_entities) && list_entities.length > 0) {
-                $.each(list_entities, function (index, data) {
+                $.each(list_entities, function(index, data) {
                     var itemGrp = that.group.call('itemGrp', 'create', 'itemGrp'); //member create
                     that.items.push(itemGrp);
                     var opt_ = {
@@ -56,18 +55,18 @@ define(['jquery', 'component', 'tpl!templates/list',
                 this.showEmptyList(opt);
             }
 
-			return this.comp;
+            return this.comp;
         },
-        removeItem: function (opt) {
-			var items = this.items;
-			$.each(items, function (i, itemObj) {
-				if (itemObj === opt.itemObj) {
-					items.splice(i, 1);
-					return false;
-				}
-			});
+        removeItem: function(opt) {
+            var items = this.items;
+            $.each(items, function(i, itemObj) {
+                if (itemObj === opt.itemObj) {
+                    items.splice(i, 1);
+                    return false;
+                }
+            });
         },
-        showEmptyList: function (opt) {},
+        showEmptyList: function(opt) {},
     });
 
     return List;

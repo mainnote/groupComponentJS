@@ -1,5 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/textarea', 'autosize'
-	], function ($, Component, tpl, autosize) {
+define(['jquery', 'component', 'tpl!templates/textarea', 'autosize'], function($, Component, tpl, autosize) {
     var Textarea = Component.create('Textarea');
     Textarea.extend({
         tpl: tpl,
@@ -8,9 +7,14 @@ define(['jquery', 'component', 'tpl!templates/textarea', 'autosize'
             textarea_value: '',
             textarea_placeholder: '',
             textarea_class: '',
+            textarea_autoResize: false
         },
-        setup: function (opt) {
-            autosize(this.comp);
+        setup: function(opt) {
+            this.setOpt(opt);
+            if (this.opt.textarea_autoResize) {
+                autosize(this.comp);
+            }
+
             return this.comp;
         },
     });

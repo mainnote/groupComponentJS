@@ -15,3 +15,8 @@ li.list-group-item div.form-group {
     top: 5px;
     right: 5px;
 }
+button.button_add {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    width: 60%
+}

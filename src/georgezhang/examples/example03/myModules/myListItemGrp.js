@@ -70,7 +70,7 @@ define(['jquery', 'listItemGrp', 'input', 'button'], function($, ListItemGrp, In
                     elem: btn
                 }],
             });
-        },
+        }
     });
 
     return MyListItemGrp;

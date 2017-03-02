@@ -1,5 +1,4 @@
-define(['jquery', 'component', 'tpl!templates/form'
-	], function ($, Component, tpl) {
+define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl) {
     var Form = Component.create('Form');
     Form.extend({
         tpl: tpl,
@@ -7,12 +6,12 @@ define(['jquery', 'component', 'tpl!templates/form'
             form_action: '/',
             form_method: 'GET'
         },
-        init: function () {
+        init: function() {
             Component.init.call(this);
             this.submitting = false;
             this.components = [];
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
             //build fieldset from JSON
             if (opt.form_elements && $.isArray(opt.form_elements)) {
@@ -41,7 +40,7 @@ define(['jquery', 'component', 'tpl!templates/form'
             }
             return this.comp;
         },
-        submit: function (opt) {
+        submit: function(opt) {
             if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var id;
@@ -54,21 +53,21 @@ define(['jquery', 'component', 'tpl!templates/form'
                     url: action,
                     data: data,
                     context: this,
-                    done: function (data) {
+                    done: function(data) {
                         var opt_ = {
                             data: data,
                         };
                         this.done(opt_);
                     },
-                    always: function () {
+                    always: function() {
                         this.always();
                     },
                 });
             }
         },
-        checkValid: function (opt) {
+        checkValid: function(opt) {
             var validFlag = true;
-            $.each(this.components, function (index, cmd) {
+            $.each(this.components, function(index, cmd) {
                 if ('checkValid' in cmd('thisObj')) {
                     var result = cmd('checkValid'); //valid?
                     if (!result) validFlag = false;
@@ -76,11 +75,11 @@ define(['jquery', 'component', 'tpl!templates/form'
             });
             return validFlag;
         },
-        done: function (opt) {},
-        always: function (opt) {
+        done: function(opt) {},
+        always: function(opt) {
             this.submitting = false;
         },
-        add: function (opt) {
+        add: function(opt) {
             this.components.push(opt.comp);
             var opt_ = $.extend({
                 container: this.comp.find('fieldset'),
@@ -88,9 +87,9 @@ define(['jquery', 'component', 'tpl!templates/form'
             }, opt.compOpt);
             opt.comp.render(opt_);
         },
-        find: function (opt) {
+        find: function(opt) {
             var subComp;
-            $.each(this.components, function (i, comp) {
+            $.each(this.components, function(i, comp) {
                 if (comp.name === opt.name) {
                     subComp = comp;
                     return false;
@@ -98,11 +97,11 @@ define(['jquery', 'component', 'tpl!templates/form'
             });
             return subComp;
         },
-        serialize: function (opt) {
+        serialize: function(opt) {
             return this.comp.serialize();
         },
 
-        serializeArray: function (opt) {
+        serializeArray: function(opt) {
             return this.comp.serializeArray();
         },
 

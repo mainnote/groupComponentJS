@@ -1,14 +1,17 @@
-define(['jquery', 'optGrp', 'form', 'request', 'error'
-	], function ($, OptGrp, Form, Request, Error) {
+define(['jquery', 'optGrp', 'form', 'request', 'errorList'], function($, OptGrp, Form, Request, ErrorList) {
     var FormGrp = OptGrp.create('FormGrp');
     var form = Form.create('form');
+    var request = Request.create('request');
+    var errorList = ErrorList.create('errorList');
+
+
     var form_checkValid = form.checkValid;
     form.extend({
-        submit: function (opt) {
+        submit: function(opt) {
             if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var that = this;
-                this.comp.find('.error').each(function (index) {
+                this.comp.find('.error').each(function(index) {
                     $(this).remove();
                 });
                 var id;
@@ -23,24 +26,24 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
                     request_data: inputData,
                 };
                 return this.group.call('request', 'connectAsync', opt_)
-                    .then(function (data) {
+                    .then(function(data) {
                         var opt0 = {
                             data: data
                         };
 
                         return that.done(opt0);
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         return that.error({
                             error: err,
                         });
                     })
-                    .finally(function () {
+                    .finally(function() {
                         return that.always();
                     });
             }
         },
-        checkValid: function (opt) {
+        checkValid: function(opt) {
             var validFlag = form_checkValid.call(this, opt);
             if (validFlag) {
                 return true;
@@ -50,12 +53,14 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
                 });
             }
         },
-        error: function (opt) {
+        error: function(opt) {
             if ($.isPlainObject(opt.error)) {
-                var error = Error.create('error');
-                error.render($.extend(opt.error, {
-                    container: $('<div class="error"></div>').appendTo(this.comp)
-                }));
+                var errorList = this.group.getMember('errorList');
+                var form_error = errorList.create();
+                form_error
+                    .render($.extend(opt.error, {
+                        container: $('<div class="error"></div>').appendTo(this.comp)
+                    }));
             } else {
                 this.comp.append('<div class="error">' + opt.error + '</div>');
             }
@@ -63,13 +68,12 @@ define(['jquery', 'optGrp', 'form', 'request', 'error'
 
     });
 
-    var request = Request.create('request');
-	FormGrp.extend({
-		render: function(opt) {
-			this.call('form', 'render', opt);
-		}
-	});
-    FormGrp.join(form, request);
+    FormGrp.join(form, request, errorList);
+    FormGrp.extend({
+        set: function(opt) {
+            this.call('form', 'render', opt);
+        }
+    });
 
     return FormGrp;
 });

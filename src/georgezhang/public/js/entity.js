@@ -6,12 +6,28 @@ define(['jquery', 'optObj'], function($, OptObj) {
             this.value = null;
             this.items = []; //items
         },
+        add: function(opt) {
+            if (opt.hasOwnProperty('value')) {
+                if ($.isPlainObject(opt.value)) {
+                    this.value = $.extend({}, this.value || {}, opt.value);
+                } else {
+                    this.value = opt.value;
+                }
+            }
+            return this;
+        },
         update: function(opt) {
             if (opt.hasOwnProperty('value')) {
                 if ($.isPlainObject(opt.value)) {
                     this.value = $.extend({}, this.value || {}, opt.value);
                 } else {
                     this.value = opt.value;
+                }
+                //inform collection
+                if (this.group) {
+                    this.group.call('collection', 'update', {
+                        entity: this
+                    });
                 }
                 this.notify({
                     action: 'update'
@@ -31,6 +47,7 @@ define(['jquery', 'optObj'], function($, OptObj) {
             return this.value;
         },
         delete: function(opt) {
+            //inform collection
             if (this.group) {
                 this.group.call('collection', 'remove', {
                     entity: this

@@ -1,25 +1,41 @@
+require.config({
+    paths: {
+        'mockjax': '../../jquery.mockjax'
+    },
+    shim: {
+        'mockjax': {
+            'deps': ['jquery']
+        }
+    }
+});
+
 //start entry of this eample
-define(['jquery', 'myApp/myModules/myCollectionListGrp'], function($, MyCollectionListGrp) {
+define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], function($, MyCollectionListGrp, Request, m) {
     //title -- update your title
     $('#title').text('groupComponent.js Example 04');
     $('#title').attr('data-id', 'myCollectionListGrp');
     //Introduction -- update your Introduction
-    $('.demo_section').prepend('<h2>Remote Asyncrhonize Loading to List with Custom Item</h2><i>Scroll to end</i>');
+    $('.demo_section').prepend('<h2>Remote Asyncrhonize Loading to List with Custom Item</h2><i>Try edit text</i>');
 
     //file list -- update you list
     var list = [{
             name: 'myCollectionListGrp.js',
             src: 'myModules/myCollectionListGrp.js',
             type: 'javascript'
-        },{
-                name: 'myListItemGrp.js',
-                src: 'myModules/myListItemGrp.js',
-                type: 'javascript'
-            },
+        }, {
+            name: 'myListItemGrp.js',
+            src: 'myModules/myListItemGrp.js',
+            type: 'javascript'
+        },
         {
             name: 'example.js',
             src: 'example.js',
             type: 'javascript'
+        },
+        {
+            name: 'myItem.html',
+            src: 'myTemplates/myItem.html',
+            type: 'htmlmixed'
         },
         {
             name: 'example.html',
@@ -43,6 +59,29 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp'], function($, MyCollecti
     $('#file_list').append(html.join(''));
 
     //example code -- apply your own example code
+    //mock delete entity
+    $.mockjax({
+      url: '/vevo/?videoId=*',
+      type: 'delete',
+      dataType: 'json',
+      responseTime: 100,
+      responseText: {
+        status: 'success',
+      }
+    });
+    //mock update entity
+    $.mockjax({
+      url: '/vevo/?videoId=*',
+      type: 'put',
+      dataType: 'json',
+      responseTime: 100,
+      responseText: {
+        status: 'success',
+      }
+    });
+
+
+    //mack REST APIs
     console.log('Start example now');
     //add layout
     $('#demo_sample').append('<div class="container"><div class="row"><div id="leftSide" class="col col-6"></div><div id="rightSide" class="col col-6"></div></div></div>');
@@ -50,6 +89,7 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp'], function($, MyCollecti
     var myCollectionListGrp = MyCollectionListGrp.create('myCollectionListGrp');
     myCollectionListGrp.setup({
         container: $('#demo_sample'),
-        values: ['Apple', 'Orange', 'Banana', 'Pineapple', 'Grape'],
+        url: '/src/georgezhang/examples/media/data/vevo.json',
+        entity_url: '/vevo/'
     });
 });

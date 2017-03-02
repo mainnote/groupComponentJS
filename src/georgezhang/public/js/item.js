@@ -66,13 +66,12 @@ define(['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl
                     item_value: this.entity.get(),
                 },
             });
-
-            //update entity
-            //this.entity.update({
-            //    value: opt.doc || {}
-            //});
         },
+        /* consider an item may have heavy UI. I try not to render it again. So, you have to decide which part might be changed during update. e.g. title, description etc. */
         updateUI: function(opt) {
+            if (opt && opt.doc && opt.doc.item_value && typeof opt.doc.item_value == 'object') {
+                throw new TypeError('Method item.updateUI have to be overriden for object value.');
+            }
             this.comp.find('.item_value').html(opt.doc.item_value);
         },
         updateEntity: function(opt) {

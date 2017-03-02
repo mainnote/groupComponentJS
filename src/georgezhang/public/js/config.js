@@ -1,7 +1,7 @@
 require.config({
     baseUrl: 'public/js/',
     paths: {
-        'jquery': '//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min',
+        'jquery': '//cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery',
         'tpl': '../../build/tpl',
         'autosize': '//cdnjs.cloudflare.com/ajax/libs/autosize.js/3.0.8/autosize.min',
         'bootstrap': '//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min',
@@ -22,16 +22,16 @@ require.config({
     },
     shim: {
         'bootstrap': {
-            "deps": ['jquery']
+            'deps': ['jquery']
         },
         'notify': {
-            "deps": ['jquery']
+            'deps': ['jquery']
         },
         'bootstrap-switch': {
-            "deps": ['bootstrap']
+            'deps': ['bootstrap']
         },
         'bootstrap-tagsinput': {
-            "deps": ['bootstrap']
+            'deps': ['bootstrap']
         },
         underscore: {
             exports: '_'
@@ -41,7 +41,7 @@ require.config({
         },
         typeahead: {
             deps: ['jquery'],
-            init: function ($) {
+            init: function($) {
                 return require.s.contexts._.registry['typeahead.js'].factory($);
             }
         },
