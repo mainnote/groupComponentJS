@@ -21,7 +21,7 @@ define(['jquery', 'optGrp', 'input', 'entity', 'item'], function($, OptGrp, Inpu
     var MyInputItemGrp = OptGrp.create('MyInputItemGrp');
     MyInputItemGrp.join(input, entity, item);
     MyInputItemGrp.extend({
-        setup: function(opt) {
+        set: function(opt) {
             this.call('input', 'render', opt);
 
             var thisEntity = this.getMember('entity');

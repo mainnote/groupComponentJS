@@ -18,5 +18,8 @@ li.list-group-item div.form-group {
 button.button_add {
     margin-top: 16px;
     margin-bottom: 16px;
-    width: 60%
+    width: 30%
+}
+.add_item {
+    text-align: right;
 }

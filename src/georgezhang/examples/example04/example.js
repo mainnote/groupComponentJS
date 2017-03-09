@@ -87,7 +87,7 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], 
     $('#demo_sample').append('<div class="container"><div class="row"><div id="leftSide" class="col col-6"></div><div id="rightSide" class="col col-6"></div></div></div>');
 
     var myCollectionListGrp = MyCollectionListGrp.create('myCollectionListGrp');
-    myCollectionListGrp.setup({
+    myCollectionListGrp.set({
         container: $('#demo_sample'),
         url: '/src/georgezhang/examples/media/data/vevo.json',
         entity_url: '/vevo/'

@@ -82,7 +82,7 @@ define(['jquery', 'optGrp', 'input', 'button', './myList'],
         //create an instance of a group
         var TodolistGrp = OptGrp.create('TodolistGrp');
         TodolistGrp.extend({
-            setup: function(opt) {
+            set: function(opt) {
                 this.call('input_item', 'render', opt);
                 this.call('button_add', 'render', opt);
                 this.call('myList', 'render', opt);

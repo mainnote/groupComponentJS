@@ -41,7 +41,7 @@ define(['jquery', 'myApp/myModules/myInputItemGrp'], function($, MyInputItemGrp)
     //example code -- apply your own example code
     console.log('Start example now');
     var myInputItemGrp = MyInputItemGrp.create('myInputItemGrp');
-    myInputItemGrp.setup({
+    myInputItemGrp.set({
         container: $('#demo_sample'),
         input_placeholder: 'Type something here!'
     });

@@ -3,7 +3,7 @@ define(['jquery', 'optGrp', 'list', 'itemGrp'], function($, OptGrp, List, ItemGr
     var list = List.create('list');
     var itemGrp = ItemGrp.create('itemGrp');
     ListItemGrp.extend({
-        render: function(opt) {
+        set: function(opt) {
             this.call('list', 'render', opt);
         },
     });

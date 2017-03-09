@@ -4,7 +4,7 @@ define(['jquery', 'component', 'tpl!templates/list', ], function($, Component, t
         tpl: tpl,
         init: function() {
             Component.init.call(this);
-            this.collection = null;
+            this.collectionGrp = null;
             this.items = [];
         },
         reset: function(opt) {
@@ -21,14 +21,16 @@ define(['jquery', 'component', 'tpl!templates/list', ], function($, Component, t
         },
         setup: function(opt) {
             var that = this;
-            this.collection = opt.collection;
+            if (!this.collectionGrp)
+                this.collectionGrp = opt.collectionGrp;
 
             var list_entities;
             //direct from opt
             if (opt.list_entities) {
                 list_entities = opt.list_entities;
             } else {
-                list_entities = opt.collection.getEntities();
+                var collection = opt.collectionGrp.getMember('collection');
+                list_entities = collection.getEntities();
             }
 
             if (list_entities && $.isArray(list_entities) && list_entities.length > 0) {

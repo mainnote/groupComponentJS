@@ -67,9 +67,9 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
         },
         checkValid: function(opt) {
             var validFlag = true;
-            $.each(this.components, function(index, cmd) {
-                if ('checkValid' in cmd('thisObj')) {
-                    var result = cmd('checkValid'); //valid?
+            $.each(this.components, function(index, component) {
+                if ('checkValid' in component) {
+                    var result = component.checkValid(); //valid?
                     if (!result) validFlag = false;
                 }
             });
@@ -90,7 +90,7 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
         find: function(opt) {
             var subComp;
             $.each(this.components, function(i, comp) {
-                if (comp.name === opt.name) {
+                if (comp._id === opt._id) {
                     subComp = comp;
                     return false;
                 }

@@ -45,10 +45,10 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp'], function($, MyCollecti
     //example code -- apply your own example code
     console.log('Start example now');
     //add layout
-    $('#demo_sample').append('<div class="container"><div class="row"><div id="leftSide" class="col col-6"></div><div id="rightSide" class="col col-6"></div></div></div>');
+    $('#demo_sample').append('<div class="container"><div class="add_item"></div><div class="row"><div id="leftSide" class="col col-6"></div><div id="rightSide" class="col col-6"></div></div></div>');
 
     var myCollectionListGrp = MyCollectionListGrp.create('myCollectionListGrp');
-    myCollectionListGrp.setup({
+    myCollectionListGrp.set({
         container: $('#demo_sample'),
         values: ['Apple', 'Orange', 'Banana', 'Pineapple', 'Grape'],
     });

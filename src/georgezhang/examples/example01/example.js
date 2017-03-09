@@ -51,7 +51,7 @@ define(['jquery', 'myApp/myModules/todolistGrp'], function($, TodolistGrp) {
     //example code
     console.log('Start example now');
     var todolistGrp = TodolistGrp.create('todolistGrp');
-    todolistGrp.setup({
+    todolistGrp.set({
         container: $('#demo_sample'),
         button_name: 'Add',
     });

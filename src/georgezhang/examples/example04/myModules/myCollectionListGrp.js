@@ -57,17 +57,18 @@ define(['jquery', 'optGrp', 'collectionRequestGrp', 'myApp/myModules/myListItemG
 
     //setup layout
     MyCollectionListGrp.extend({
-        setup: function(opt) {
+        set: function(opt) {
             var that = this;
-            that.call('collectionRequestGrp', 'add', opt)
+            var collection = this.getMember('collection');
+            collection.add(opt)
                 .then(function() {
-                    that.call('listItemGrp_left', 'render', $.extend({}, opt, {
+                    that.call('listItemGrp_left', 'set', $.extend({}, opt, {
                         container: opt.container.find('#leftSide'),
-                        collection: that.getMember('collectionRequestGrp')
+                        collectionGrp: that.getMember('collectionRequestGrp')
                     }));
-                    that.call('listItemGrp_right', 'render', $.extend({}, opt, {
+                    that.call('listItemGrp_right', 'set', $.extend({}, opt, {
                         container: opt.container.find('#rightSide'),
-                        collection: that.getMember('collectionRequestGrp')
+                        collectionGrp: that.getMember('collectionRequestGrp')
                     }));
                 })
                 .catch(function(err){

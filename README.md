@@ -46,11 +46,13 @@ View is defined in `/templates` folder which uses underscore.js template syntax.
 1. Always `setOpt(opt)`
 2. `this.elem` will be presented the jQuery object template elements.
 3. Only constant attributes/variable can be defined on object structure. attributes/variable must define in `init()` method like `this.myVar = null;`
+4. minimum code in each group
+5. prefer getMember(), upCall(), downCall() to self(), .group.group .......
 
 ## Components
 
 ### list.js
-1. list_entities will hold each item data;
+1. list_entities or collectionGrp will hold each item data;
 2. Entity holds information of a single "row"; Item will connect to Entity and show the UI and events; Collection is a manager for entities; List is a manager of Item to lay down the items.
 
 Entity <--------> Item

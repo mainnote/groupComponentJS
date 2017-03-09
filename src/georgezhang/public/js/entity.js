@@ -24,7 +24,7 @@ define(['jquery', 'optObj'], function($, OptObj) {
                     this.value = opt.value;
                 }
                 //inform collection
-                if (this.group) {
+                if (this.group && this.group.getMember('collection')) {
                     this.group.call('collection', 'update', {
                         entity: this
                     });

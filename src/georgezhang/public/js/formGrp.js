@@ -25,7 +25,7 @@ define(['jquery', 'optGrp', 'form', 'request', 'errorList'], function($, OptGrp,
                     request_method: method,
                     request_data: inputData,
                 };
-                return this.group.call('request', 'connectAsync', opt_)
+                return this.group.call('request', 'connect', opt_)
                     .then(function(data) {
                         var opt0 = {
                             data: data
