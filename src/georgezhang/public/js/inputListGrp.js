@@ -184,7 +184,7 @@ define(['jquery', 'optGrp', 'inputList', 'promptFormGrp', 'listItemGrp', 'collec
                     container: $('#mnbody'),
                 });
                 var prompt_form = (that.group.call('promptFormGrp_Add', 'create'));
-                prompt_form.render(opt_)
+                prompt_form.render(opt_);
             });
 
             //setup list items

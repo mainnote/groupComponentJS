@@ -1,8 +1,6 @@
-li.list-group-item {
-    /*height: 50px;*/
-}
-
-li.list-group-item div.form-group, textarea.form-control {
+li.list-group-item div.form-group
+, #leftSide textarea.form-control
+, #rightSide textarea.form-control {
     position: absolute;
     left: 0;
     top: 0;
@@ -21,4 +19,12 @@ h4.card-title {
 }
 p.card-text{
     position: relative;
+}
+button.button_add {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    width: 30%
+}
+.add_item {
+    text-align: right;
 }

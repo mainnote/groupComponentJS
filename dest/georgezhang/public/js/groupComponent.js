@@ -123,6 +123,9 @@ var obj = {
             return false;
         }
     },
+    self: function(){
+        return this;
+    }
 };
 
 var __NOTFOUND__ = '__NOTFOUND__';
@@ -368,60 +371,38 @@ return Grp;
 
 }));
 
-define('opt',['jquery', 'Promise'
-	], function ($) {
+define('opt',['jquery', 'Promise'], function($) {
     return {
         opt: {}, //should not be overriden
         defaultOpt: {},
-        reservedAttr: ['opt', 'defaultOpt', 'init', 'setOpt', 'set', 'setAsync', 'convertPromise', 'promisable'],
-        init: function () {},
-        setOpt: function (opt) {
+        reservedAttr: ['opt', 'defaultOpt', 'init', 'setOpt', 'set'],
+        init: function() {},
+        setOpt: function(opt) {
             if (opt) this.opt = $.extend({}, this.defaultOpt, this.opt, opt);
-        },
-        setAsync: function () {
-            if (this.promisable.length > 0) {
-                var that = this;
-                _.each(this.promisable, function (methodName) {
-                    that[methodName + 'Async'] = that.convertPromise(methodName);
-                });
-            }
-            return this;
-        },
-        convertPromise: function (methodName) {
-            return function (opt) {
-                var that = this;
-                if (!opt) opt = {};
-                return Promise.fromCallback(function (callback) {
-                    opt.callback = callback;
-                    return that[methodName](opt);
-                });
-            };
-        },
+        }
     };
 });
 
-define('optObj',['jquery', 'group', 'opt'
-	], function ($, Grp, Opt) {
+define('optObj',['jquery', 'group', 'opt'], function($, Grp, Opt) {
     var OptObj = Grp.obj.create('OptObj');
     OptObj.extend(Opt);
     return OptObj;
 });
 
-define('optGrp',['jquery', 'group', 'opt'
-	], function ($, Grp, Opt) {
+define('optGrp',['jquery', 'group', 'opt'], function($, Grp, Opt) {
     var OptGrp = Grp.group.create('OptGrp');
     OptGrp.extend(Opt);
     return OptGrp;
 });
-define('component',['jquery', 'optObj'
-	], function ($, OptObj) {
+
+define('component',['jquery', 'optObj'], function($, OptObj) {
     var Component = OptObj.create('Component');
     Component.extend({
-        template: function (opt) {
+        template: function(opt) {
             return this.tpl ? this.tpl(opt) : '';
         },
-        beforeRender: function (opt) {},
-        render: function (opt) {
+        beforeRender: function(opt) {},
+        render: function(opt) {
             this.setOpt(opt || {});
             this.beforeRender(this.opt);
 
@@ -439,16 +420,16 @@ define('component',['jquery', 'optObj'
             return this.opt.noSetup ? this.comp : this.setup(opt_);
         },
 
-        setup: function (opt) {
+        setup: function(opt) {
             return this.comp;
         },
-        remove: function (opt) {
+        remove: function(opt) {
             this.comp.remove();
             this.comp = null;
             this.afterRemoved(opt);
         },
-        afterRemoved: function (opt) {},
-        setElements: function (opt) {
+        afterRemoved: function(opt) {},
+        setElements: function(opt) {
             var that = this;
             if (opt.elements && $.isArray(opt.elements)) {
                 for (var i = 0, len = opt.elements.length; i < len; i++) {
@@ -473,7 +454,7 @@ define('component',['jquery', 'optObj'
                 }
             }
         },
-        addElement: function (opt) {
+        addElement: function(opt) {
             if (!opt.elemOpt) opt.elemOpt = {};
             opt.elemOpt.container = opt.container;
             opt.elemOpt.parent = this;
@@ -628,12 +609,28 @@ define('entity',['jquery', 'optObj'], function($, OptObj) {
             this.value = null;
             this.items = []; //items
         },
+        add: function(opt) {
+            if (opt.hasOwnProperty('value')) {
+                if ($.isPlainObject(opt.value)) {
+                    this.value = $.extend({}, this.value || {}, opt.value);
+                } else {
+                    this.value = opt.value;
+                }
+            }
+            return this;
+        },
         update: function(opt) {
             if (opt.hasOwnProperty('value')) {
                 if ($.isPlainObject(opt.value)) {
                     this.value = $.extend({}, this.value || {}, opt.value);
                 } else {
                     this.value = opt.value;
+                }
+                //inform collection
+                if (this.group && this.group.getMember('collection')) {
+                    this.group.call('collection', 'update', {
+                        entity: this
+                    });
                 }
                 this.notify({
                     action: 'update'
@@ -653,6 +650,7 @@ define('entity',['jquery', 'optObj'], function($, OptObj) {
             return this.value;
         },
         delete: function(opt) {
+            //inform collection
             if (this.group) {
                 this.group.call('collection', 'remove', {
                     entity: this
@@ -667,18 +665,17 @@ define('entity',['jquery', 'optObj'], function($, OptObj) {
     return Entity;
 });
 
-define('collection',['jquery', 'optObj'
-	], function ($, OptObj) {
+define('collection',['jquery', 'optObj'], function($, OptObj) {
     var Collection = OptObj.create('Collection');
     Collection.extend({
-        init: function () {
+        init: function() {
             OptObj.init.call(this);
             this.values = [];
         },
-        reset: function (opt) {
+        reset: function(opt) {
             this.values = [];
         },
-        add: function (opt) {
+        add: function(opt) {
             var that = this;
 
             function addValue(value) {
@@ -686,14 +683,14 @@ define('collection',['jquery', 'optObj'
                 var opt_ = {
                     value: value,
                 };
-                var v = entity.update(opt_);
+                var v = entity.add(opt_);
                 that.values.push(v);
             }
 
-			//if values is array, add individually; otherwise, add as single entity
+            //if values is array, add individually; otherwise, add as single entity
             if (opt.values) {
                 if ($.isArray(opt.values)) {
-                    $.each(opt.values, function (index, value) {
+                    $.each(opt.values, function(index, value) {
                         addValue(value);
                     });
                 } else {
@@ -703,23 +700,24 @@ define('collection',['jquery', 'optObj'
             return this.values;
         },
 
-		//return the entity back
-        addExtra: function (opt) {
+        //return the entity back
+        addExtra: function(opt) {
             var startIndex = this.values.length;
             this.add(opt);
             return this.values.slice(startIndex);
         },
-        getValues: function (opt) {
-            return $.map(this.values, function (entity, i) {
+        getValues: function(opt) {
+            return $.map(this.values, function(entity, i) {
                 return entity.get();
             });
         },
-		getEntities: function(opt) {
-			return this.values;
-		},
-        remove: function (opt) {
+        getEntities: function(opt) {
+            return this.values;
+        },
+        update: function(opt) {},
+        remove: function(opt) {
             var values = this.values;
-            $.each(values, function (i, entity) {
+            $.each(values, function(i, entity) {
                 if (entity === opt.entity) {
                     values.splice(i, 1);
                     return false;
@@ -731,21 +729,12 @@ define('collection',['jquery', 'optObj'
     return Collection;
 });
 
- define('collectionGrp',['jquery', 'optGrp', 'collection', 'entity'
-	], function ($, OptGrp, Collection, Entity) {
+ define('collectionGrp',['jquery', 'optGrp', 'collection', 'entity'], function($, OptGrp, Collection, Entity) {
      var CollectionGrp = OptGrp.create('CollectionGrp');
      var collection = Collection.create('collection');
      var entity = Entity.create('entity');
 
      CollectionGrp.join(collection, entity);
-     CollectionGrp.extend({
-         add: function(opt) {
-            return this.call('collection', 'add', opt); //values
-         },
-         getEntities: function(opt) {
-             return this.call('collection', 'getEntities', opt);
-         }
-     });
 
      return CollectionGrp;
  });
@@ -763,8 +752,26 @@ __p+='<form onsubmit="return false;" method="'+
 return __p;
 }; });
 
-define('form',['jquery', 'component', 'tpl!templates/form'
-	], function ($, Component, tpl) {
+define('form',['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl) {
+    function _v(obj, pathStr) {
+        var paths = pathStr.split('.');
+        var len = paths.length;
+        if (len > 1) {
+            var result = obj;
+            for (var i=0; i<len; i++) {
+                if (result.hasOwnProperty(paths[i])) {
+                    result = result[paths[i]];
+                } else {
+                    throw new TypeError('invalid pathStr when mapping!');
+                }
+            }
+
+            return result;
+        } else {
+            return obj[pathStr];
+        }
+    }
+
     var Form = Component.create('Form');
     Form.extend({
         tpl: tpl,
@@ -772,12 +779,12 @@ define('form',['jquery', 'component', 'tpl!templates/form'
             form_action: '/',
             form_method: 'GET'
         },
-        init: function () {
+        init: function() {
             Component.init.call(this);
             this.submitting = false;
             this.components = [];
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
             //build fieldset from JSON
             if (opt.form_elements && $.isArray(opt.form_elements)) {
@@ -791,7 +798,7 @@ define('form',['jquery', 'component', 'tpl!templates/form'
                         compOpt = elem.opt ? $.extend({}, elem.opt) : {};
                         var keyColumnMap = elem.opt.keyColumnMap;
                         for (var key in keyColumnMap) {
-                            compOpt[key] = opt.doc[keyColumnMap[key]];
+                            compOpt[key] = _v(opt.doc, keyColumnMap[key]);
                         }
                     } else {
                         compOpt = elem.opt;
@@ -806,7 +813,7 @@ define('form',['jquery', 'component', 'tpl!templates/form'
             }
             return this.comp;
         },
-        submit: function (opt) {
+        submit: function(opt) {
             if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var id;
@@ -819,33 +826,33 @@ define('form',['jquery', 'component', 'tpl!templates/form'
                     url: action,
                     data: data,
                     context: this,
-                    done: function (data) {
+                    done: function(data) {
                         var opt_ = {
                             data: data,
                         };
                         this.done(opt_);
                     },
-                    always: function () {
+                    always: function() {
                         this.always();
                     },
                 });
             }
         },
-        checkValid: function (opt) {
+        checkValid: function(opt) {
             var validFlag = true;
-            $.each(this.components, function (index, cmd) {
-                if ('checkValid' in cmd('thisObj')) {
-                    var result = cmd('checkValid'); //valid?
+            $.each(this.components, function(index, component) {
+                if ('checkValid' in component) {
+                    var result = component.checkValid(); //valid?
                     if (!result) validFlag = false;
                 }
             });
             return validFlag;
         },
-        done: function (opt) {},
-        always: function (opt) {
+        done: function(opt) {},
+        always: function(opt) {
             this.submitting = false;
         },
-        add: function (opt) {
+        add: function(opt) {
             this.components.push(opt.comp);
             var opt_ = $.extend({
                 container: this.comp.find('fieldset'),
@@ -853,21 +860,21 @@ define('form',['jquery', 'component', 'tpl!templates/form'
             }, opt.compOpt);
             opt.comp.render(opt_);
         },
-        find: function (opt) {
+        find: function(opt) {
             var subComp;
-            $.each(this.components, function (i, comp) {
-                if (comp.name === opt.name) {
+            $.each(this.components, function(i, comp) {
+                if (comp._id === opt._id) {
                     subComp = comp;
                     return false;
                 }
             });
             return subComp;
         },
-        serialize: function (opt) {
+        serialize: function(opt) {
             return this.comp.serialize();
         },
 
-        serializeArray: function (opt) {
+        serializeArray: function(opt) {
             return this.comp.serializeArray();
         },
 
@@ -876,17 +883,16 @@ define('form',['jquery', 'component', 'tpl!templates/form'
     return Form;
 });
 
-define('request',['jquery', 'optObj', 'Promise'
-	], function ($, OptObj, Promise) {
+define('request',['jquery', 'optObj', 'Promise'], function($, OptObj, Promise) {
     var Request = OptObj.create('Request');
     Request.extend({
-        init: function (opt) {
+        init: function(opt) {
             this.xhr = null;
         },
-        abort: function (opt) {
+        abort: function(opt) {
             if (this.xhr) this.xhr.abort();
         },
-        connectAsync: function (opt) {
+        connect: function(opt) {
             var that = this;
             this.setOpt(opt);
             var params = {
@@ -894,20 +900,33 @@ define('request',['jquery', 'optObj', 'Promise'
                 method: this.opt.request_method,
                 data: this.opt.request_data,
                 dataType: 'json',
+                contentType: this.opt.request_contentType || 'application/json'
             };
             if (opt.request_params && $.isPlainObject(opt.request_params)) {
                 $.extend(params, opt.request_params);
             }
 
-            return new Promise(function (resolve, reject) {
+            if (!params.url) throw new TypeError('invalid URL in request');
+
+            return new Promise(function(resolve, reject) {
                 that.xhr = $.ajax(params)
-                    .done(function (data, textStatus, jqXHR) {
-                        if (data && 'error' in data) {
-                            return reject(data.error);
-                        }
+                    .done(function(data, textStatus, jqXHR) {
                         return resolve(data);
                     })
-                    .fail(function (jqXHR, textStatus, errorThrown) {
+                    .fail(function(jqXHR, textStatus, errorThrown) {
+                        return reject(jqXHR.responseText || errorThrown);
+                    });
+            });
+        },
+        getJSON: function(opt) {
+            console.log('getJSON');
+            var that = this;
+            return new Promise(function(resolve, reject) {
+                that.xhr = $.getJSON(opt.url)
+                    .done(function(data, textStatus, jqXHR) {
+                        return resolve(data);
+                    })
+                    .fail(function(jqXHR, textStatus, errorThrown) {
                         return reject(jqXHR.responseText || errorThrown);
                     });
             });
@@ -918,7 +937,7 @@ define('request',['jquery', 'optObj', 'Promise'
 });
 
 
-define('tpl!templates/error', ['underscore'], function (_) { return function(obj){
+define('tpl!templates/errorList', ['underscore'], function (_) { return function(obj){
 var __t,__p='',__j=Array.prototype.join,print=function(){__p+=__j.call(arguments,'');};
 with(obj||{}){
 __p+='<b>'+
@@ -934,10 +953,10 @@ __p+='\n</ol>';
 return __p;
 }; });
 
-define('error',['jquery', 'component', 'tpl!templates/error'
+define('errorList',['jquery', 'component', 'tpl!templates/errorList'
 	], function ($, Component, tpl) {
-    var Error = Component.create('Error');
-    Error.extend({
+    var ErrorList = Component.create('ErrorList');
+    ErrorList.extend({
         tpl: tpl,
         defaultOpt: {
             message: '',
@@ -945,20 +964,23 @@ define('error',['jquery', 'component', 'tpl!templates/error'
         },
     });
 
-    return Error;
+    return ErrorList;
 });
 
-define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
-	], function ($, OptGrp, Form, Request, Error) {
+define('formGrp',['jquery', 'optGrp', 'form', 'request', 'errorList'], function($, OptGrp, Form, Request, ErrorList) {
     var FormGrp = OptGrp.create('FormGrp');
     var form = Form.create('form');
+    var request = Request.create('request');
+    var errorList = ErrorList.create('errorList');
+
+
     var form_checkValid = form.checkValid;
     form.extend({
-        submit: function (opt) {
+        submit: function(opt) {
             if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
                 var that = this;
-                this.comp.find('.error').each(function (index) {
+                this.comp.find('.error').each(function(index) {
                     $(this).remove();
                 });
                 var id;
@@ -972,25 +994,25 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
                     request_method: method,
                     request_data: inputData,
                 };
-                return this.group.call('request', 'connectAsync', opt_)
-                    .then(function (data) {
+                return this.group.call('request', 'connect', opt_)
+                    .then(function(data) {
                         var opt0 = {
                             data: data
                         };
 
                         return that.done(opt0);
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         return that.error({
                             error: err,
                         });
                     })
-                    .finally(function () {
+                    .finally(function() {
                         return that.always();
                     });
             }
         },
-        checkValid: function (opt) {
+        checkValid: function(opt) {
             var validFlag = form_checkValid.call(this, opt);
             if (validFlag) {
                 return true;
@@ -1000,12 +1022,14 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
                 });
             }
         },
-        error: function (opt) {
+        error: function(opt) {
             if ($.isPlainObject(opt.error)) {
-                var error = Error.create('error');
-                error.render($.extend(opt.error, {
-                    container: $('<div class="error"></div>').appendTo(this.comp)
-                }));
+                var errorList = this.group.getMember('errorList');
+                var form_error = errorList.create();
+                form_error
+                    .render($.extend(opt.error, {
+                        container: $('<div class="error"></div>').appendTo(this.comp)
+                    }));
             } else {
                 this.comp.append('<div class="error">' + opt.error + '</div>');
             }
@@ -1013,13 +1037,12 @@ define('formGrp',['jquery', 'optGrp', 'form', 'request', 'error'
 
     });
 
-    var request = Request.create('request');
-	FormGrp.extend({
-		render: function(opt) {
-			this.call('form', 'render', opt);
-		}
-	});
-    FormGrp.join(form, request);
+    FormGrp.join(form, request, errorList);
+    FormGrp.extend({
+        set: function(opt) {
+            this.call('form', 'render', opt);
+        }
+    });
 
     return FormGrp;
 });
@@ -1055,6 +1078,8 @@ define('item',['jquery', 'component', 'tpl!templates/item'], function($, Compone
                 noSetup: opt.noSetup,
                 item_value: this.entity.get(),
             };
+            if (opt.prepend) opt_.prepend = true;
+
             return Component.render.call(this, opt_);
         },
         getEntityValue: function(opt) {
@@ -1103,13 +1128,12 @@ define('item',['jquery', 'component', 'tpl!templates/item'], function($, Compone
                     item_value: this.entity.get(),
                 },
             });
-
-            //update entity
-            //this.entity.update({
-            //    value: opt.doc || {}
-            //});
         },
+        /* consider an item may have heavy UI. I try not to render it again. So, you have to decide which part might be changed during update. e.g. title, description etc. */
         updateUI: function(opt) {
+            if (opt && opt.doc && opt.doc.item_value && typeof opt.doc.item_value == 'object') {
+                throw new TypeError('Method item.updateUI have to be overriden for object value.');
+            }
             this.comp.find('.item_value').html(opt.doc.item_value);
         },
         updateEntity: function(opt) {
@@ -1129,17 +1153,16 @@ __p+='<ul class="list-group"></ul>';
 return __p;
 }; });
 
-define('list',['jquery', 'component', 'tpl!templates/list',
-	], function ($, Component, tpl) {
+define('list',['jquery', 'component', 'tpl!templates/list', ], function($, Component, tpl) {
     var List = Component.create('List');
     List.extend({
         tpl: tpl,
-        init: function () {
+        init: function() {
             Component.init.call(this);
-			this.collection = null;
+            this.collectionGrp = null;
             this.items = [];
         },
-        reset: function (opt) {
+        reset: function(opt) {
             //make the original frame firm by setting min-height and width
             if (this.comp && this.comp.css) {
                 this.comp.css({
@@ -1151,20 +1174,22 @@ define('list',['jquery', 'component', 'tpl!templates/list',
 
             this.items = [];
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
-			this.collection = opt.collection;
+            if (!this.collectionGrp)
+                this.collectionGrp = opt.collectionGrp;
 
-			var list_entities;
-			//direct from opt
-			if (opt.list_entities) {
-				list_entities = opt.list_entities;
-			} else {
-				list_entities = opt.collection.getEntities();
-			}
+            var list_entities;
+            //direct from opt
+            if (opt.list_entities) {
+                list_entities = opt.list_entities;
+            } else {
+                var collection = opt.collectionGrp.getMember('collection');
+                list_entities = collection.getEntities();
+            }
 
             if (list_entities && $.isArray(list_entities) && list_entities.length > 0) {
-                $.each(list_entities, function (index, data) {
+                $.each(list_entities, function(index, data) {
                     var itemGrp = that.group.call('itemGrp', 'create', 'itemGrp'); //member create
                     that.items.push(itemGrp);
                     var opt_ = {
@@ -1172,7 +1197,9 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                         container: that.comp,
                         item_entity: data,
                     };
-                    var itemComp = itemGrp.render(opt_);
+                    if (opt.prepend) opt_.prepend = true;
+
+                    var itemComp = itemGrp.set(opt_);
                     return itemComp;
                 });
 
@@ -1187,18 +1214,18 @@ define('list',['jquery', 'component', 'tpl!templates/list',
                 this.showEmptyList(opt);
             }
 
-			return this.comp;
+            return this.comp;
         },
-        removeItem: function (opt) {
-			var items = this.items;
-			$.each(items, function (i, itemObj) {
-				if (itemObj === opt.itemObj) {
-					items.splice(i, 1);
-					return false;
-				}
-			});
+        removeItem: function(opt) {
+            var items = this.items;
+            $.each(items, function(i, itemObj) {
+                if (itemObj === opt.itemObj) {
+                    items.splice(i, 1);
+                    return false;
+                }
+            });
         },
-        showEmptyList: function (opt) {},
+        showEmptyList: function(opt) {},
     });
 
     return List;
@@ -1210,28 +1237,27 @@ define('itemGrp',['jquery', 'optGrp', 'item'
     var item = Item.create('item');
 
 	ItemGrp.extend({
-		render: function(opt){
+		set: function(opt){
 			this.call('item', 'render', opt);
 		},
 	});
     ItemGrp.join(item);
-	
+
 	return ItemGrp;
 });
 
-define('listItemGrp',['jquery', 'optGrp', 'list', 'itemGrp'
-	], function ($, OptGrp, List, ItemGrp) {
-	var ListItemGrp = OptGrp.create('ListItemGrp');
+define('listItemGrp',['jquery', 'optGrp', 'list', 'itemGrp'], function($, OptGrp, List, ItemGrp) {
+    var ListItemGrp = OptGrp.create('ListItemGrp');
     var list = List.create('list');
     var itemGrp = ItemGrp.create('itemGrp');
-	ListItemGrp.extend({
-		render: function(opt) {
-			this.call('list', 'render', opt);
-		},
-	});
+    ListItemGrp.extend({
+        set: function(opt) {
+            this.call('list', 'render', opt);
+        },
+    });
 
     ListItemGrp.join(list, itemGrp);
-	return ListItemGrp;
+    return ListItemGrp;
 });
 
 
@@ -1245,33 +1271,32 @@ __p+='<div class="promptTop">\r\n    <div class="promptHead">\r\n        <a clas
 return __p;
 }; });
 
-define('prompt',['jquery', 'component', 'tpl!templates/prompt'
-	], function ($, Component, tpl) {
+define('prompt',['jquery', 'component', 'tpl!templates/prompt'], function($, Component, tpl) {
     var Prompt = Component.create('Prompt');
     Prompt.extend({
         tpl: tpl,
         defaultOpt: {
             prompt_title: 'Prompt'
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
             if (!window.layerCount) window.layerCount = 10000;
             this.comp.css('z-index', window.layerCount++);
             var btn_done = this.comp.find('.promptHead .done');
             var btn_back = this.comp.find('.promptHead .back');
-            btn_done.on('click', function (e) {
+            btn_done.on('click', function(e) {
                 that.donePrompt();
             });
 
-            btn_back.on('click', function (e) {
+            btn_back.on('click', function(e) {
                 that.remove();
             });
             return this.comp;
         },
-        donePrompt: function (opt) {
+        donePrompt: function(opt) {
             this.afterSubmit(opt);
         },
-        afterSubmit: function (opt) {
+        afterSubmit: function(opt) {
             this.remove();
         }
 
@@ -1360,22 +1385,21 @@ define('scroll',['jquery', 'optObj'], function ($, OptObj) {
     return Scroll;
 });
 
-define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
-	], function ($, OptGrp, Prompt, FormGrp, Scroll) {
+define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'], function($, OptGrp, Prompt, FormGrp, Scroll) {
     var PromptFormGrp = OptGrp.create('PromptFormGrp');
 
     var prompt = Prompt.create('prompt');
     prompt.extend({
-        setup: function (opt) {
+        setup: function(opt) {
             Scroll.disableScroll();
             var promptComp = Prompt.setup.call(this, opt);
             opt.container = promptComp;
-            this.group.call('formGrp', 'render', opt);
+            this.group.call('formGrp', 'set', opt);
             return promptComp;
         },
 
-        donePrompt: function (opt) {
-            return this.group.call('formGrp', 'submit', opt);
+        donePrompt: function(opt) {
+            return this.group.downCall('form', 'submit', opt);
         },
         afterRemoved: function(opt) {
             Scroll.enableScroll();
@@ -1388,16 +1412,16 @@ define('promptFormGrp',['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'
     var formGrp = FormGrp.create('formGrp');
     var form = formGrp.getMember('form');
     form.extend({
-        done: function (opt) {
+        done: function(opt) {
             this.group.upCall('prompt', 'afterSubmit', opt); //fromGrp > promptFormGrp
         },
     });
 
-	PromptFormGrp.extend({
-		render: function(opt){
-			this.call('prompt', 'render', opt);
-		},
-	});
+    PromptFormGrp.extend({
+        render: function(opt) {
+            this.call('prompt', 'render', opt);
+        },
+    });
     PromptFormGrp.join(prompt, formGrp);
 
     return PromptFormGrp;
@@ -1420,8 +1444,7 @@ __p+='<textarea name="'+
 return __p;
 }; });
 
-define('textarea',['jquery', 'component', 'tpl!templates/textarea', 'autosize'
-	], function ($, Component, tpl, autosize) {
+define('textarea',['jquery', 'component', 'tpl!templates/textarea', 'autosize'], function($, Component, tpl, autosize) {
     var Textarea = Component.create('Textarea');
     Textarea.extend({
         tpl: tpl,
@@ -1430,9 +1453,14 @@ define('textarea',['jquery', 'component', 'tpl!templates/textarea', 'autosize'
             textarea_value: '',
             textarea_placeholder: '',
             textarea_class: '',
+            textarea_autoResize: false
         },
-        setup: function (opt) {
-            autosize(this.comp);
+        setup: function(opt) {
+            this.setOpt(opt);
+            if (this.opt.textarea_autoResize) {
+                autosize(this.comp);
+            }
+
             return this.comp;
         },
     });
@@ -1925,18 +1953,17 @@ define('toggleHeaderScroll',['jquery', 'optObj', 'scroll'
     return ToggleHeaderScroll;
 });
 
-define('navbarGrp',['jquery', 'optGrp', 'navbar', 'toggleHeaderScroll'
-	], function ($, OptGrp, Navbar, ToggleHeaderScroll) {
-	var NavbarGrp = OptGrp.create('NavbarGrp');
+define('navbarGrp',['jquery', 'optGrp', 'navbar', 'toggleHeaderScroll'], function($, OptGrp, Navbar, ToggleHeaderScroll) {
+    var NavbarGrp = OptGrp.create('NavbarGrp');
     var Navbar = Navbar.create('Navbar');
     var ToggleHeaderScroll = ToggleHeaderScroll.create('ToggleHeaderScroll');
-	NavbarGrp.extend({
-		render: function(opt) {
-			this.call('Navbar', 'render', opt);
-		},
-	});
+    NavbarGrp.extend({
+        render: function(opt) {
+            this.call('Navbar', 'render', opt);
+        },
+    });
     NavbarGrp.join(Navbar, ToggleHeaderScroll);
-	return NavbarGrp;
+    return NavbarGrp;
 });
 
 
@@ -2307,103 +2334,80 @@ define('fetcher',['jquery', 'optObj', 'scroll', 'request'
     return Fetcher;
 });
 
- define('collectionRequestGrp',['jquery', 'optGrp', 'collection', 'entity', 'request', 'Promise'
-	], function ($, OptGrp, Collection, Entity, Request, Promise) {
-     var CollectionGrp = OptGrp.create('CollectionGrp');
-     var collection = Collection.create('collection');
-     collection.extend({
-         defaultOpt: {
-             remote: true
-         },
-         connectEntityAsync: function (opt) {
-             var that = this;
-             this.setOpt(opt);
-             if (this.defaultOpt.remote) {
-                 var opt_ = {
-                     request_url: opt.resourceUrl || ((this.opt.request_baseUrl || '/') + (opt.entity.value._id || '')),
-                     request_method: opt.connectMethod,
-                 };
+define('collectionRequestGrp',['jquery', 'collectionGrp', 'request', 'Promise'], function($, CollectionGrp, Request, Promise) {
+    var CollectionRequestGrp = CollectionGrp.create('CollectionRequestGrp');
+    var request = Request.create('request');
+    CollectionRequestGrp.join(request);
 
-                 if (opt && opt.data) {
-                     opt_.request_data = opt.data;
-                     opt_.request_method = 'POST';
-                 }
-                 return this.group.call('request', 'connectAsync', opt_)
-                     .then(function (data) {
-                         that.update(opt);
-                         return data;
-                     });
+    var collection = CollectionRequestGrp.getMember('collection');
+    var collection_remove = collection.remove;
+    var collection_update = collection.update;
+    collection.extend({
+        fetchAdd: function(opt) {
+            var that = this;
+            that.setOpt(opt);
+            if (opt && opt.url) {
+                return this.remoteGet(opt)
+                    .then(function(values) {
+                        var _opt = {
+                            values: values
+                        };
 
-             } else {
-                 if (opt.connectMethod === 'GET') {
-                     return Promise.resolve(opt.entity.get());
-                 } else {
-                     this.update(opt);
-                     return Promise.resolve();
-                 }
-             }
-         },
-         update: function (opt) {
-             if (opt.connectMethod === 'DELETE' || opt.connectMethod === 'PUT') {
-                 this.remove(opt);
-             }
-         }
-     });
+                        that.add(_opt);
+                    });
+                //must return promise
+            } else {
+                throw new TypeError('invalid URL');
+            }
+        },
+        remove: function(opt){
+            var that = this;
+            if (opt && opt.entity) {
+                return this.remoteRemove(opt)
+                    .then(function(values) {
+                        collection_remove.call(that, opt);
+                    });
+                //must return promise
+            } else {
+                throw new TypeError('invalid entity');
+            }
+        },
+        update: function(opt) {
+            var that = this;
+            if (opt && opt.entity) {
+                return this.remoteUpdate(opt)
+                    .then(function(values) {
+                        collection_update.call(that, opt);
+                    });
+                //must return promise
+            } else {
+                throw new TypeError('invalid entity');
+            }
+        },
+        //to be overriden
+        remoteGet: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteGet(opt) must be overriden!');
+            //must return Promise
+        },
+        //to be overriden
+        remoteRemove: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteRemove(opt) must be overriden!');
+            //must return Promise
+        },
+        //to be overriden
+        remoteUpdate: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteUpdate(opt) must be overriden!');
+            //must return Promise
+        },
+        //to be overriden
+        remoteAdd: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteAdd(opt) must be overriden!');
+            //must return Promise
+        }
+    });
 
-     var entity = Entity.create('entity');
-     entity.extend({
-         removeAsync: function (opt) {
-             //back to collection to remove this entity
-             var opt_ = {
-                 connectMethod: 'DELETE',
-                 entity: this,
-             };
-
-             if (opt && opt.data) opt_.data = opt.data;
-             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
-
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-
-         },
-         fetchAsync: function (opt) {
-             var opt_ = {
-                 connectMethod: 'GET',
-                 entity: this,
-             };
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-         },
-         errorAsync: function (opt) {
-             //back to collection to remove this entity
-             var opt_ = {
-                 connectMethod: 'PUT',
-                 entity: this,
-             };
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-         },
-         postAsync: function (opt) {
-             var opt_ = {
-                 connectMethod: 'POST',
-                 entity: this,
-             };
-
-             if (opt && opt.data) opt_.data = opt.data;
-             if (opt && opt.resourceUrl) opt_.resourceUrl = opt.resourceUrl;
-
-             return this.group.call('collection', 'connectEntityAsync', opt_);
-         },
-     });
-
-     var request = Request.create('request');
-     CollectionGrp.extend({
-         render: function(opt){
-             this.call('collection', 'render', opt);
-         },
-     });
-
-     CollectionGrp.join(collection, entity, request);
-
-     return CollectionGrp;
- });
+    return CollectionRequestGrp;
+});
 
 define('listScrollEndFetchGrp',['jquery', 'optGrp', 'listItemGrp', 'collectionRequestGrp', 'fetcher'], function ($, OptGrp, ListItemGrp, CollectionRequestGrp, Fetcher) {
     var ListScrollEndFetchGrp = OptGrp.create('ListScrollEndFetchGrp');

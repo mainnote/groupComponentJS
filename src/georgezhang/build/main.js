@@ -36,7 +36,6 @@ module.exports = [
     'listScrollEndFetchGrp',
     'toggleHeaderScroll',
     'scroll',
-    'error',
     'inputList',
     'inputListGrp',
     'inputListGrp_selection',

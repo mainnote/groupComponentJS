@@ -1,8 +1,6 @@
-define(['jquery', 'optGrp', 'collectionRequestGrp', 'myApp/myModules/myListItemGrp', 'myApp/myModules/myAddItemGrp'], function($, OptGrp, CollectionRequestGrp, MyListItemGrp, MyAddItemGrp) {
+define(['jquery', 'optGrp', 'collectionRequestGrp', 'myApp/myModules/myListItemGrp', 'scroll'], function($, OptGrp, CollectionRequestGrp, MyListItemGrp, Scroll) {
     var collectionRequestGrp = CollectionRequestGrp.create('collectionRequestGrp');
-    var listItemGrp_left = MyListItemGrp.create('listItemGrp_left');
-    var listItemGrp_right = MyListItemGrp.create('listItemGrp_right');
-    var myAddItemGrp = MyAddItemGrp.create('myAddItemGrp');
+    var listItemGrp = MyListItemGrp.create('listItemGrp');
 
     var collection = collectionRequestGrp.getMember('collection');
     var collection_addExtra = collection.addExtra;
@@ -72,13 +70,8 @@ define(['jquery', 'optGrp', 'collectionRequestGrp', 'myApp/myModules/myListItemG
             return that.remoteAdd(opt)
                 .then(function(res) {
                     var newEntities = collection_addExtra.call(that, opt); //it is an array of new entities
-                    var list_left = that.group.upCall('listItemGrp_left', 'getMember', 'list');
-                    var list_right = that.group.upCall('listItemGrp_right', 'getMember', 'list');
-                    list_left.setup({
-                        list_entities: newEntities,
-                        prepend: true
-                    });
-                    list_right.setup({
+                    var list = that.group.upCall('listItemGrp', 'getMember', 'list');
+                    list.setup({
                         list_entities: newEntities,
                         prepend: true
                     });
@@ -87,31 +80,58 @@ define(['jquery', 'optGrp', 'collectionRequestGrp', 'myApp/myModules/myListItemG
     });
 
     var MyCollectionListGrp = OptGrp.create('MyCollectionListGrp');
-    MyCollectionListGrp.join(collectionRequestGrp, listItemGrp_left, listItemGrp_right, myAddItemGrp);
+    MyCollectionListGrp.join(collectionRequestGrp, listItemGrp);
 
     //setup layout
     MyCollectionListGrp.extend({
         set: function(opt) {
             var that = this;
+            var scroll_id = 'LOAD NEXT';
             var collection = this.getMember('collection');
-            collection.fetchAdd(opt)
-                .then(function() {
-                    that.call('listItemGrp_left', 'set', $.extend({}, opt, {
-                        container: opt.container.find('#leftSide'),
-                        collectionGrp: that.getMember('collectionRequestGrp')
-                    }));
-                    that.call('listItemGrp_right', 'set', $.extend({}, opt, {
-                        container: opt.container.find('#rightSide'),
-                        collectionGrp: that.getMember('collectionRequestGrp')
-                    }));
-                    that.call('myAddItemGrp', 'set', $.extend({
-                        button_name: 'Add new item',
-                        button_class: 'btn-sm btn-primary button_add'
-                    }, opt));
-                })
-                .catch(function(err) {
-                    console.log(err);
-                });
+            var currentTop = 0;
+            var $body = $('body');
+            var url_index = 0;
+            opt.url = opt.urls[url_index++];
+            loadBatch(opt);
+
+            function loadBatch(opt_) {
+                $body.addClass('loading');
+                collection.fetchAdd(opt_)
+                    .then(function() {
+                        that.call('listItemGrp', 'set', $.extend({}, opt_, {
+                            container: opt_.container.find('#centerContent'),
+                            collectionGrp: that.getMember('collectionRequestGrp')
+                        }));
+                        $body.removeClass('loading');
+                        $(document).scrollTop(currentTop);
+                    })
+                    .then(function() {
+                        //setup scroll trigger here
+                        Scroll
+                            .add({
+                                obj: scroll_id,
+                                fn: next.bind(this)
+                            });
+
+                        //trigger funtion for scroll
+                        function next() {
+                            currentTop = $(document).scrollTop();
+                            if (currentTop >= ($('#go_map').position().top - $(window).height())) { //when scoll reach the end of the container
+                                Scroll.remove({
+                                    obj: scroll_id
+                                });
+                                if (opt_.urls.length > url_index) {
+                                    opt_.url = opt_.urls[url_index++];
+                                    loadBatch(opt_);
+                                }
+                            }
+                        }
+                    })
+                    .catch(function(err) {
+                        console.log(err);
+                        $body.removeClass('loading');
+                    });
+            }
         },
     });
     return MyCollectionListGrp;

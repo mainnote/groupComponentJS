@@ -30,7 +30,7 @@ define(['jquery', 'optGrp', 'listItemGrp', 'collectionRequestGrp', 'fetcher'], f
             //fetch data from server API for initial dataset
             var opt_firstFetch = {
                 url: getUrl(),
-            }
+            };
             thatGrp.call('fetcher', 'getAsync', opt_firstFetch)
                 .then(function (firstResult) {
                     /*

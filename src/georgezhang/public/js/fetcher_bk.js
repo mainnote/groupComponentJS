@@ -1,3 +1,7 @@
+/*
+	In listScrollEndFetchGrp, the event will trigger ......
+*/
+
 define(['jquery', 'optObj', 'scroll', 'request'
 	], function ($, OptObj, Scroll, Request) {
     var Fetcher = OptObj.create('Fetcher');

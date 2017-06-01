@@ -1,4 +1,4 @@
-define(['jquery', 'listItemGrp', 'input', 'button', 'textarea', 'tpl!myApp/myTemplates/myItem'], function($, ListItemGrp, Input, Button, Textarea, tpl) {
+define(['jquery', 'listItemGrp', 'input', 'button', 'textarea', 'tpl!myApp/myTemplates/myItem', 'lazyload'], function($, ListItemGrp, Input, Button, Textarea, tpl, lazyload) {
 
     var MyListItemGrp = ListItemGrp.create('MyListItemGrp');
     //input change title
@@ -92,6 +92,10 @@ define(['jquery', 'listItemGrp', 'input', 'button', 'textarea', 'tpl!myApp/myTem
         setup: function(opt) {
             var that = this;
             itemSetup.call(that, opt);
+
+            //image Lazy Load
+            var image = this.comp.find('img.lazy').first();
+            image.lazyload();
 
             //title editor
             var $title = that.comp.find('.card-title');

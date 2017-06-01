@@ -18,6 +18,8 @@ define(['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl
                 noSetup: opt.noSetup,
                 item_value: this.entity.get(),
             };
+            if (opt.prepend) opt_.prepend = true;
+
             return Component.render.call(this, opt_);
         },
         getEntityValue: function(opt) {

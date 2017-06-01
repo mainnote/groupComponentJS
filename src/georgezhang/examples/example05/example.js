@@ -12,25 +12,15 @@ require.config({
 //start entry of this eample
 define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], function($, MyCollectionListGrp, Request, m) {
     //title -- update your title
-    $('#title').text('groupComponent.js Example 04');
+    $('#title').text('groupComponent.js Example 05');
     $('#title').attr('data-id', 'myCollectionListGrp');
     //Introduction -- update your Introduction
-    $('.demo_section').prepend('<h2>Remote Asyncrhonize Loading to List with Custom Item</h2><i>Try edit text</i>');
+    $('.demo_section').prepend('<h2>Scroll to load more items with jQuery Lazyload plugin</h2><i>Try scroll</i>');
 
     //file list -- update you list
     var list = [{
             name: 'myCollectionListGrp.js',
             src: 'myModules/myCollectionListGrp.js',
-            type: 'javascript'
-        },
-        {
-            name: 'myListItemGrp.js',
-            src: 'myModules/myListItemGrp.js',
-            type: 'javascript'
-        },
-        {
-            name: 'myAddItemGrp.js',
-            src: 'myModules/myListItemGrp.js',
             type: 'javascript'
         },
         {
@@ -100,12 +90,18 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], 
     //mack REST APIs
     console.log('Start example now');
     //add layout
-    $('#demo_sample').append('<div class="container"><div class="add_item"></div><div class="row"><div id="leftSide" class="col col-6"></div><div id="rightSide" class="col col-6"></div></div></div>');
+    $('#demo_sample').append('<div class="container"><div class="row"><div id="centerContent"></div></div></div>');
 
     var myCollectionListGrp = MyCollectionListGrp.create('myCollectionListGrp');
     myCollectionListGrp.set({
         container: $('#demo_sample'),
-        url: '/src/georgezhang/examples/media/data/vevo.json',
+        urls: ['/src/georgezhang/examples/media/data/vevo0.json',
+               '/src/georgezhang/examples/media/data/vevo1.json',
+               '/src/georgezhang/examples/media/data/vevo2.json',
+               '/src/georgezhang/examples/media/data/vevo3.json',
+               '/src/georgezhang/examples/media/data/vevo4.json',
+               '/src/georgezhang/examples/media/data/vevo5.json'
+              ],
         entity_url: '/vevo/'
     });
 });

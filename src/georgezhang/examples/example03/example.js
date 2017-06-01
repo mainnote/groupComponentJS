@@ -11,11 +11,22 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp'], function($, MyCollecti
             name: 'myCollectionListGrp.js',
             src: 'myModules/myCollectionListGrp.js',
             type: 'javascript'
-        },{
-                name: 'myListItemGrp.js',
-                src: 'myModules/myListItemGrp.js',
-                type: 'javascript'
-            },
+        },
+        {
+            name: 'myListItemGrp.js',
+            src: 'myModules/myListItemGrp.js',
+            type: 'javascript'
+        },
+        {
+            name: 'myAddItemGrp.js',
+            src: 'myModules/myListItemGrp.js',
+            type: 'javascript'
+        },
+        {
+            name: 'myAddItemFormGrpWrap.js',
+            src: 'myModules/myAddItemFormGrpWrap.js',
+            type: 'javascript'
+        },
         {
             name: 'example.js',
             src: 'example.js',

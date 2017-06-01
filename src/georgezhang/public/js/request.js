@@ -34,7 +34,6 @@ define(['jquery', 'optObj', 'Promise'], function($, OptObj, Promise) {
             });
         },
         getJSON: function(opt) {
-            console.log('getJSON');
             var that = this;
             return new Promise(function(resolve, reject) {
                 that.xhr = $.getJSON(opt.url)

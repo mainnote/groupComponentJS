@@ -19,6 +19,7 @@ require.config({
         'bloodhound': '//cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/bloodhound.min',
         'Promise': '//cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.1/bluebird.min',
         'fineuploader': '//cdnjs.cloudflare.com/ajax/libs/file-uploader/5.11.7/jquery.fine-uploader/jquery.fine-uploader.min',
+        'lazyload': '//cdnjs.cloudflare.com/ajax/libs/jquery_lazyload/1.9.7/jquery.lazyload.min',
     },
     shim: {
         'bootstrap': {
@@ -51,6 +52,9 @@ require.config({
         },
         fineuploader: {
             deps: ['jquery'],
+        },
+        'lazyload': {
+            'deps': ['jquery']
         },
     },
     waitSeconds: 15,

@@ -4,11 +4,10 @@ define(['jquery', 'collectionGrp', 'request', 'Promise'], function($, Collection
     CollectionRequestGrp.join(request);
 
     var collection = CollectionRequestGrp.getMember('collection');
-    var collection_add = collection.add;
     var collection_remove = collection.remove;
     var collection_update = collection.update;
     collection.extend({
-        add: function(opt) {
+        fetchAdd: function(opt) {
             var that = this;
             that.setOpt(opt);
             if (opt && opt.url) {
@@ -18,7 +17,7 @@ define(['jquery', 'collectionGrp', 'request', 'Promise'], function($, Collection
                             values: values
                         };
 
-                        collection_add.call(that, _opt);
+                        that.add(_opt);
                     });
                 //must return promise
             } else {
@@ -62,6 +61,11 @@ define(['jquery', 'collectionGrp', 'request', 'Promise'], function($, Collection
         //to be overriden
         remoteUpdate: function(opt) {
             throw new TypeError('Method collectionRequestGrp.remoteUpdate(opt) must be overriden!');
+            //must return Promise
+        },
+        //to be overriden
+        remoteAdd: function(opt) {
+            throw new TypeError('Method collectionRequestGrp.remoteAdd(opt) must be overriden!');
             //must return Promise
         }
     });

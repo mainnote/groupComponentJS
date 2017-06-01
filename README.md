@@ -29,6 +29,7 @@ View is defined in `/templates` folder which uses underscore.js template syntax.
 * create new example `cp -RP <original example path> <new example path>`
 * update static/index.html
 * update example/menu.json
+* access example http://localhost:8080/src/georgezhang/examples/example01/example.html
 
 ## build
 *Always check Gruntfile if there is any change*

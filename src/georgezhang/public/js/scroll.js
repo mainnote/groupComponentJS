@@ -7,7 +7,7 @@ define(['jquery', 'optObj'], function ($, OptObj) {
         disableScroll: function (opt) {
             this.current = $(window).scrollTop();
             $(window).scrollTop(0);
-            
+
             /*
             $('html, body').css({
                 'overflow': 'hidden',
@@ -33,6 +33,7 @@ define(['jquery', 'optObj'], function ($, OptObj) {
             $(window).on('scroll', function (event) {
                 that.triggerEvents(event);
             });
+            return that;
         },
         add: function (opt) {
             //if set, skip

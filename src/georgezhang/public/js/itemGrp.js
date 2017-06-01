@@ -4,11 +4,11 @@ define(['jquery', 'optGrp', 'item'
     var item = Item.create('item');
 
 	ItemGrp.extend({
-		render: function(opt){
+		set: function(opt){
 			this.call('item', 'render', opt);
 		},
 	});
     ItemGrp.join(item);
-	
+
 	return ItemGrp;
 });

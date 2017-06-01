@@ -1,4 +1,23 @@
 define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl) {
+    function _v(obj, pathStr) {
+        var paths = pathStr.split('.');
+        var len = paths.length;
+        if (len > 1) {
+            var result = obj;
+            for (var i=0; i<len; i++) {
+                if (result.hasOwnProperty(paths[i])) {
+                    result = result[paths[i]];
+                } else {
+                    throw new TypeError('invalid pathStr when mapping!');
+                }
+            }
+
+            return result;
+        } else {
+            return obj[pathStr];
+        }
+    }
+
     var Form = Component.create('Form');
     Form.extend({
         tpl: tpl,
@@ -25,7 +44,7 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
                         compOpt = elem.opt ? $.extend({}, elem.opt) : {};
                         var keyColumnMap = elem.opt.keyColumnMap;
                         for (var key in keyColumnMap) {
-                            compOpt[key] = opt.doc[keyColumnMap[key]];
+                            compOpt[key] = _v(opt.doc, keyColumnMap[key]);
                         }
                     } else {
                         compOpt = elem.opt;

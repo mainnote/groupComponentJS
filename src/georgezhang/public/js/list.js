@@ -42,7 +42,9 @@ define(['jquery', 'component', 'tpl!templates/list', ], function($, Component, t
                         container: that.comp,
                         item_entity: data,
                     };
-                    var itemComp = itemGrp.render(opt_);
+                    if (opt.prepend) opt_.prepend = true;
+
+                    var itemComp = itemGrp.set(opt_);
                     return itemComp;
                 });
 

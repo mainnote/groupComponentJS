@@ -18,5 +18,10 @@
         "id": "example04",
         "url": "/src/georgezhang/examples/example04/example.html",
         "html": "example 04 - Remote Asyncrhonize Loading to List with Custom Item"
+    },
+    {
+        "id": "example05",
+        "url": "/src/georgezhang/examples/example05/example.html",
+        "html": "example 05 - Scroll to load more items"
     }
 ]
