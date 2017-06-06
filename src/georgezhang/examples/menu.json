@@ -23,5 +23,10 @@
         "id": "example05",
         "url": "/src/georgezhang/examples/example05/example.html",
         "html": "example 05 - Scroll to load more items"
+    },
+    {
+        "id": "example06",
+        "url": "/src/georgezhang/examples/example06/example.html",
+        "html": "example 06 - Autocomplete, Textarea with count, icon toggle, tags input etc."
     }
 ]

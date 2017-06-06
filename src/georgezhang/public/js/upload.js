@@ -6,9 +6,9 @@ define(['jquery', 'component', 'fineuploader', 'tpl!templates/upload'
         defaultOpt: {
             upload_label_class: 'upload_label_class',
             upload_label_name: '',
-            upload_endpoint: '/api/upload',
-            upload_waitingPath: '/img/waiting-generic.png',
-            upload_notAvailablePath: '/img/not_available-generic.png',
+            upload_endpoint: '/api/upload', //to be replaced
+            upload_waitingPath: '/img/waiting-generic.png', //to be replaced
+            upload_notAvailablePath: '/img/not_available-generic.png', //to be replaced
         },
         setup: function (opt) {
             var fineuploader = this.comp.find('.fineuploader');

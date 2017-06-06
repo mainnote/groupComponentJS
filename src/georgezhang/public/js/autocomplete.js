@@ -1,5 +1,4 @@
-define(['jquery', 'input', 'typeahead', 'bloodhound'
-	], function ($, Input, typeahead, Bloodhound) {
+define(['jquery', 'input', 'typeahead', 'bloodhound'], function($, Input, typeahead, Bloodhound) {
     var Autocomplete = Input.create('Autocomplete');
     Autocomplete.extend({
         defaultOpt: $.extend({}, Autocomplete.defaultOpt, {
@@ -7,22 +6,20 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
             forceSelect: true,
         }),
         bloodhound: Bloodhound,
-        setDataSource: function (opt) {
+        setDataSource: function(opt) {
             // constructs the suggestion engine
-            var opt_bloodhound = $.extend({}, {
-                datumTokenizer: this.bloodhound.tokenizers.whitespace,
-                queryTokenizer: this.bloodhound.tokenizers.whitespace,
-                identify: function (obj) {
-                    return obj._id;
-                },
-            }, opt.engine_opt || {});
-            this.source = new this.bloodhound(opt_bloodhound);
+			if (!opt || !opt.engine_opt || !$.isPlainObject(opt.engine_opt) || $.isEmptyObject(opt.engine_opt)) throw new TypeError('Must setup engine_opt!');
+
+			if (!opt.engine_opt.datumTokenizer) opt.engine_opt.datumTokenizer = this.bloodhound.tokenizers.whitespace;
+			if (!opt.engine_opt.queryTokenizer) opt.engine_opt.queryTokenizer = this.bloodhound.tokenizers.whitespace;
+
+            this.source = new this.bloodhound(opt.engine_opt);
 
             return $.extend({}, {
                 source: this.source
             }, opt.source_opt || {});
         },
-        setup: function (opt) {
+        setup: function(opt) {
             var that = this;
             this.inputElem = this.comp.find('input');
 
@@ -42,22 +39,22 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
             if (opt.autocomplete_id) this.input_hidden.val(opt.autocomplete_id);
             this.comp.append(this.input_hidden);
 
-            this.inputElem.bind('typeahead:select', function (ev, suggestion) {
+            this.inputElem.bind('typeahead:select', function(ev, suggestion) {
                 that.input_hidden.val(suggestion._id);
             });
-            this.inputElem.bind('typeahead:change', function (ev) {
+            this.inputElem.bind('typeahead:change', function(ev) {
                 var val = that.inputElem.typeahead('val');
                 that.input_hidden.val('');
                 if (val && val.length > 0 && that.opt.forceSelect) {
                     that.input_hidden.val('');
                     var skip = false;
-                    that.source.search(val, function (datums) {
+                    that.source.search(val, function(datums) {
                         if (datums && datums.length > 0) {
                             skip = true;
                             that.input_hidden.val(datums[0]._id);
                             that.inputElem.typeahead('val', datums[0].name);
                         }
-                    }, function (datums) {
+                    }, function(datums) {
                         if (!skip) {
                             if (datums && datums.length > 0) {
                                 that.input_hidden.val(datums[0]._id);
@@ -70,7 +67,7 @@ define(['jquery', 'input', 'typeahead', 'bloodhound'
 
             return this.comp;
         },
-        checkValid: function (opt) {
+        checkValid: function(opt) {
             if (this.opt.forceSelect) {
                 var input_hidden_id = this.input_hidden.val();
                 if (input_hidden_id && input_hidden_id.length > 0) {

@@ -37,7 +37,7 @@ require(['jquery', 'input', 'button', 'request', 'debug/debugGroupGrp', 'debug/d
                         } catch (e) {
                             console.error(JSON.stringify(e));
                             that.getResult({
-                                invalidHints: 'This module cannote be extracted.'
+                                invalidHints: 'This module cannot be extracted.'
                             });
                         }
                     }, function(err) {

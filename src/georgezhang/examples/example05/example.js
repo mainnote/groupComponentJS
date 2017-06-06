@@ -24,6 +24,11 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], 
             type: 'javascript'
         },
         {
+            name: 'myListItemGrp.js',
+            src: 'myModules/myListIemGrp.js',
+            type: 'javascript'
+        },
+        {
             name: 'example.js',
             src: 'example.js',
             type: 'javascript'
@@ -57,33 +62,33 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], 
     //example code -- apply your own example code
     //mock delete entity
     $.mockjax({
-      url: '/vevo/?videoId=*',
-      type: 'delete',
-      dataType: 'json',
-      responseTime: 100,
-      responseText: {
-        status: 'success',
-      }
+        url: '/vevo/?videoId=*',
+        type: 'delete',
+        dataType: 'json',
+        responseTime: 100,
+        responseText: {
+            status: 'success',
+        }
     });
     //mock update entity
     $.mockjax({
-      url: '/vevo/?videoId=*',
-      type: 'put',
-      dataType: 'json',
-      responseTime: 100,
-      responseText: {
-        status: 'success',
-      }
+        url: '/vevo/?videoId=*',
+        type: 'put',
+        dataType: 'json',
+        responseTime: 100,
+        responseText: {
+            status: 'success',
+        }
     });
     //mock add entity
     $.mockjax({
-      url: '/vevo/',
-      type: 'post',
-      dataType: 'json',
-      responseTime: 100,
-      responseText: {
-        status: 'success',
-      }
+        url: '/vevo/',
+        type: 'post',
+        dataType: 'json',
+        responseTime: 100,
+        responseText: {
+            status: 'success',
+        }
     });
 
 
@@ -96,12 +101,12 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], 
     myCollectionListGrp.set({
         container: $('#demo_sample'),
         urls: ['/src/georgezhang/examples/media/data/vevo0.json',
-               '/src/georgezhang/examples/media/data/vevo1.json',
-               '/src/georgezhang/examples/media/data/vevo2.json',
-               '/src/georgezhang/examples/media/data/vevo3.json',
-               '/src/georgezhang/examples/media/data/vevo4.json',
-               '/src/georgezhang/examples/media/data/vevo5.json'
-              ],
+            '/src/georgezhang/examples/media/data/vevo1.json',
+            '/src/georgezhang/examples/media/data/vevo2.json',
+            '/src/georgezhang/examples/media/data/vevo3.json',
+            '/src/georgezhang/examples/media/data/vevo4.json',
+            '/src/georgezhang/examples/media/data/vevo5.json'
+        ],
         entity_url: '/vevo/'
     });
 });

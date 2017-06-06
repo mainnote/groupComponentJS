@@ -111,7 +111,7 @@ label {
     padding: 5px;
 }
 .btn.edit, i.iconToggle.fa {
-    position: absolute;
+    /*position: absolute;*/
     bottom: 2px;
     right: 2px;
     margin-right: 15px;
