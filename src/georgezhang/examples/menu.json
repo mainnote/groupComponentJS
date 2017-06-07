@@ -1,5 +1,4 @@
-[
-    {
+[{
         "id": "example01",
         "url": "/src/georgezhang/examples/example01/example.html",
         "html": "example 01 - A simple Todo list!"
@@ -27,6 +26,16 @@
     {
         "id": "example06",
         "url": "/src/georgezhang/examples/example06/example.html",
-        "html": "example 06 - Autocomplete, Textarea with count, icon toggle, tags input etc."
+        "html": "example 06 - Autocomplete, Checkbox, Icon Toggle, Editor, Uploader, Tags Input"
+    },
+    {
+        "id": "example07",
+        "url": "/src/georgezhang/examples/example07/example.html",
+        "html": "example 07 - Modal"
+    },
+    {
+        "id": "example08",
+        "url": "/src/georgezhang/examples/example08/example.html",
+        "html": "example 08 - Form"
     }
 ]

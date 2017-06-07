@@ -53,7 +53,27 @@
             right: 20px;
             top: 150px;
             border: 1px solid #e2e2e2;
-            width: 200px;
+            width: 140px;
+            text-align: center;
+        }
+        #top_menu ul {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #top_menu ul li {
+            padding: 2px 16px;
+        }
+        #right_menu a, #top_menu a {
+            color: #999;
+        }
+        #title {
+            color: #98989e;
+            font-size: larger;
+        }
+        nav.navbar a.navbar-brand {
+            font-family: fantasy;
+            color: #0275d8;
         }
     </style>
     <script src="debug/debug.js"></script>
@@ -64,6 +84,13 @@
     <a class="hidden-sm-down" href="https://github.com/mainnote/groupComponentJS"><img style="position: absolute; top: 0; right: 0; border: 0;z-index:1031"" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
     <div id="mnbody">
         <h1 id="title"></h1>
+        <div id="top_menu" class="bg-faded hidden-lg-up">
+            <ul>
+                <li><a href="#go_example">Example</a></li>
+                <li><a href="#go_map">Group Map</a></li>
+                <li><a href="#go_sample_code">Code</a></li>
+            </ul>
+        </div>
         <section id="go_example" class="demo_section">
             <div id="demo_sample">
             </div>
@@ -80,7 +107,7 @@
             </div>
             <pre><code id="sample_code"></code></pre>
         </section>
-        <div id="right_menu">
+        <div id="right_menu" class="bg-faded hidden-lg-down">
             <ul>
                 <li><a href="#go_example">Example</a></li>
                 <li><a href="#go_map">Group Map</a></li>
@@ -91,8 +118,13 @@
     <div class="modal"></div>
     <script>
         (function() {
-            require(['fastclick', 'bootstrap', 'myApp/menu', 'myApp/example'], function(fastclick, b, menu, example) {
+            require(['fastclick', 'bootstrap', 'myApp/menu', 'myApp/example', 'footer'], function(fastclick, b, menu, example, Footer) {
                 fastclick.attach(document.body);
+                Footer.create('footer').render({
+                    container: $('body'),
+                    footer_link: ['<li><a href="../privacy.html">Privacy</a></li>', '<li><a href="../about.html">About</a></li>'],
+                    footer_p: ['<p>&copy; Mainnote Limited. All rights reservied.</p>'],
+                });
             });
         })();
     </script>
