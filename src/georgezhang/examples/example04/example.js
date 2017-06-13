@@ -10,7 +10,7 @@ require.config({
 });
 
 //start entry of this eample
-define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], function($, MyCollectionListGrp, Request, m) {
+define(['jquery', 'myApp/myModules/myCollectionListGrp', 'mockjax'], function($, MyCollectionListGrp, m) {
     //title -- update your title
     $('#title').text('groupComponent.js Example 04');
     $('#title').attr('data-id', 'myCollectionListGrp');
@@ -67,33 +67,33 @@ define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], 
     //example code -- apply your own example code
     //mock delete entity
     $.mockjax({
-      url: '/vevo/?videoId=*',
-      type: 'delete',
-      dataType: 'json',
-      responseTime: 100,
-      responseText: {
-        status: 'success',
-      }
+        url: '/vevo/?videoId=*',
+        type: 'delete',
+        dataType: 'json',
+        responseTime: 100,
+        responseText: {
+            status: 'success',
+        }
     });
     //mock update entity
     $.mockjax({
-      url: '/vevo/?videoId=*',
-      type: 'put',
-      dataType: 'json',
-      responseTime: 100,
-      responseText: {
-        status: 'success',
-      }
+        url: '/vevo/?videoId=*',
+        type: 'put',
+        dataType: 'json',
+        responseTime: 100,
+        responseText: {
+            status: 'success',
+        }
     });
     //mock add entity
     $.mockjax({
-      url: '/vevo/',
-      type: 'post',
-      dataType: 'json',
-      responseTime: 100,
-      responseText: {
-        status: 'success',
-      }
+        url: '/vevo/',
+        type: 'post',
+        dataType: 'json',
+        responseTime: 100,
+        responseText: {
+            status: 'success',
+        }
     });
 
 

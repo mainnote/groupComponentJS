@@ -4,7 +4,7 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
         var len = paths.length;
         if (len > 1) {
             var result = obj;
-            for (var i=0; i<len; i++) {
+            for (var i = 0; i < len; i++) {
                 if (result.hasOwnProperty(paths[i])) {
                     result = result[paths[i]];
                 } else {
@@ -31,8 +31,7 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
             this.components = [];
         },
         setup: function(opt) {
-            var that = this;
-            //build fieldset from JSON
+            //build fieldset from opt
             if (opt.form_elements && $.isArray(opt.form_elements)) {
                 var len = opt.form_elements.length;
                 for (var i = 0; i < len; i++) {
@@ -59,40 +58,33 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
             }
             return this.comp;
         },
-        submit: function(opt) {
+        submit: function(opt) { //to be overriden
+            throw new TypeError('Must override form.submit() method');
+            /*
             if (!this.submitting && this.checkValid()) {
                 this.submitting = true;
-                var id;
-                if (this.opt && this.opt.doc && this.opt.doc._id) id = this.opt.doc._id;
-                var action = (this.opt.form_action || this.comp.attr('action')) + id || '';
+                var action = (this.opt.form_action || this.comp.attr('action'));
                 var method = this.opt.form_method || this.comp.attr('method');
                 var data = this.serialize();
-                $.ajax({
-                    type: method,
-                    url: action,
-                    data: data,
-                    context: this,
-                    done: function(data) {
-                        var opt_ = {
-                            data: data,
-                        };
-                        this.done(opt_);
-                    },
-                    always: function() {
-                        this.always();
-                    },
-                });
             }
+            */
         },
         checkValid: function(opt) {
             var validFlag = true;
             $.each(this.components, function(index, component) {
-                if ('checkValid' in component) {
+                if ('checkValid' in component && typeof component.checkValid == 'function') {
                     var result = component.checkValid(); //valid?
                     if (!result) validFlag = false;
                 }
             });
             return validFlag;
+        },
+        all: function(opt) {
+            $.each(this.components, function(index, component) {
+                if (opt.compfn in component && typeof component[opt.compfn] == 'function') {
+                    component[opt.compfn]();
+                }
+            });
         },
         done: function(opt) {},
         always: function(opt) {
@@ -104,7 +96,11 @@ define(['jquery', 'component', 'tpl!templates/form'], function($, Component, tpl
                 container: this.comp.find('fieldset'),
                 form: this
             }, opt.compOpt);
-            opt.comp.render(opt_);
+            if ('_memberList' in opt.comp && typeof opt.comp.set == 'function') { //if component is a group
+                opt.comp.set(opt_);
+            } else { //native component
+                opt.comp.render(opt_);
+            }
         },
         find: function(opt) {
             var subComp;

@@ -50,22 +50,22 @@ define(['jquery', 'collectionGrp', 'request', 'Promise'], function($, Collection
         },
         //to be overriden
         remoteGet: function(opt) {
-            throw new TypeError('Method collectionRequestGrp.remoteGet(opt) must be overriden!');
+            throw new TypeError('Method collection.remoteGet(opt) must be overriden!');
             //must return Promise
         },
         //to be overriden
         remoteRemove: function(opt) {
-            throw new TypeError('Method collectionRequestGrp.remoteRemove(opt) must be overriden!');
+            throw new TypeError('Method collection.remoteRemove(opt) must be overriden!');
             //must return Promise
         },
         //to be overriden
         remoteUpdate: function(opt) {
-            throw new TypeError('Method collectionRequestGrp.remoteUpdate(opt) must be overriden!');
+            throw new TypeError('Method collection.remoteUpdate(opt) must be overriden!');
             //must return Promise
         },
         //to be overriden
         remoteAdd: function(opt) {
-            throw new TypeError('Method collectionRequestGrp.remoteAdd(opt) must be overriden!');
+            throw new TypeError('Method collection.remoteAdd(opt) must be overriden!');
             //must return Promise
         }
     });

@@ -10,7 +10,7 @@ require.config({
 });
 
 //start entry of this eample
-define(['jquery', 'myApp/myModules/myCollectionListGrp', 'request', 'mockjax'], function($, MyCollectionListGrp, Request, m) {
+define(['jquery', 'myApp/myModules/myCollectionListGrp', 'mockjax'], function($, MyCollectionListGrp, m) {
     //title -- update your title
     $('#title').text('groupComponent.js Example 05');
     $('#title').attr('data-id', 'myCollectionListGrp');

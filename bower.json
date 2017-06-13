@@ -10,14 +10,13 @@
   "moduleType": [
     "amd",
     "es6",
-    "globals",
-    "node",
-    "yui"
+    "globals"
   ],
   "keywords": [
-    "mainnote",
     "groupJS",
-    "groupComponentJS"
+    "groupComponentJS",
+    "groupComponent",
+    "frontend"
   ],
   "license": "MIT",
   "ignore": [
@@ -25,7 +24,8 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    "secret.json"
   ],
   "devDependencies": {},
   "dependencies": {

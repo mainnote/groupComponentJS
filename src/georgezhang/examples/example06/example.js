@@ -17,10 +17,9 @@ define(['jquery',
     'myApp/myModules/myEditor',
     'myApp/myModules/myUploader',
     'myApp/myModules/myTagInput',
-    'request',
     'mockjax'
 ], function($, MyAutocomplete, MyCheckbox, MyIconToggle, MyEditor, MyUploader, MyTagInput,
-    Request, m) {
+    m) {
     //title -- update your title
     $('#title').text('groupComponent.js Example 06');
     $('#title').attr('data-id', 'myAutocomplete');

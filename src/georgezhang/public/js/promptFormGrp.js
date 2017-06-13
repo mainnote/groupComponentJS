@@ -1,24 +1,21 @@
-define(['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'], function($, OptGrp, Prompt, FormGrp, Scroll) {
+define(['jquery', 'optGrp', 'prompt', 'formGrp'], function($, OptGrp, Prompt, FormGrp) {
     var PromptFormGrp = OptGrp.create('PromptFormGrp');
 
     var prompt = Prompt.create('prompt');
+    var prompt_setup = Prompt.setup;
+    var prompt_afterSubmit = Prompt.afterSubmit;
     prompt.extend({
         setup: function(opt) {
-            Scroll.disableScroll();
-            var promptComp = Prompt.setup.call(this, opt);
+            var promptComp = prompt_setup.call(this, opt);
             opt.container = promptComp;
             this.group.call('formGrp', 'set', opt);
             return promptComp;
         },
-
         donePrompt: function(opt) {
             return this.group.downCall('form', 'submit', opt);
         },
-        afterRemoved: function(opt) {
-            Scroll.enableScroll();
-        },
         afterSubmit: function(opt) {
-            Prompt.afterSubmit.call(this, opt);
+            prompt_afterSubmit.call(this, opt);
         }
     });
 
@@ -31,7 +28,7 @@ define(['jquery', 'optGrp', 'prompt', 'formGrp', 'scroll'], function($, OptGrp, 
     });
 
     PromptFormGrp.extend({
-        render: function(opt) {
+        set: function(opt) {
             this.call('prompt', 'render', opt);
         },
     });

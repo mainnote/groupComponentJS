@@ -12,18 +12,22 @@ require.config({
 //start entry of this eample
 define(['jquery',
     'myApp/myModules/myForm',
-    'myApp/myModules/myPromptForm',
     'mockjax'
-], function($, MyForm, MyPromptForm,
+], function($, myForm,
     m) {
     //title -- update your title
-    $('#title').text('groupComponent.js Example 08');
-    $('#title').attr('data-id', 'myForm');
+    $('#title').text('groupComponent.js Example 09');
+    $('#title').attr('data-id', 'myInputListGrp');
     //Introduction -- update your Introduction
-    $('.demo_section').prepend('<h2>Form</h2><i>Fill the form</i>');
+    $('.demo_section').prepend('<h2>Input List</h2><i>Sometimes inside a form, you want user to add a list of items. We call it inputList.</i>');
 
     //file list -- update you list
     var list = [{
+            name: 'myInputListGrp.js',
+            src: 'myModules/myInputListGrp.js',
+            type: 'javascript'
+        },
+        {
             name: 'myForm.js',
             src: 'myModules/myForm.js',
             type: 'javascript'
@@ -32,10 +36,26 @@ define(['jquery',
             name: 'myFormOption.js',
             src: 'myModules/myFormOption.js',
             type: 'javascript'
-        }, {
-            name: 'myPromptForm.js',
-            src: 'myModules/myPromptForm.js',
+        },
+        {
+            name: 'myInputListGrp_formOption.js',
+            src: 'myModules/myInputListGrp_formOption.js',
             type: 'javascript'
+        },
+        {
+            name: 'myInputListGrp_listItemGrp.js',
+            src: 'myModules/myInputListGrp_listItemGrp.js',
+            type: 'javascript'
+        },
+        {
+            name: 'myInputListGrp_promptFormGrp.js',
+            src: 'myModules/myInputListGrp_promptFormGrp.js',
+            type: 'javascript'
+        },
+        {
+            name: 'myInputListGrp_item.html',
+            src: 'myTemplates/myInputListGrp_item.html',
+            type: 'htmlmixed'
         },
         {
             name: 'example.js',
@@ -79,14 +99,10 @@ define(['jquery',
     //add layout
     $('#demo_sample').append('<div class="container"><div class="row"><div id="centerContent"></div></div></div>');
 
-    //randomly put components to sample box
-    var myForm = MyForm.create();
-    myForm.set({
-        container: $('#demo_sample')
+    var myForm_1 = myForm.create('myForm_1');
+    myForm_1.set({
+        container: $('#demo_sample'),
+        tag: 'InputList Demo',
     });
 
-    var myPromptForm = MyPromptForm.create();
-    myPromptForm.setButton({
-        container: $('#demo_sample')
-    });
 });

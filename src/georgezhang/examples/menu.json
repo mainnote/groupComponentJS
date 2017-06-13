@@ -37,5 +37,10 @@
         "id": "example08",
         "url": "/src/georgezhang/examples/example08/example.html",
         "html": "example 08 - Form"
+    },
+    {
+        "id": "example09",
+        "url": "/src/georgezhang/examples/example09/example.html",
+        "html": "example 09 - Input List"
     }
 ]

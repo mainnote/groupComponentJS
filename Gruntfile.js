@@ -3,6 +3,8 @@
  */
 
 module.exports = function(grunt) {
+    
+    //include a list of modules to package
     var module_list = require('./src/georgezhang/build/main');
     // Project configuration.
     grunt.initConfig({

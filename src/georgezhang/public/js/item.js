@@ -36,31 +36,6 @@ define(['jquery', 'component', 'tpl!templates/item'], function($, Component, tpl
             //destroy itself
             this.remove();
         },
-        removeAsync: function(opt) {
-            var that = this;
-            var opt_ = {};
-            if (opt && opt.data) opt_.data = opt.data;
-            return this.entity.removeAsync(opt_)
-                .then(function(data) {
-                    //remove from list
-                    that.list.removeItem({
-                        itemObj: that
-                    });
-
-                    //remove UI
-                    that.comp.remove();
-
-                    return data;
-                });
-        },
-        postAsync: function(opt) {
-            return this.entity.postAsync(opt);
-        },
-        fetchAsync: function(opt) {
-            var that = this;
-            this.setOpt(opt);
-            return this.entity.fetchAsync();
-        },
         update: function(opt) {
             //update UI
             this.updateUI({

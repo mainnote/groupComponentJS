@@ -5,7 +5,6 @@ define(['jquery', 'component', 'tpl!templates/inputList'
         tpl: tpl,
         defaultOpt: {
             inputList_name: 'inputList_name',
-            inputList_lable: 'Add: ',
             inputList_value: '',
         },
     });

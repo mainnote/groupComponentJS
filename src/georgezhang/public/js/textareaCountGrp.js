@@ -1,12 +1,9 @@
-define(['jquery', 'optGrp', 'textarea', 'count'
-	], function ($, OptGrp, Textarea, Count) {
-	var TextareaCountGrp = OptGrp.create('TextareaCountGrp');
-    var Textarea = Textarea.create('Textarea');
-    var Count = Count.create('Count');
+define(['jquery', 'optGrp', 'textarea', 'count'], function($, OptGrp, Textarea, Count) {
+    var TextareaCountGrp = OptGrp.create('TextareaCountGrp');
     TextareaCountGrp.join(Textarea, Count);
-    
-	TextareaCountGrp.extend({
-        render: function(opt) {
+
+    TextareaCountGrp.extend({
+        set: function(opt) {
             var textareaComp = this.call('Textarea', 'render', opt);
             var opt_ = {
                 comp: textareaComp,
@@ -14,7 +11,7 @@ define(['jquery', 'optGrp', 'textarea', 'count'
             };
             this.call('Count', 'render', opt_);
         },
-	});
+    });
 
-	return TextareaCountGrp;
+    return TextareaCountGrp;
 });

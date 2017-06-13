@@ -5,8 +5,8 @@ define(['jquery', 'optObj'], function ($, OptObj) {
     var Scroll = OptObj.create('Scroll');
     Scroll.extend({
         disableScroll: function (opt) {
-            this.current = $(window).scrollTop();
-            $(window).scrollTop(0);
+            if (!this.current) this.current = $(window).scrollTop();
+            //$(window).scrollTop(0);
 
             /*
             $('html, body').css({
@@ -26,6 +26,7 @@ define(['jquery', 'optObj'], function ($, OptObj) {
             });
             */
             if (this.current) $(window).scrollTop(this.current);
+            this.current = null;
             /* $('html, body').off('mousewheel'); */
         },
         set: function (opt) {

@@ -12,10 +12,9 @@ require.config({
 //start entry of this eample
 define(['jquery',
     'myApp/myModules/myModals',
-    'request',
     'mockjax'
 ], function($, MyModals,
-    Request, m) {
+    m) {
     //title -- update your title
     $('#title').text('groupComponent.js Example 07');
     $('#title').attr('data-id', 'myModals');
